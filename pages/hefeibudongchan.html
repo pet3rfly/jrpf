@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合肥市不动产登记信息查询结果</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --font-song: "SimSun", "Songti SC", serif;
+            --font-hei: "SimHei", "Heiti SC", sans-serif;
+            --border-color: #000;
+        }
+
+        @page { size: A4; margin: 0; }
+
+        body {
+            background-color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: var(--font-song);
+            color: #000;
+        }
+
+        .a4-page {
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            padding: 25mm 5mm 5mm 5mm;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        @media print {
+            body { background: none; padding: 0; }
+            .a4-page {
+                box-shadow: none;
+                width: 210mm; height: 297mm;
+                padding: 25mm 5mm 5mm 5mm;
+                margin: 0;
+                page-break-after: always;
+            }
+            .control-panel, .btn-group { display: none !important; }
+            -webkit-print-color-adjust: exact;
+        }
+
+        #bg-watermark {
+            position: absolute; top: 40px; left: 0px; width: 100%; height: 100%;
+            z-index: 0; object-fit: cover; pointer-events: none; opacity: 0.8;
+        }
+        #stamp-layer {
+            position: absolute; z-index: 5;
+            width: 160px; top: 350px; left: 400px;
+            pointer-events: none; mix-blend-mode: multiply; transform: rotate(-15deg);
+        }
+        .content-layer {
+            position: relative; z-index: 10; background: transparent; 
+        }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .header-title { text-align: center; width: 100%; padding-left: 120px; }
+        .header-title h1 {
+            font-size: 22px; font-weight: bold; font-family: var(--font-hei);
+            margin: 0 0 15px 0; letter-spacing: 1px;
+        }
+        .header-info { font-size: 16px; text-align: left; margin: 0; }
+        .qr-code { width: 120px; height: 120px; object-fit: contain; }
+
+        .section-title {
+            font-size: 16px; 
+            font-weight: normal; 
+            margin: 10px 0 2px 0;
+            font-family: var(--font-song);
+        }
+
+        table {
+            width: 100%; border-collapse: collapse; margin-bottom: 2px;
+            table-layout: fixed; 
+            font-size: 16px; 
+            background: transparent;
+        }
+        
+        th, td {
+            border: 1px solid #000;
+            padding: 2px 1px;
+            text-align: center; 
+            vertical-align: middle;
+            line-height: 1.1; word-break: break-all;
+            font-weight: normal;
+        }
+        
+        td[contenteditable="true"] { outline: none; }
+        [contenteditable="true"]:hover { background-color: rgba(255, 255, 0, 0.1); cursor: text; }
+        [contenteditable="true"]:focus { background-color: rgba(255, 255, 255, 0.8); }
+
+        .footer-date {
+            text-align: right; font-size: 16px;
+            margin-top: 8px; margin-bottom: 5px;
+            margin-right: 4em;
+        }
+        .footer-notes { font-size: 16px; line-height: 1.4; color: #333; margin-top: 5px; }
+
+        .btn-group {
+            position: fixed; top: 20px; right: 20px; z-index: 10001;
+            display: flex; gap: 10px;
+        }
+        .float-btn {
+            padding: 8px 15px; background: #2258da; color: #fff;
+            border: none; border-radius: 4px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 14px;
+            font-family: "Microsoft YaHei";
+        }
+        .float-btn.green { background: #28a745; }
+        .float-btn:hover { opacity: 0.9; }
+
+        .control-panel {
+            position: fixed; bottom: 20px; right: 20px; background: #fff;
+            border: 1px solid #ccc; padding: 15px; z-index: 10000;
+            width: 280px; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 8px; font-size: 12px; font-family: "Microsoft YaHei";
+            transition: all 0.3s ease;
+        }
+        .control-panel.collapsed {
+            width: 40px; height: 40px; padding: 0; border-radius: 50%;
+            background: #2258da; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .control-panel.collapsed .panel-content { display: none; }
+        .toggle-icon { display: none; color: white; font-size: 20px; }
+        .control-panel.collapsed .toggle-icon { display: block; }
+        
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px;
+        }
+        .minimize-btn { 
+            cursor: pointer; font-size: 16px; width: 16px; height: 16px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; color: #666;
+        }
+        .control-row { margin-bottom: 10px; }
+        .control-row label { display: block; margin-bottom: 3px; font-weight: bold; color: #555; }
+        .control-row input { width: 95%; padding: 5px; border: 1px solid #ddd; }
+        .slider-container { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .slider-container input { flex: 1; }
+
+    </style>
+</head>
+<body>
+
+    <div class="btn-group">
+        <button class="float-btn green" onclick="saveAsImage()">🖼️ 存为图片</button>
+        <button class="float-btn" onclick="window.print()">🖨️ 打印 / PDF</button>
+    </div>
+
+    <div class="a4-page" id="capture-area">
+        <img src="../images/bdc水印.jpg" id="bg-watermark" alt="水印" style="top: 40px; left: 0px;">
+        <img src="../images/hfbdc.png" id="stamp-layer" alt="印章" style="top: 375px; left: 460px; width: 160px;">
+
+        <div class="content-layer">
+            
+            <div class="header">
+                <div class="header-title">
+                    <h1>合肥市不动产登记信息查询结果</h1>
+                    <div class="header-info" contenteditable="true">依申请，经过查询 合肥市不动产统一登记信息管理系统，结果如下：</div>
+                </div>
+                <img src="../images/hfqr-100.jpg" id="qr-img" class="qr-code" alt="QR">
+            </div>
+
+            <div class="section-title">产权信息</div>
+            <table>
+                <colgroup>
+                    <col style="width: 28%">
+                    <col style="width: 12%">
+                    <col style="width: 25%">
+                    <col style="width: 12%">
+                    <col style="width: 11%">
+                    <col style="width: 12%">
+                </colgroup>
+                <tr>
+                    <th>不动产权证号</th>
+                    <th>权利人</th>
+                    <th>证件号</th>
+                    <th>登记类型</th>
+                    <th>登记原因</th>
+                    <th>登记时间</th>
+                </tr>
+                <tr>
+                    <td contenteditable="true">皖(2021)合肥市不动产权<br>第4145544号</td>
+                    <td contenteditable="true">顾露云</td>
+                    <td contenteditable="true">342622199106302421</td>
+                    <td contenteditable="true">转移登记</td>
+                    <td contenteditable="true">存量房买卖</td>
+                    <td contenteditable="true">2021-10-22</td>
+                </tr>
+            </table>
+
+            <div class="section-title">不动产详情（面积单位：平方米）</div>
+            <table>
+                <colgroup>
+                    <col style="width: 8%">
+                    <col style="width: 8%">
+                    <col style="width: 8%">
+                    <col style="width: 10%">
+                    <col style="width: 14%">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                    <col style="width: 16%">
+                </colgroup>
+                <tr>
+                    <td colspan="2">共有情况</td>
+                    <td colspan="2" contenteditable="true">单独所有</td>
+                    <td colspan="2">不动产单元号</td>
+                    <td colspan="3" contenteditable="true">340104401007GB00071F00020062</td>
+                </tr>
+                <tr>
+                    <td colspan="2">坐落</td>
+                    <td colspan="7" contenteditable="true">蜀山区十里店路719号清溪家园5幢1602</td>
+                </tr>
+                <tr>
+                    <td>总层数</td>
+                    <td>所在层</td>
+                    <td>室号</td>
+                    <td>规划用途</td>
+                    <td>房屋性质</td>
+                    <td>建筑面积</td>
+                    <td>专有面积</td>
+                    <td>分摊面积</td>
+                    <td>竣工时间</td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">18</td>
+                    <td contenteditable="true">16</td>
+                    <td contenteditable="true">1602</td>
+                    <td contenteditable="true">住宅</td>
+                    <td contenteditable="true">市场化商品房</td>
+                    <td contenteditable="true">97.02</td>
+                    <td contenteditable="true">81.36</td>
+                    <td contenteditable="true">15.66</td>
+                    <td contenteditable="true">2017-06-30</td>
+                </tr>
+                <tr>                    
+                    <td colspan="2">土地使用面积</td>
+                    <td colspan="2" contenteditable="true">50188.64</td>
+                    <td colspan="2">土地使用期限</td>
+                    <td colspan="3" contenteditable="true">至2090-06-27</td>
+                </tr>
+                <tr>
+                    <td colspan="2">宗地面积</td>
+                    <td colspan="3" contenteditable="true">50188.64</td>
+                    <td colspan="2">宗地性质</td>
+                    <td colspan="2" contenteditable="true">出让</td>
+                </tr>
+                <tr>
+                    <td colspan="2">宗地权利类型</td>
+                    <td colspan="3" contenteditable="true">国有建设用地使用权</td>
+                    <td colspan="2">宗地用途</td>
+                    <td colspan="2" contenteditable="true">城镇住宅用地</td>
+                </tr>
+                <tr>
+                    <td colspan="2">宗地用途 2</td>
+                    <td colspan="3" contenteditable="true"></td>
+                    <td colspan="2">宗地用途 3</td>
+                    <td colspan="2" contenteditable="true"></td>
+                </tr>
+                <tr>
+                    <td colspan="2">附记</td>
+                    <td colspan="7" contenteditable="true"></td>
+                </tr>
+            </table>
+
+            <div class="section-title">抵押信息（金额单位：万元）</div>
+            <table>
+                <colgroup>
+                    <col style="width: 22%"> <col style="width: 15%"> <col style="width: 10%"> <col style="width: 10%"> <col style="width: 15%"> <col style="width: 12%"> <col style="width: 10%"> <col style="width: 6%">  </colgroup>
+                <tr>
+                    <th>不动产证明号</th>
+                    <th>抵押权人</th>
+                    <th>抵押方式</th>
+                    <th>抵押金额</th>
+                    <th>债务履行期限</th>
+                    <th>登记时间</th>
+                    <th>禁止转让</th>
+                    <th>附记</th>
+                </tr>
+                <tr>
+                    <td contenteditable="true">皖(2025)合肥市不动<br>产证明第4009908号</td>
+                    <td contenteditable="true">安徽九鼎典当<br>有限公司</td>
+                    <td contenteditable="true">一般抵押</td>
+                    <td contenteditable="true">64</td>
+                    <td contenteditable="true">2025-11-27 至<br>2025-12-26</td>
+                    <td contenteditable="true">2025-12-01</td>
+                    <td contenteditable="true">是</td>
+                    <td contenteditable="true"></td>
+                </tr>
+            </table>
+
+            <div class="section-title">查封信息（注：轮候查封的实际起止日期为待定）</div>
+            <table>
+                <colgroup>
+                    <col style="width: 15%">
+                    <col style="width: 10%">
+                    <col style="width: 20%">
+                    <col style="width: 15%">
+                    <col style="width: 15%">
+                    <col style="width: 10%">
+                    <col style="width: 15%">
+                </colgroup>
+                <tr>
+                    <th>查封机构</th>
+                    <th>查封类型</th>
+                    <th>查封文号</th>
+                    <th>查封开始时间</th>
+                    <th>查封结束时间</th>
+                    <th>是否解封</th>
+                    <th>附记</th>
+                </tr>
+                <tr>
+                    <td contenteditable="true" style="height: 18px;"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                </tr>
+            </table>
+
+            <div class="section-title">异议信息</div>
+            <table>
+                <tr>
+                    <th style="width: 50%">异议事项</th>
+                    <th style="width: 50%">附记</th>
+                </tr>
+                <tr>
+                    <td contenteditable="true" style="height: 18px;"></td>
+                    <td contenteditable="true"></td>
+                </tr>
+            </table>
+
+            <div class="section-title">居住权信息</div>
+            <table>
+                <colgroup>
+                    <col style="width: 25%">
+                    <col style="width: 20%">
+                    <col style="width: 20%">
+                    <col style="width: 15%">
+                    <col style="width: 20%">
+                </colgroup>
+                <tr>
+                    <th>不动产证明号</th>
+                    <th>居住权人</th>
+                    <th>居住权期限</th>
+                    <th>登记时间</th>
+                    <th>附记</th>
+                </tr>
+                <tr>
+                    <td contenteditable="true" style="height: 18px;"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                </tr>
+            </table>
+
+            <div class="footer-date" id="footerDateDisplay" contenteditable="true">
+                2025 年 12 月 22 日 14 时 52 分
+            </div>
+
+            <div class="footer-notes">
+                说明：<br>
+                1、本次查询结果依据不动产（含房屋）登记簿出具，反映查询人目前实际拥有的不动产权利登记信息。<br>
+                2、可能因被查询人身份信息与登记簿不一致导致错误结果，查询人请当场核实以上身份信息和结果信息，<br>
+                如信息有误或异议，请告知档案查询工作人员予以核实，如有隐瞒或提供虚假信息自行承担法律责任。<br>
+                3、查询结果中空白栏，均为登记簿中无此项信息。<br>
+                4、查询人对以上查询中涉及的相关信息负有保密义务。
+            </div>
+
+        </div>
+    </div>
+
+    <div class="control-panel" id="controlPanel">
+        <div class="toggle-icon" onclick="toggleControlPanel()">⚙</div>
+        
+        <div class="panel-content">
+            <div class="panel-header">
+                <h4>页面元素控制</h4>
+                <span class="minimize-btn" onclick="toggleControlPanel()" title="收起">_</span>
+            </div>
+
+            <div class="control-row">
+                <label>日期时间设置</label>
+                <input type="datetime-local" id="datePicker" step="60" onchange="updateDate()">
+            </div>
+
+            <div class="control-row">
+                <label>替换二维码 (hfqr-100.jpg)</label>
+                <input type="file" accept="image/*" onchange="loadQR(this)">
+            </div>
+
+            <div class="control-row" style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
+                <label>印章位置 (上下)</label>
+                <div class="slider-container">
+                    <input type="range" id="stampTop" min="0" max="1000" value="350" oninput="updateStamp()">
+                </div>
+            </div>
+
+            <div class="control-row">
+                <label>印章位置 (左右)</label>
+                <div class="slider-container">
+                    <input type="range" id="stampLeft" min="0" max="700" value="400" oninput="updateStamp()">
+                </div>
+            </div>
+
+            <div class="control-row">
+                <label>印章大小</label>
+                <div class="slider-container">
+                    <input type="range" id="stampSize" min="50" max="300" value="160" oninput="updateStamp()">
+                </div>
+            </div>
+
+            <div class="control-row" style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
+                <label>底纹位置 (上下)</label>
+                <div class="slider-container">
+                    <input type="range" id="wmTop" min="-200" max="200" value="40" oninput="updateWatermark()">
+                </div>
+            </div>
+
+            <div class="control-row">
+                <label>底纹位置 (左右)</label>
+                <div class="slider-container">
+                    <input type="range" id="wmLeft" min="-200" max="200" value="0" oninput="updateWatermark()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// 初始化日期
+        window.onload = function() {
+            // 修改点1：去掉括号里的内容，即获取当前时间
+            const now = new Date(); 
+            
+            const picker = document.getElementById('datePicker');
+            const yyyy = now.getFullYear();
+            const MM = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            picker.value = `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+
+            // 修改点2：增加这一行，页面加载时立即更新底部文字
+            updateDate(); 
+        }
+
+        function toggleControlPanel() {
+            document.getElementById('controlPanel').classList.toggle('collapsed');
+        }
+
+        function updateDate() {
+            const val = document.getElementById('datePicker').value;
+            if(val) {
+                const d = new Date(val);
+                const year = d.getFullYear();
+                const month = d.getMonth() + 1;
+                const date = d.getDate();
+                const hour = d.getHours();
+                const minute = String(d.getMinutes()).padStart(2, '0');
+                
+                const text = `${year} 年 ${month} 月 ${date} 日 ${hour} 时 ${minute} 分`;
+                document.getElementById('footerDateDisplay').innerText = text;
+            }
+        }
+
+        function saveAsImage() {
+            const element = document.getElementById('capture-area');
+            html2canvas(element, {
+                scale: 2, 
+                useCORS: true,
+                allowTaint: true, 
+                backgroundColor: "#ffffff",
+                scrollX: 0,
+                scrollY: 0,
+                height: element.offsetHeight,
+                width: element.offsetWidth
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = '不动产产调结果.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            }).catch(err => {
+                console.error("导出图片失败:", err);
+                alert("导出失败。请确保文件已部署在服务器(如GitHub Pages)上，而非直接双击打开。");
+            });
+        }
+
+        function loadQR(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('qr-img').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updateStamp() {
+            var top = document.getElementById('stampTop').value;
+            var left = document.getElementById('stampLeft').value;
+            var size = document.getElementById('stampSize').value;
+            var stamp = document.getElementById('stamp-layer');
+            stamp.style.top = top + 'px';
+            stamp.style.left = left + 'px';
+            stamp.style.width = size + 'px';
+        }
+
+        function updateWatermark() {
+            var top = document.getElementById('wmTop').value;
+            var left = document.getElementById('wmLeft').value;
+            var wm = document.getElementById('bg-watermark');
+            wm.style.top = top + 'px';
+            wm.style.left = left + 'px';
+        }
+    </script>
+</body>
+</html>

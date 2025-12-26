@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>银行批复系统 - 工作台</title>
     
-    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="icon" href="images/favicon.png" type="image/png">
 
     <style>
         :root {
@@ -13,8 +13,8 @@
             --text-color: #2c3e50;
             --card-bg: #ffffff;
             
-            /* ★★★ 颜色修正 ★★★ */
-            --color-ccb: #005baa;   /* 建行深蓝 (已修正) */
+            /* 各业务主题色 */
+            --color-ccb: #005baa;   /* 建行深蓝 */
             --color-abc: #008d7c;   /* 农行青绿 */
             --color-spdb: #2258da;  /* 浦发亮蓝 */
             --color-boc: #b71c1c;   /* 中行红色 */
@@ -53,7 +53,7 @@
             margin: 0;
         }
 
-        /* Grid 布局：强制一行3个 */
+        /* Grid 布局 */
         .card-container {
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
@@ -155,7 +155,7 @@
 
         /* 颜色定义 */
         .card-1 .card-top { background: var(--color-ccb); }
-        .card-1 .icon-circle { background: rgba(0, 91, 170, 0.08); } /* 微调背景色透明度匹配建行蓝 */
+        .card-1 .icon-circle { background: rgba(0, 91, 170, 0.08); } 
         .card-1 .card-btn { background: var(--color-ccb); }
 
         .card-2 .card-top { background: var(--color-abc); }
@@ -186,7 +186,6 @@
             font-size: 12px;
         }
 
-        /* 响应式适配 */
         @media (max-width: 900px) {
             .card-container { grid-template-columns: repeat(2, 1fr); }
         }
@@ -205,11 +204,11 @@
 
     <div class="card-container">
         
-        <a href="page1.html" class="card card-1" target="_blank">
+        <a href="pages/jiansheyinhang.html" class="card card-1" target="_blank">
             <div class="card-top"></div>
             <div class="card-content">
                 <div class="icon-circle">
-                    <img src="建行logo.png" class="bank-logo" alt="CCB">
+                    <img src="images/建行logo.png" class="bank-logo" alt="CCB">
                 </div>
                 <div class="card-title">信贷业务详情</div>
                 <div class="card-desc">
@@ -219,11 +218,11 @@
             </div>
         </a>
 
-        <a href="page2.html" class="card card-2" target="_blank">
+        <a href="pages/nongyeyinhang.html" class="card card-2" target="_blank">
             <div class="card-top"></div>
             <div class="card-content">
                 <div class="icon-circle">
-                    <img src="农行logo.png" class="bank-logo" alt="ABC">
+                    <img src="images/农行logo.png" class="bank-logo" alt="ABC">
                 </div>
                 <div class="card-title">贷款审批通知书</div>
                 <div class="card-desc">
@@ -233,11 +232,11 @@
             </div>
         </a>
 
-        <a href="page3.html" class="card card-3" target="_blank">
+        <a href="pages/pufayinhang.html" class="card card-3" target="_blank">
             <div class="card-top"></div>
             <div class="card-content">
                 <div class="icon-circle">
-                    <img src="浦发logo.png" class="bank-logo" alt="SPDB">
+                    <img src="images/浦发logo.png" class="bank-logo" alt="SPDB">
                 </div>
                 <div class="card-title">OA 审批邮件</div>
                 <div class="card-desc">
@@ -247,11 +246,11 @@
             </div>
         </a>
 
-        <a href="page4.html" class="card card-4" target="_blank">
+        <a href="pages/zhongguoyinhang.html" class="card card-4" target="_blank">
             <div class="card-top"></div>
             <div class="card-content">
                 <div class="icon-circle">
-                    <img src="中行logo.png" class="bank-logo" alt="BOC">
+                    <img src="images/中行logo.png" class="bank-logo" alt="BOC">
                 </div>
                 <div class="card-title">签署意见书</div>
                 <div class="card-desc">
@@ -261,11 +260,11 @@
             </div>
         </a>
 
-        <a href="page5.html" class="card card-5" target="_blank">
+        <a href="pages/hefeibudongchan.html" class="card card-5" target="_blank">
             <div class="card-top"></div>
             <div class="card-content">
                 <div class="icon-circle">
-                    <img src="hfbdclogo.png" class="bank-logo" alt="HFBDC">
+                    <img src="images/hfbdclogo.png" class="bank-logo" alt="HFBDC">
                 </div>
                 <div class="card-title">不动产登记信息</div>
                 <div class="card-desc">

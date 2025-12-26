@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浦发审批通知</title>
+    <style>
+        :root {
+            --bg-gray: #eaeaea;      
+            --border-gray: #b8b8b8;  
+            --watermark-gray: #e6e6e6; 
+            --link-blue: #2258da;    
+            --text-main: #333;       
+            --text-meta: #666;
+            --status-bar-bg: #EDEEF1; 
+            
+            --font-main: "Microsoft YaHei", "Segoe UI", sans-serif;
+            --font-watermark: "SimSun", "Songti SC", serif; 
+        }
+
+        body {
+            background-color: #f0f2f5; 
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-main);
+            overflow: hidden; 
+        }
+
+        /* ================= 水印层 ================= */
+        #watermark-layer {
+            position: fixed; 
+            top: 0; left: -20%; 
+            width: 140vw; height: 140vh;
+            pointer-events: none; 
+            z-index: 9999; 
+            mix-blend-mode: multiply; 
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            justify-content: space-around;
+        }
+
+        .watermark-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--watermark-gray);
+            font-family: var(--font-watermark); 
+            font-weight: normal; 
+            transform: rotate(-30deg);
+            white-space: nowrap;
+        }
+
+        /* ================= 弹窗容器 ================= */
+        .modal-window {
+            width: 80%; 
+            max-width: 1400px; 
+            height: 85vh; 
+            background-color: #fff;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3); 
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid #999; 
+            z-index: 10; 
+        }
+
+        /* ================= 顶部独立状态栏 ================= */
+        .window-status-bar {
+            height: 30px;
+            background-color: var(--status-bar-bg);
+            border-bottom: 1px solid #dcdcdc; 
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; 
+            padding-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .win-controls-img {
+            width: 110px; height: 24px;
+            display: block; background-color: transparent; cursor: pointer;
+        }
+
+        /* ================= 灰色 Header 区域 ================= */
+        .modal-header-gray {
+            background-color: var(--bg-gray);
+            height: 70px; 
+            position: relative;
+            flex-shrink: 0;
+            border-bottom: 2px solid var(--border-gray);
+        }
+
+        .settings-area {
+            position: absolute; bottom: 10px; right: 30px;
+            text-align: center; font-size: 12px; color: var(--text-meta);
+            cursor: pointer;
+        }
+        
+        .settings-icon {
+            width: 32px; height: 32px;
+            margin: 0 auto 2px;
+            background: url('../images/settings.png') no-repeat center/contain;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ================= 白色内容区域 ================= */
+        .modal-content-white {
+            background-color: #fff;
+            flex: 1;
+            padding: 30px 50px;
+            overflow-y: auto; 
+            position: relative;
+        }
+
+        h1.mail-title {
+            font-size: 24px; font-weight: normal; margin: 0 0 15px 0; color: #000;
+        }
+
+        /* ----- 新增布局：头部Meta行 (包含左侧信息和右侧按钮) ----- */
+        .meta-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* 顶部对齐 */
+            margin-bottom: 5px; /* 与灰色块的间距 */
+        }
+
+        /* 左侧信息区 */
+        .meta-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mail-meta-line { display: flex; align-items: center; }
+        .mailbox-text { font-size: 16px; color: #000; font-weight: normal; }
+        .meta-time { font-size: 14px; color: var(--text-meta); margin-left: 20px; font-family: Arial, sans-serif; } 
+        .sent-to { font-size: 14px; color: var(--text-meta); }
+
+/* 修改后的 .info-actions，增加了右边距 */
+.info-actions {
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-end; 
+    gap: 5px;
+    margin-top: 2px;
+    margin-right: 20px; /* 新增：距离右边的间距 */
+}
+        .action-icons { display: flex; gap: 10px; align-items: center;}
+        .action-icons img { width: 16px; height: 16px; display: block; cursor: pointer; opacity: 0.7; }
+        .action-icons img:hover { opacity: 1; }
+
+        .hide-info-btn { color: var(--link-blue); font-size: 12px; cursor: pointer; text-decoration: none; }
+        .hide-info-btn:hover { text-decoration: underline; }
+
+        /* 灰色详情块 (内部不再有按钮) */
+        .info-block {
+            background-color: var(--bg-gray);
+            padding: 15px 20px;
+            font-size: 14px;
+            line-height: 1.8;
+            position: relative;
+            margin-bottom: 25px;
+            border-top: 2px solid var(--border-gray);
+            border-bottom: 2px solid var(--border-gray);
+        }
+
+        .info-row { display: flex; }
+        .info-label { color: var(--text-meta); width: 60px; text-align: justify; text-align-last: justify; margin-right: 10px; }
+        .info-val { color: var(--text-main); }
+        .font-arial { font-family: Arial, sans-serif; }
+
+        .mail-body { font-size: 15px; line-height: 1.6; color: #000; word-break: break-all; }
+        .normal-link { color: inherit; text-decoration: none; cursor: text; font-family: Arial, sans-serif; }
+
+        /* ================= 控制面板 ================= */
+        .control-panel {
+            position: fixed; bottom: 20px; right: 20px; background: #fff;
+            border: 1px solid #ccc; padding: 15px; z-index: 10000;
+            width: 260px; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 8px; font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .control-panel.collapsed {
+            width: 40px; height: 40px; padding: 0; border-radius: 50%;
+            background: var(--link-blue); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .control-panel.collapsed .panel-content { display: none; }
+        .toggle-icon { display: none; color: white; font-size: 20px; }
+        .control-panel.collapsed .toggle-icon { display: block; }
+        
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px;
+        }
+        
+        /* 16px 方形折叠按钮 */
+        .minimize-btn { 
+            cursor: pointer; font-size: 16px; width: 16px; height: 16px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; color: #666;
+        }
+        .minimize-btn:hover { color: #000; background-color: #f0f0f0; border-radius: 2px;}
+
+        .control-row { margin-bottom: 10px; }
+        .control-row label { display: block; margin-bottom: 3px; color: #555; font-weight: bold;}
+        .control-row input, .control-row select { width: 95%; padding: 5px; border: 1px solid #ddd; }
+        
+        .slider-container { display: flex; align-items: center; justify-content: space-between; }
+        .slider-container input { width: 70%; }
+        
+        .btn-action { width: 100%; padding: 6px; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer; margin-top: 5px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="watermark-layer"></div>
+
+    <div class="modal-window">
+        <div class="window-status-bar">
+            <img src="../images/window_controls.png" class="win-controls-img" alt="Window Controls">
+        </div>
+
+        <div class="modal-header-gray">
+            <div class="settings-area">
+                <div class="settings-icon"></div>
+                设置
+            </div>
+        </div>
+
+        <div class="modal-content-white">
+            <h1 class="mail-title">
+                贷款审批通过通知：请阅知：合肥<span id="txtBranch">高新科技</span>支行有1笔贷款已完成审批
+            </h1>
+
+            <div class="meta-header-row">
+                <div class="meta-left">
+                    <div class="mail-meta-line">
+                        <span class="mailbox-text">信箱: 业务流程管理平台</span>
+                        <span class="meta-time" id="txtDateTimeTop">2025-12-22 11:28:26</span>
+                    </div>
+                    <div class="sent-to">
+                        发送至 <span id="txtManagerNameTop">刘立伟</span> ;
+                    </div>
+                </div>
+
+                <div class="info-actions">
+                    <div class="action-icons">
+                        <img src="../images/icon_chat.png" alt="Chat" title="聊天">
+                        <img src="../images/icon_return.png" alt="Reply" title="回复">
+                    </div>
+                    <a class="hide-info-btn">隐藏信息</a>
+                </div>
+            </div>
+
+            <div class="info-block">
+                <div class="info-row">
+                    <span class="info-label">发件人</span>
+                    <span class="info-val">信箱：业务流程管理平台 &lt;<span id="txtEmailSender">bpmp@spdb.com.cn</span>&gt;</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">收件人</span>
+                    <span class="info-val">"<span id="txtManagerNameRec">刘立伟</span>" &lt;<span id="txtManagerEmail">llw@spdb.com.cn</span>&gt; ;</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">时 间</span>
+                    <span class="info-val font-arial" id="txtDateTimeMeta">2025-12-22 11:28:26</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">大 小</span>
+                    <span class="info-val">2.2 KB</span>
+                </div>
+            </div>
+
+            <div class="mail-body">
+                业务品种：个人生产经营贷款、借款人：*<span id="txtCustomerName">静</span>、合同号:<span id="txtContract">5801200398453610058</span>、金额：<span id="txtAmount">860000</span>元，已完成审批，业务详情请登录零售信贷服务系统（<span class="normal-link">http://plbs.pbspdb.com/PLBS</span>）进行查询。注：此为浦发银行零售信贷服务系统自动发送的消息，请勿直接回复
+            </div>
+        </div>
+    </div>
+
+    <div class="control-panel" id="controlPanel">
+        <div class="toggle-icon" onclick="toggleControlPanel()">⚙</div>
+        
+        <div class="panel-content">
+            <div class="panel-header">
+                <h4>邮件内容配置</h4>
+                <span class="minimize-btn" onclick="toggleControlPanel()" title="收起">_</span>
+            </div>
+
+            <div class="control-row">
+                <label>支行名称</label>
+                <select id="selBranch" onchange="updateContent()">
+                    <option value="高新科技">高新科技 (默认)</option>
+                    <option value="瑶海">瑶海</option>
+                    <option value="四牌楼">四牌楼</option>
+                    <option value="政务新区">政务新区</option>
+                    <option value="滨湖新区">滨湖新区</option>
+                    <option value="宁国路">宁国路</option>
+                </select>
+            </div>
+
+            <div class="control-row">
+                <label>客户经理姓名</label>
+                <input type="text" id="inpManager" value="刘立伟" oninput="updateContent()">
+            </div>
+
+            <div class="control-row">
+                <label>姓名拼音 (影响水印/邮箱)</label>
+                <input type="text" id="inpPinyin" value="llw" oninput="updateContent()">
+            </div>
+
+            <div class="control-row">
+                <label>借款人姓名 (显示后一位)</label>
+                <input type="text" id="inpCustomer" value="静" oninput="updateContent()">
+            </div>
+
+            <div class="control-row">
+                <label>合同号 (5801200 + 12位)</label>
+                <button class="btn-action" onclick="refreshContract()">刷新合同号</button>
+            </div>
+
+            <div class="control-row">
+                <label>金额 (元)</label>
+                <input type="text" id="inpAmount" value="860000" oninput="updateContent()">
+            </div>
+
+            <div class="control-row">
+                <label>日期时间 (默认当前)</label>
+                <input type="datetime-local" id="inpDate" step="1" onchange="updateContent()">
+            </div>
+
+            <div class="control-row">
+                <label>水印密度 (左密 - 右疏)</label>
+                <div class="slider-container">
+                    <input type="range" id="inpDensity" min="1.0" max="3.0" step="0.1" value="2.0" oninput="updateContent()">
+                    <span id="txtDensity">2.0</span>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <label>水印字号 (px)</label>
+                <div class="slider-container">
+                    <input type="range" id="inpFontSize" min="24" max="72" step="2" value="48" oninput="updateContent()">
+                    <span id="txtFontSize">48</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const HH = String(now.getHours()).padStart(2, '0');
+            const MM = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            
+            const nowStr = `${yyyy}-${mm}-${dd}T${HH}:${MM}:${ss}`;
+            document.getElementById('inpDate').value = nowStr;
+            
+            updateContent();
+        };
+
+        function toggleControlPanel() {
+            document.getElementById('controlPanel').classList.toggle('collapsed');
+        }
+
+        function refreshContract() {
+            const prefix = "5801200";
+            let suffix = "";
+            for(let i=0; i<12; i++) {
+                suffix += Math.floor(Math.random() * 10);
+            }
+            document.getElementById('txtContract').innerText = prefix + suffix;
+        }
+
+        function updateContent() {
+            const branch = document.getElementById('selBranch').value;
+            const manager = document.getElementById('inpManager').value;
+            const pinyin = document.getElementById('inpPinyin').value;
+            const customer = document.getElementById('inpCustomer').value;
+            const amount = document.getElementById('inpAmount').value;
+            const dateStrRaw = document.getElementById('inpDate').value;
+            const density = parseFloat(document.getElementById('inpDensity').value);
+            const fontSize = parseInt(document.getElementById('inpFontSize').value);
+            
+            document.getElementById('txtDensity').innerText = density;
+            document.getElementById('txtFontSize').innerText = fontSize;
+
+            let formattedDate = "";
+            let dateForWatermark = "";
+            if(dateStrRaw) {
+                const d = new Date(dateStrRaw);
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                const HH = String(d.getHours()).padStart(2, '0');
+                const MM = String(d.getMinutes()).padStart(2, '0');
+                const ss = String(d.getSeconds()).padStart(2, '0');
+                
+                formattedDate = `${yyyy}-${mm}-${dd} ${HH}:${MM}:${ss}`;
+                dateForWatermark = `${yyyy}-${mm}-${dd}`;
+            }
+
+            document.getElementById('txtBranch').innerText = branch;
+            document.getElementById('txtManagerNameTop').innerText = manager;
+            document.getElementById('txtManagerNameRec').innerText = manager;
+            document.getElementById('txtManagerEmail').innerText = pinyin + "@spdb.com.cn";
+            document.getElementById('txtCustomerName').innerText = customer;
+            document.getElementById('txtAmount').innerText = amount;
+            
+            document.getElementById('txtDateTimeTop').innerText = formattedDate;
+            document.getElementById('txtDateTimeMeta').innerText = formattedDate;
+
+            updateWatermark(pinyin, dateForWatermark, density, fontSize);
+        }
+
+        function updateWatermark(pinyin, dateStr, density, fontSize) {
+            const container = document.getElementById('watermark-layer');
+            container.innerHTML = ''; 
+
+            const text = `浦发银行 ${pinyin.toUpperCase()} ${dateStr}`;
+            
+            const baseW = 400;
+            const baseH = 200;
+            const itemW = baseW * density;
+            const itemH = baseH * density;
+
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+            
+            const cols = Math.ceil(winW / itemW) + 2;
+            const rows = Math.ceil(winH / itemH) + 2;
+            const total = cols * rows;
+
+            for(let i=0; i<total; i++) {
+                const div = document.createElement('div');
+                div.className = 'watermark-item';
+                div.innerText = text;
+                div.style.width = itemW + 'px';
+                div.style.height = itemH + 'px';
+                div.style.fontSize = fontSize + 'px'; 
+                container.appendChild(div);
+            }
+        }
+        
+        window.addEventListener('resize', () => { updateContent(); });
+    </script>
+</body>
+</html>

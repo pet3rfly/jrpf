@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建行批复通知</title>
+    <style>
+        :root {
+            /* ================= 主题配置 ================= */
+            --theme-color: #156082; 
+            
+            --header-line: var(--theme-color);
+            --icon-color: var(--theme-color);
+            
+            --text-color: #333;
+            --container-width: 1100px;
+            
+            /* 页面内容默认字体变量 */
+            --main-font: "SimSun", "Songti SC", serif; 
+        }
+
+        body {
+            font-family: var(--main-font); 
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ------------------- 水印层 ------------------- */
+        #watermark-layer {
+            position: fixed;
+            top: 0;
+            left: -100px;
+            width: 150%; /* 稍微加大一点，防止疏散后边缘露白 */
+            height: 150%;
+            pointer-events: none;
+            z-index: 0; 
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+
+        .watermark-row {
+            display: flex;
+            width: 100%;
+            /* 行间距不再由CSS固定，改为JS控制，以配合疏密调整 */
+            flex-wrap: nowrap;
+        }
+
+        /* 这里的左移也需要根据疏密程度动态调整吗？
+           为了简单稳定，保持固定的错位视觉效果通常就够了，
+           或者我们可以让错位距离设为宽度的一半。
+           这里暂时保持CSS控制，视觉上“砖墙”效果依然存在。
+        */
+        .watermark-row:nth-child(even) { margin-left: 80px; }
+
+        .watermark-item {
+            /* 宽高现在由JS动态赋值，CSS里只需定义对齐方式 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transform: rotate(-30deg);
+            user-select: none;
+            flex-shrink: 0;
+            
+            /* 水印强制使用微软雅黑 */
+            font-family: "Microsoft YaHei", sans-serif !important; 
+        }
+
+        .wm-type-a {
+            color: rgba(0, 0, 0, 0.12);
+            font-size: 26px;
+            font-weight: normal;
+            line-height: 1.2;
+        }
+
+        .wm-type-b {
+            color: rgba(0, 0, 0, 0.08);
+            font-size: 18px;
+            font-weight: normal;
+        }
+
+        /* ------------------- 主内容区域 ------------------- */
+        .main-wrapper {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 顶部导航 */
+        .header-nav {
+            display: flex;
+            align-items: flex-end;
+            border-bottom: 2px solid var(--header-line);
+            padding-top: 50px; 
+            padding-bottom: 10px;
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-bottom: 0; 
+            background-color: #fff; 
+            position: relative;
+            z-index: 20; 
+        }
+
+        .nav-links span {
+            font-weight: bold;
+            margin-right: 20px;
+            cursor: default;
+            font-size: 15px;
+            font-family: var(--main-font); 
+        }
+        .nav-links span:first-child { color: #000; }
+
+        /* 表单区域 */
+        .form-container {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 60px;
+            row-gap: 12px;
+            padding: 40px 20px;
+            background-repeat: no-repeat;
+            background-position: left top;
+            background-size: 70%;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group label {
+            width: 170px;
+            text-align: right;
+            margin-right: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .form-group input, .form-group select {
+            flex: 1;
+            padding: 3px 5px;
+            border: 1px solid #a0a0a0;
+            background-color: rgba(255, 255, 255, 0.4); 
+            font-size: 13px;
+            height: 24px;
+            color: #333;
+            font-weight: 500;
+            outline: none;
+            font-family: var(--main-font); 
+        }
+
+        /* 下拉菜单定制 */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: 
+                url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23156082'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"),
+                linear-gradient(to left, #e0e0e0 20px, transparent 20px); 
+            background-repeat: no-repeat;
+            background-position: right 0px center, right 0 top 0;
+            background-size: 20px 20px, 100% 100%;
+            padding-right: 25px; 
+            cursor: pointer;
+        }
+        
+        /* 日期输入框定制 */
+        input[type="date"] {
+            font-family: inherit;
+            position: relative;
+        }
+        
+        ::-webkit-calendar-picker-indicator {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" viewBox="0 0 24 24"><path fill="%23156082" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>');
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            opacity: 1;
+        }
+
+        #fileInput { display: none; }
+
+        /* 控制面板 */
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 15px;
+            z-index: 9999;
+            width: 220px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            font-family: "Microsoft YaHei", sans-serif; 
+        }
+
+        .control-panel.collapsed {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+            background: var(--theme-color); 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .control-panel.collapsed .panel-content { display: none; }
+        .toggle-icon { display: none; color: white; font-size: 20px; }
+        .control-panel.collapsed .toggle-icon { display: block; }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+        }
+        .panel-header h4 { margin: 0; color: #333; }
+    /* 新的折叠按钮样式 (16px方形) */
+        .minimize-btn { 
+    cursor: pointer; 
+    font-size: 16px; 
+    width: 16px; 
+    height: 16px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: bold;
+    color: #666;
+}
+.minimize-btn:hover {
+    color: #000;
+    background-color: #f0f0f0;
+    border-radius: 2px;
+}
+
+        .control-panel input[type="text"], .control-panel select { width: 90%; padding: 5px; margin-bottom: 8px; border: 1px solid #ddd; }
+        
+        /* 滑块样式 */
+        .slider-container { margin-bottom: 15px; }
+        .slider-label { display: flex; justify-content: space-between; color: #666; margin-bottom: 2px;}
+        input[type=range] { width: 100%; cursor: pointer; }
+
+        .control-btn-group { display: flex; gap: 5px; margin-top: 10px; }
+        .btn-tool {
+            flex: 1;
+            padding: 6px 0;
+            cursor: pointer;
+            border: 1px solid #999;
+            background: #f8f8f8;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .btn-refresh { color: #d9534f; border-color: #d43f3a; }
+        .btn-logo { color: #5cb85c; border-color: #4cae4c; }
+        .btn-update { color: #337ab7; border-color: #2e6da4; width: 100%; margin-top: 5px;}
+
+    </style>
+</head>
+<body>
+
+    <input type="file" id="fileInput" accept="image/*">
+
+    <div id="watermark-layer"></div>
+
+    <div class="main-wrapper">
+        <div class="header-nav">
+            <div class="nav-links">
+                <span>基本信息</span>
+                <span>担保关联</span>
+                <span>贷款关联人</span>
+            </div>
+        </div>
+
+        <div class="form-container" id="formArea">
+            
+            <div class="form-group">
+                <label>合约编号：</label>
+                <input type="text" id="contractId" value="34020257055475115776">
+            </div>
+            <div class="form-group">
+                <label>ALS账号：</label>
+                <input type="text">
+            </div>
+
+            <div class="form-group">
+                <label>客户编号：</label>
+                <input type="text" id="customerId" value="0761930009053342401">
+            </div>
+            <div class="form-group">
+                <label>客户姓名：</label>
+                <input type="text" value="宗文成">
+            </div>
+
+            <div class="form-group">
+                <label>币种：</label>
+                <select>
+                    <option selected>人民币元</option>
+                    <option>美元</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>产品代码：</label>
+                <input type="text" value="9613">
+            </div>
+
+            <div class="form-group">
+                <label>关联贷款类型：</label>
+                <select><option>请选择</option></select>
+            </div>
+            <div class="form-group">
+                <label>关联贷款申请顺序号：</label>
+                <input type="text">
+            </div>
+
+            <div class="form-group">
+                <label>额度类型：</label>
+                <select><option selected>小企业小额贷款额度</option></select>
+            </div>
+            <div class="form-group">
+                <label>额度用途：</label>
+                <select><option selected>小企业贷款:生产经营</option></select>
+            </div>
+
+            <div class="form-group">
+                <label>担保方式：</label>
+                <select>
+                    <option selected>抵押</option>
+                    <option>质押</option>
+                    <option>保证</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>放款方式：</label>
+                <select><option selected>抵押权登记放款</option></select>
+            </div>
+
+            <div class="form-group">
+                <label>授信总额(元)：</label>
+                <input type="text" id="creditTotal" class="money-input" value="1,800,000.00">
+            </div>
+            <div class="form-group">
+                <label>可用额度(元)：</label>
+                <input type="text" id="creditAvail" class="money-input" value="1,800,000.00">
+            </div>
+
+            <div class="form-group">
+                <label>初始授信总额(元)：</label>
+                <input type="text" id="creditInit" class="money-input" value="1,800,000.00">
+            </div>
+            <div class="form-group">
+                <label>起始日期：</label>
+                <input type="date" id="startDate" value="2025-12-25">
+            </div>
+
+            <div class="form-group">
+                <label>期限(月)：</label>
+                <input type="text" value="36">
+            </div>
+            <div class="form-group">
+                <label>截止日期：</label>
+                <input type="date" id="endDate">
+            </div>
+
+            <div class="form-group">
+                <label>额度是否循环：</label>
+                <select>
+                    <option selected>是</option>
+                    <option>否</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>业务状态：</label>
+                <select><option selected>抵押</option></select>
+            </div>
+
+            <div class="form-group">
+                <label>额度状态：</label>
+                <select>
+                    <option selected>处理中</option>
+                    <option>生效</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>担保物是否自动记帐：</label>
+                <select>
+                    <option selected>是</option>
+                    <option>否</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>担保物是否自动记帐：</label>
+                <select>
+                    <option>请选择</option>
+                    <option>是</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>保证方式：</label>
+                <select><option>请选择</option></select>
+            </div>
+
+            <div class="form-group">
+                <label>贷款主办机构：</label>
+                <input type="text" id="hostOrgId" value="34001307">
+            </div>
+            <div class="form-group">
+                <label>客户经理姓名：</label>
+                <input type="text" id="managerName" value="方春苗">
+            </div>
+
+            <div class="form-group">
+                <label>云快贷贷款种类：</label>
+                <select><option>请选择</option></select>
+            </div>
+            <div class="form-group">
+                <label>受理渠道：</label>
+                <select><option selected>员工渠道</option></select>
+            </div>
+
+            <div class="form-group">
+                <label>是否阶段性担保：</label>
+                <select>
+                    <option selected>否</option>
+                    <option>是</option>
+                </select>
+            </div>
+            <div class="form-group"></div>
+        </div>
+    </div>
+
+    <div class="control-panel" id="controlPanel">
+        <div class="toggle-icon" onclick="toggleControlPanel()">⚙</div>
+        
+        <div class="panel-content">
+            <div class="panel-header">
+                <h4>操作与设置</h4>
+                <span class="minimize-btn" onclick="toggleControlPanel()" title="收起">_</span>
+            </div>
+            
+            <label style="font-weight:bold; display:block; margin-bottom:5px;">页面字体 (不含水印)：</label>
+            <select id="fontSwitcher" onchange="changeFont(this.value)" style="margin-bottom:15px;">
+                <option value='"SimSun", "Songti SC", serif'>宋体 (推荐)</option>
+                <option value='"Microsoft YaHei", sans-serif'>微软雅黑</option>
+            </select>
+
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>水印疏密</span>
+                    <span id="densityVal">1.5x</span>
+                </div>
+                <input type="range" id="wmDensity" min="1.0" max="3.0" step="0.1" value="1.5" oninput="updateWatermark()">
+            </div>
+
+            <div class="control-btn-group" style="margin-bottom: 15px;">
+                <button class="btn-tool btn-refresh" onclick="generateNumbers()">刷新编号</button>
+                <button class="btn-tool btn-logo" onclick="document.getElementById('fileInput').click()">上传LOGO</button>
+            </div>
+            
+            <div style="border-top:1px dashed #ddd; margin:10px 0;"></div>
+
+            <h4 style="margin-bottom:10px;">水印文字设置</h4>
+            
+            <input type="text" id="wmName" placeholder="姓名" value="方春苗" oninput="handleNameChange(this.value)">
+            <input type="text" id="wmID" placeholder="工号/机构号" value="34001307" oninput="handleIDChange(this.value)">
+            <input type="text" id="wmPinyin" placeholder="拼音 (手动输入)" value="fangchunmiao">
+            
+            <button class="btn-tool btn-update" onclick="updateWatermark()">更新文字水印</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 配置区域 =================
+        const DEFAULT_LOGO_PATH = '../images/logo.png'; 
+        // ==========================================
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const formArea = document.getElementById('formArea');
+            const img = new Image();
+            img.onload = function() { formArea.style.backgroundImage = `url(${DEFAULT_LOGO_PATH})`; };
+            img.src = DEFAULT_LOGO_PATH;
+        });
+
+        function changeFont(fontName) {
+            document.documentElement.style.setProperty('--main-font', fontName);
+        }
+
+        function toggleControlPanel() {
+            document.getElementById('controlPanel').classList.toggle('collapsed');
+        }
+
+        function formatInput(val) {
+            let cleanVal = val.replace(/[^\d.]/g, "");
+            let parts = cleanVal.split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return parts.join('.');
+        }
+
+        function formatBlur(val) {
+            if(!val) return "";
+            let numVal = val.replace(/,/g, "");
+            let floatVal = parseFloat(numVal);
+            if(isNaN(floatVal)) return val;
+            let fixedVal = floatVal.toFixed(2);
+            let parts = fixedVal.split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return parts.join('.');
+        }
+
+        document.querySelectorAll('.money-input').forEach(input => {
+            input.addEventListener('input', function(e) {
+                const formatted = formatInput(e.target.value);
+                if (e.target.value !== formatted) { e.target.value = formatted; }
+                if (e.target.id === 'creditTotal') {
+                    document.getElementById('creditAvail').value = formatted;
+                    document.getElementById('creditInit').value = formatted;
+                }
+            });
+            input.addEventListener('blur', function(e) {
+                const formatted = formatBlur(e.target.value);
+                e.target.value = formatted;
+                if (e.target.id === 'creditTotal') {
+                    document.getElementById('creditAvail').value = formatted;
+                    document.getElementById('creditInit').value = formatted;
+                }
+            });
+        });
+
+        function handleNameChange(val) {
+            document.getElementById('managerName').value = val;
+            updateWatermark();
+        }
+        document.getElementById('managerName').addEventListener('input', function(e) {
+            document.getElementById('wmName').value = e.target.value;
+            updateWatermark();
+        });
+
+        function handleIDChange(val) {
+            document.getElementById('hostOrgId').value = val;
+            updateWatermark();
+        }
+        document.getElementById('hostOrgId').addEventListener('input', function(e) {
+            document.getElementById('wmID').value = e.target.value;
+            updateWatermark();
+        });
+
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+
+        function calculateEndDate() {
+            const startVal = startDateInput.value;
+            if (startVal) {
+                const date = new Date(startVal);
+                date.setDate(date.getDate() + 60);
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                endDateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+        calculateEndDate(); 
+        startDateInput.addEventListener('change', calculateEndDate);
+
+        function generateNumbers() {
+            const fixedPrefixContract = "3402025";
+            let randomSuffixContract = "";
+            for(let i=0; i<13; i++) randomSuffixContract += Math.floor(Math.random() * 10);
+            const fixedPrefixCustomer = "07619300090";
+            let randomSuffixCustomer = "";
+            for(let i=0; i<8; i++) randomSuffixCustomer += Math.floor(Math.random() * 10);
+            document.getElementById('contractId').value = fixedPrefixContract + randomSuffixContract;
+            document.getElementById('customerId').value = fixedPrefixCustomer + randomSuffixCustomer;
+        }
+
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const formArea = document.getElementById('formArea');
+                    formArea.style.backgroundImage = `url(${event.target.result})`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 9. 全屏交错水印 (支持密度调整)
+        function updateWatermark() {
+            const container = document.getElementById('watermark-layer');
+            const name = document.getElementById('wmName').value;
+            const id = document.getElementById('wmID').value;
+            const pinyin = document.getElementById('wmPinyin').value;
+            
+            // 获取密度系数
+            const density = parseFloat(document.getElementById('wmDensity').value);
+            document.getElementById('densityVal').innerText = density + "x";
+
+            container.innerHTML = ''; 
+            
+            // 基础尺寸 (密度1.0时的尺寸)
+            const baseW = 200;
+            const baseH = 100;
+            const baseRowMargin = 30; // 行间距基数
+
+            // 动态尺寸
+            const itemWidth = baseW * density;
+            const itemHeight = baseH * density;
+            const rowMargin = baseRowMargin * density;
+
+            const windowHeight = window.innerHeight;
+            // 行数计算：考虑放大后的高度和行间距
+            const rowCount = Math.ceil(windowHeight / (itemHeight + rowMargin)) + 4;
+            
+            const windowWidth = window.innerWidth;
+            const colCount = Math.ceil(windowWidth / itemWidth) + 4;
+
+            for (let r = 0; r < rowCount; r++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'watermark-row';
+                // 动态设置行高和边距
+                rowDiv.style.marginBottom = rowMargin + 'px';
+
+                for (let c = 0; c < colCount; c++) {
+                    const div = document.createElement('div');
+                    div.className = 'watermark-item';
+                    
+                    // 动态设置每个格子的宽高
+                    div.style.width = itemWidth + 'px';
+                    div.style.height = itemHeight + 'px';
+
+                    let isTypeA = (r % 2 === 0) ? (c % 2 === 0) : (c % 2 !== 0);
+                    if (isTypeA) {
+                        div.classList.add('wm-type-a');
+                        div.innerHTML = `${name}<br>${id}`; 
+                    } else {
+                        div.classList.add('wm-type-b');
+                        div.innerText = `${pinyin}.ah`;
+                    }
+                    rowDiv.appendChild(div);
+                }
+                container.appendChild(rowDiv);
+            }
+        }
+
+        window.addEventListener('resize', updateWatermark);
+        window.onload = updateWatermark;
+    </script>
+</body>
+</html>
