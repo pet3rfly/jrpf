@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>银行批复系统 - 工作台</title>
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            
+            /* 三个页面的主题色 */
+            --color-page1: #156082; /* 深蓝 */
+            --color-page2: #008d7c; /* 青绿 */
+            --color-page3: #2258da; /* 亮蓝 */
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 顶部标题区 */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin: 0 0 10px 0;
+            color: #333;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin: 0;
+        }
+
+        /* 卡片容器 */
+        .card-container {
+            display: flex;
+            gap: 30px;
+            padding: 0 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: var(--card-bg);
+            width: 280px;
+            height: 360px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        /* 卡片顶部色块 */
+        .card-top {
+            height: 8px;
+            width: 100%;
+        }
+
+        /* 卡片内容 */
+        .card-content {
+            padding: 40px 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* 图标圆圈 */
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .icon-circle {
+            transform: scale(1.1);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        /* 按钮模拟 */
+        .card-btn {
+            margin-top: auto;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .card-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- 颜色定义 --- */
+        
+        /* 卡片 1 */
+        .card-1 .card-top { background: var(--color-page1); }
+        .card-1 .icon-circle { color: var(--color-page1); background: rgba(21, 96, 130, 0.1); }
+        .card-1 .card-btn { background: var(--color-page1); }
+
+        /* 卡片 2 */
+        .card-2 .card-top { background: var(--color-page2); }
+        .card-2 .icon-circle { color: var(--color-page2); background: rgba(0, 141, 124, 0.1); }
+        .card-2 .card-btn { background: var(--color-page2); }
+
+        /* 卡片 3 */
+        .card-3 .card-top { background: var(--color-page3); }
+        .card-3 .icon-circle { color: var(--color-page3); background: rgba(34, 88, 218, 0.1); }
+        .card-3 .card-btn { background: var(--color-page3); }
+
+        /* 动画 */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 底部版权 */
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            color: #ccc;
+            font-size: 12px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>银行批复系统</h1>
+        <p>Bank Approval System Portal</p>
+    </div>
+
+    <div class="card-container">
+        
+        <a href="page1.html" class="card card-1" target="_blank">
+            <div class="card-top"></div>
+            <div class="card-content">
+                <div class="icon-circle">📝</div>
+                <div class="card-title">建行批复</div>
+                <div class="card-desc">
+                    录入与查看信贷业务基本信息<br>担保关联及贷款关联人数据
+                </div>
+                <div class="card-btn">进入系统 &rarr;</div>
+            </div>
+        </a>
+
+        <a href="page2.html" class="card card-2" target="_blank">
+            <div class="card-top"></div>
+            <div class="card-content">
+                <div class="icon-circle">🖨️</div>
+                <div class="card-title">农行批复</div>
+                <div class="card-desc">
+                    生成正式贷款审批通知单<br>支持Word导出与打印设置
+                </div>
+                <div class="card-btn">进入系统 &rarr;</div>
+            </div>
+        </a>
+
+        <a href="page3.html" class="card card-3" target="_blank">
+            <div class="card-top"></div>
+            <div class="card-content">
+                <div class="icon-circle">📧</div>
+                <div class="card-title">光大批复</div>
+                <div class="card-desc">
+                    查看贷款审批通过通知<br>模拟OA系统内部弹窗邮件
+                </div>
+                <div class="card-btn">进入系统 &rarr;</div>
+            </div>
+        </a>
+
+    </div>
+
+    <div class="footer">© 2025 Bank Internal System. All rights reserved.</div>
+
+</body>
+</html>
