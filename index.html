@@ -6,16 +6,16 @@
     <title>银行批复系统 - 工作台</title>
     <style>
         :root {
-            --bg-color: #f005baa;
+            --bg-color: #f5f7fa;
             --text-color: #2c3e50;
             --card-bg: #ffffff;
             
             /* 各业务主题色 */
-            --color-ccb: #156082;   /* 建行深蓝 (Page 1) */
-            --color-abc: #008d7c;   /* 农行青绿 (Page 2) */
-            --color-spdb: #2258da;  /* 浦发亮蓝 (Page 3) */
-            --color-boc: #b71c1c;   /* 中行红色 (Page 4) */
-            --color-hfbdc: #673ab7; /* 不动产紫色 (Page 5) */
+            --color-ccb: #005baa;   /* 建行深蓝 */
+            --color-abc: #008d7c;   /* 农行青绿 */
+            --color-spdb: #2258da;  /* 浦发亮蓝 */
+            --color-boc: #b71c1c;   /* 中行红色 */
+            --color-hfbdc: #673ab7; /* 不动产紫色 */
         }
 
         body {
@@ -51,20 +51,22 @@
             margin: 0;
         }
 
-        /* 卡片容器 */
+        /* --- 卡片容器 (核心修改：CSS Grid 布局) --- */
         .card-container {
-            display: flex;
-            gap: 25px;
+            display: grid; /* 改为网格布局 */
+            /* 强制 3 列，每列等宽 (1fr) */
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 30px; /* 卡片之间的间距 */
             padding: 0 20px 40px 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 1600px; /* 稍微加宽以容纳更多卡片 */
+            width: 100%;
+            max-width: 1100px; /* 限制最大宽度，防止在大屏上拉得太宽 */
+            box-sizing: border-box;
         }
 
-        /* 卡片样式 */
+        /* --- 卡片样式 --- */
         .card {
             background: var(--card-bg);
-            width: 260px;
+            width: 100%; /* 让卡片填满网格单元 */
             height: 340px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
@@ -114,7 +116,6 @@
             overflow: hidden;
         }
 
-        /* Logo 图片样式 */
         .bank-logo {
             width: 70%;
             height: auto;
@@ -157,28 +158,22 @@
         }
 
         /* --- 颜色定义 --- */
-        
-        /* 卡片 1 (建行) */
         .card-1 .card-top { background: var(--color-ccb); }
         .card-1 .icon-circle { background: rgba(21, 96, 130, 0.08); }
         .card-1 .card-btn { background: var(--color-ccb); }
 
-        /* 卡片 2 (农行) */
         .card-2 .card-top { background: var(--color-abc); }
         .card-2 .icon-circle { background: rgba(0, 141, 124, 0.08); }
         .card-2 .card-btn { background: var(--color-abc); }
 
-        /* 卡片 3 (浦发) */
         .card-3 .card-top { background: var(--color-spdb); }
         .card-3 .icon-circle { background: rgba(34, 88, 218, 0.08); }
         .card-3 .card-btn { background: var(--color-spdb); }
 
-        /* 卡片 4 (中行) */
         .card-4 .card-top { background: var(--color-boc); }
         .card-4 .icon-circle { background: rgba(183, 28, 28, 0.08); }
         .card-4 .card-btn { background: var(--color-boc); }
 
-        /* 卡片 5 (合肥不动产) - 新增 */
         .card-5 .card-top { background: var(--color-hfbdc); }
         .card-5 .icon-circle { background: rgba(103, 58, 183, 0.08); }
         .card-5 .card-btn { background: var(--color-hfbdc); }
@@ -195,6 +190,18 @@
             padding-bottom: 20px;
             color: #ccc;
             font-size: 12px;
+        }
+
+        /* --- 响应式适配 (手机上变为1列，平板2列) --- */
+        @media (max-width: 900px) {
+            .card-container {
+                grid-template-columns: repeat(2, 1fr); /* 平板 2 列 */
+            }
+        }
+        @media (max-width: 600px) {
+            .card-container {
+                grid-template-columns: 1fr; /* 手机 1 列 */
+            }
         }
 
     </style>
@@ -278,7 +285,7 @@
             </div>
         </a>
 
-    </div>
+        </div>
 
     <div class="footer">© 2025 Bank Internal System. All rights reserved.</div>
 
