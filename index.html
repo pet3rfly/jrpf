@@ -6,15 +6,16 @@
     <title>银行批复系统 - 工作台</title>
     <style>
         :root {
-            --bg-color: #f5f7fa;
+            --bg-color: #f005baa;
             --text-color: #2c3e50;
             --card-bg: #ffffff;
             
-            /* 各银行主题色 */
-            --color-ccb: #005baa;  /* 建行深蓝 (Page 1) */
-            --color-abc: #008d7c;  /* 农行青绿 (Page 2) */
-            --color-spdb: #2258da; /* 浦发亮蓝 (Page 3) */
-            --color-boc: #b71c1c;  /* 中行红色 (Page 4) */
+            /* 各业务主题色 */
+            --color-ccb: #156082;   /* 建行深蓝 (Page 1) */
+            --color-abc: #008d7c;   /* 农行青绿 (Page 2) */
+            --color-spdb: #2258da;  /* 浦发亮蓝 (Page 3) */
+            --color-boc: #b71c1c;   /* 中行红色 (Page 4) */
+            --color-hfbdc: #673ab7; /* 不动产紫色 (Page 5) */
         }
 
         body {
@@ -23,7 +24,7 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-color);
-            min-height: 100vh; /* 改为 min-height 防止内容多时截断 */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -33,7 +34,7 @@
         /* 顶部标题区 */
         .header {
             text-align: center;
-            margin: 60px 0 40px 0; /* 调整间距 */
+            margin: 60px 0 40px 0;
             animation: fadeInDown 0.8s ease;
         }
 
@@ -57,13 +58,13 @@
             padding: 0 20px 40px 20px;
             flex-wrap: wrap;
             justify-content: center;
-            max-width: 1400px;
+            max-width: 1600px; /* 稍微加宽以容纳更多卡片 */
         }
 
         /* 卡片样式 */
         .card {
             background: var(--card-bg);
-            width: 260px; /* 稍微调窄一点以适应4个 */
+            width: 260px;
             height: 340px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
@@ -110,12 +111,12 @@
             justify-content: center;
             margin-bottom: 25px;
             transition: transform 0.3s ease;
-            overflow: hidden; /* 防止图片溢出 */
+            overflow: hidden;
         }
 
         /* Logo 图片样式 */
         .bank-logo {
-            width: 70%; /* 控制Logo在圆圈里的大小 */
+            width: 70%;
             height: auto;
             object-fit: contain;
         }
@@ -176,6 +177,11 @@
         .card-4 .card-top { background: var(--color-boc); }
         .card-4 .icon-circle { background: rgba(183, 28, 28, 0.08); }
         .card-4 .card-btn { background: var(--color-boc); }
+
+        /* 卡片 5 (合肥不动产) - 新增 */
+        .card-5 .card-top { background: var(--color-hfbdc); }
+        .card-5 .icon-circle { background: rgba(103, 58, 183, 0.08); }
+        .card-5 .card-btn { background: var(--color-hfbdc); }
 
         /* 动画 */
         @keyframes fadeInDown {
@@ -253,6 +259,20 @@
                 <div class="card-title">签署意见书</div>
                 <div class="card-desc">
                     中国银行批复签署意见<br>A4流版文件仿真打印
+                </div>
+                <div class="card-btn">进入系统 &rarr;</div>
+            </div>
+        </a>
+
+        <a href="page5.html" class="card card-5" target="_blank">
+            <div class="card-top"></div>
+            <div class="card-content">
+                <div class="icon-circle">
+                    <img src="hfbdclogo.png" class="bank-logo" alt="HFBDC">
+                </div>
+                <div class="card-title">不动产登记信息</div>
+                <div class="card-desc">
+                    合肥市不动产登记信息查询<br>全真模拟、所见即所得编辑
                 </div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
