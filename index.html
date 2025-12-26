@@ -10,10 +10,11 @@
             --text-color: #2c3e50;
             --card-bg: #ffffff;
             
-            /* 三个页面的主题色 */
-            --color-page1: #156082; /* 深蓝 */
-            --color-page2: #008d7c; /* 青绿 */
-            --color-page3: #2258da; /* 亮蓝 */
+            /* 各银行主题色 */
+            --color-ccb: #005baa;  /* 建行深蓝 (Page 1) */
+            --color-abc: #008d7c;  /* 农行青绿 (Page 2) */
+            --color-spdb: #2258da; /* 浦发亮蓝 (Page 3) */
+            --color-boc: #b71c1c;  /* 中行红色 (Page 4) */
         }
 
         body {
@@ -22,7 +23,7 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-color);
-            height: 100vh;
+            min-height: 100vh; /* 改为 min-height 防止内容多时截断 */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -32,7 +33,7 @@
         /* 顶部标题区 */
         .header {
             text-align: center;
-            margin-bottom: 60px;
+            margin: 60px 0 40px 0; /* 调整间距 */
             animation: fadeInDown 0.8s ease;
         }
 
@@ -52,17 +53,18 @@
         /* 卡片容器 */
         .card-container {
             display: flex;
-            gap: 30px;
-            padding: 0 20px;
+            gap: 25px;
+            padding: 0 20px 40px 20px;
             flex-wrap: wrap;
             justify-content: center;
+            max-width: 1400px;
         }
 
         /* 卡片样式 */
         .card {
             background: var(--card-bg);
-            width: 280px;
-            height: 360px;
+            width: 260px; /* 稍微调窄一点以适应4个 */
+            height: 340px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -83,13 +85,13 @@
 
         /* 卡片顶部色块 */
         .card-top {
-            height: 8px;
+            height: 6px;
             width: 100%;
         }
 
         /* 卡片内容 */
         .card-content {
-            padding: 40px 30px;
+            padding: 30px 25px;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -97,18 +99,25 @@
             text-align: center;
         }
 
-        /* 图标圆圈 */
+        /* Logo 圆圈容器 */
         .icon-circle {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             background: #f8f9fa;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
-            font-size: 32px;
+            margin-bottom: 25px;
             transition: transform 0.3s ease;
+            overflow: hidden; /* 防止图片溢出 */
+        }
+
+        /* Logo 图片样式 */
+        .bank-logo {
+            width: 70%; /* 控制Logo在圆圈里的大小 */
+            height: auto;
+            object-fit: contain;
         }
 
         .card:hover .icon-circle {
@@ -116,24 +125,24 @@
         }
 
         .card-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             color: #333;
         }
 
         .card-desc {
-            font-size: 14px;
+            font-size: 13px;
             color: #999;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         /* 按钮模拟 */
         .card-btn {
             margin-top: auto;
-            padding: 10px 25px;
+            padding: 8px 20px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             color: #fff;
             opacity: 0;
@@ -148,20 +157,25 @@
 
         /* --- 颜色定义 --- */
         
-        /* 卡片 1 */
-        .card-1 .card-top { background: var(--color-page1); }
-        .card-1 .icon-circle { color: var(--color-page1); background: rgba(21, 96, 130, 0.1); }
-        .card-1 .card-btn { background: var(--color-page1); }
+        /* 卡片 1 (建行) */
+        .card-1 .card-top { background: var(--color-ccb); }
+        .card-1 .icon-circle { background: rgba(21, 96, 130, 0.08); }
+        .card-1 .card-btn { background: var(--color-ccb); }
 
-        /* 卡片 2 */
-        .card-2 .card-top { background: var(--color-page2); }
-        .card-2 .icon-circle { color: var(--color-page2); background: rgba(0, 141, 124, 0.1); }
-        .card-2 .card-btn { background: var(--color-page2); }
+        /* 卡片 2 (农行) */
+        .card-2 .card-top { background: var(--color-abc); }
+        .card-2 .icon-circle { background: rgba(0, 141, 124, 0.08); }
+        .card-2 .card-btn { background: var(--color-abc); }
 
-        /* 卡片 3 */
-        .card-3 .card-top { background: var(--color-page3); }
-        .card-3 .icon-circle { color: var(--color-page3); background: rgba(34, 88, 218, 0.1); }
-        .card-3 .card-btn { background: var(--color-page3); }
+        /* 卡片 3 (浦发) */
+        .card-3 .card-top { background: var(--color-spdb); }
+        .card-3 .icon-circle { background: rgba(34, 88, 218, 0.08); }
+        .card-3 .card-btn { background: var(--color-spdb); }
+
+        /* 卡片 4 (中行) */
+        .card-4 .card-top { background: var(--color-boc); }
+        .card-4 .icon-circle { background: rgba(183, 28, 28, 0.08); }
+        .card-4 .card-btn { background: var(--color-boc); }
 
         /* 动画 */
         @keyframes fadeInDown {
@@ -171,8 +185,8 @@
 
         /* 底部版权 */
         .footer {
-            position: absolute;
-            bottom: 20px;
+            margin-top: auto;
+            padding-bottom: 20px;
             color: #ccc;
             font-size: 12px;
         }
@@ -191,10 +205,12 @@
         <a href="page1.html" class="card card-1" target="_blank">
             <div class="card-top"></div>
             <div class="card-content">
-                <div class="icon-circle">📝</div>
-                <div class="card-title">建行批复</div>
+                <div class="icon-circle">
+                    <img src="建行logo.png" class="bank-logo" alt="CCB">
+                </div>
+                <div class="card-title">信贷业务详情</div>
                 <div class="card-desc">
-                    录入与查看信贷业务基本信息<br>担保关联及贷款关联人数据
+                    建设银行信贷业务详情录入<br>关联人数据管理
                 </div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
@@ -203,10 +219,12 @@
         <a href="page2.html" class="card card-2" target="_blank">
             <div class="card-top"></div>
             <div class="card-content">
-                <div class="icon-circle">🖨️</div>
-                <div class="card-title">农行批复</div>
+                <div class="icon-circle">
+                    <img src="农行logo.png" class="bank-logo" alt="ABC">
+                </div>
+                <div class="card-title">贷款审批通知书</div>
                 <div class="card-desc">
-                    生成正式贷款审批通知单<br>支持Word导出与打印设置
+                    农业银行贷款审批通知单<br>支持打印与导出
                 </div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
@@ -215,10 +233,26 @@
         <a href="page3.html" class="card card-3" target="_blank">
             <div class="card-top"></div>
             <div class="card-content">
-                <div class="icon-circle">📧</div>
-                <div class="card-title">光大批复</div>
+                <div class="icon-circle">
+                    <img src="浦发logo.png" class="bank-logo" alt="SPDB">
+                </div>
+                <div class="card-title">OA 审批邮件</div>
                 <div class="card-desc">
-                    查看贷款审批通过通知<br>模拟OA系统内部弹窗邮件
+                    浦发银行内部OA邮件通知<br>弹窗式交互界面
+                </div>
+                <div class="card-btn">进入系统 &rarr;</div>
+            </div>
+        </a>
+
+        <a href="page4.html" class="card card-4" target="_blank">
+            <div class="card-top"></div>
+            <div class="card-content">
+                <div class="icon-circle">
+                    <img src="中行logo.png" class="bank-logo" alt="BOC">
+                </div>
+                <div class="card-title">签署意见书</div>
+                <div class="card-desc">
+                    中国银行批复签署意见<br>A4流版文件仿真打印
                 </div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
