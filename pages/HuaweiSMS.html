@@ -1,427 +1,332 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>华为短信模拟器 - 精致版</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        /* --- 基础变量：这里是调节“像不像”的关键 --- */
-        :root {
-            --bg-color: #F1F3F5; /* 更真实的浅灰背景 */
-            --header-bg: #F1F3F5; 
-            --my-bubble-bg: #E1EFFF; /* 华为默认的淡蓝色气泡 */
-            --other-bubble-bg: #FFFFFF;
-            --text-primary: #191919;
-            --text-time: #8F9398; /* 聊天时间戳颜色 */
-            --status-bar-height: 48px; 
-            --nav-bar-height: 56px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>华为短信高保真还原</title>
+<style>
+  :root {
+    /* 核心色彩规范，源自吸色 */
+    --bg-gray: #F2F3F5;
+    --bg-white: #FFFFFF;
+    --text-primary: #191919;
+    --text-secondary: #808080;
+    --text-blue: #007AFF; /* 链接文字颜色 */
+    --accent-green: #24C78D; /* SIM卡选择器绿色 */
+    --border-color: #E0E0E0;
+  }
 
-        body {
-            font-family: 'HarmonyOS Sans', 'Roboto', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: #1e1e1e;
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            color: #333;
-            overflow: hidden;
-        }
+  body {
+    margin: 0;
+    padding: 0;
+    /* 使用系统字体栈以获得最佳显示效果 */
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", STHeiti, "Microsoft Yahei", Tahoma, Simsun, sans-serif;
+    background-color: #333; /* 背景深色以便突出手机 */
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
 
-        /* --- 左侧控制台样式 (保持实用为主) --- */
-        .controls {
-            width: 320px;
-            background: #2b2b2b;
-            color: #eee;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #444;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .controls h2 { margin-top: 0; font-size: 18px; color: #fff; }
-        .controls label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
-        .controls input, .controls select, .controls textarea {
-            background: #3a3a3a; border: 1px solid #555; color: #fff;
-            width: 100%; padding: 8px; border-radius: 4px; box-sizing: border-box; margin-bottom: 10px;
-        }
-        .btn {
-            background: #0a59f7; color: white; border: none; padding: 10px; 
-            border-radius: 6px; cursor: pointer; width: 100%; font-weight: 500;
-        }
-        .btn:hover { background: #0046c7; }
+  /* 通用类 */
+  .icon-svg {
+    width: 24px;
+    height: 24px;
+    fill: #424242; /* 默认图标色 */
+  }
 
-        /* --- 右侧画布区域 --- */
-        .preview-area {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: radial-gradient(#333 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
+  /* --- 手机容器 --- */
+  .phone-container {
+    width: 100%;
+    max-width: 412px; /* 基于你提供的CSS宽度 */
+    background-color: var(--bg-gray);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* 占满屏幕高度 */
+  }
 
-        /* --- 手机本体 --- */
-        #phone-shell {
-            width: 380px;
-            height: 820px;
-            background: #000;
-            border-radius: 50px;
-            padding: 12px; /* 边框厚度 */
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            position: relative;
-        }
+  /* --- 1. 状态栏 (Status Bar) --- */
+  .status-bar {
+    height: 40px; /* 稍微调低高度使其更紧凑 */
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    background: var(--bg-gray);
+  }
 
-        /* 屏幕显示区域 */
-        #screen {
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color);
-            border-radius: 40px; /* 屏幕圆角 */
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            /* 解决圆角溢出截图问题 */
-            mask-image: radial-gradient(white, black); 
-            -webkit-mask-image: -webkit-radial-gradient(white, black);
-        }
+  .status-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
 
-        /* 挖孔屏摄像头模拟 */
-        .camera-hole {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px; /* 灵动岛/挖孔区域宽度 */
-            height: 30px;
-            background: transparent; 
-            z-index: 999;
-            pointer-events: none;
-        }
-        /* 这里的伪元素模拟中间的小黑点摄像头 */
-        .camera-hole::after {
-            content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-            width: 12px; height: 12px; background: #000; border-radius: 50%;
-        }
+  /* 精致的 SVG 电池图标替代方案 */
+  .battery-svg-container {
+    position: relative;
+    width: 24px;
+    height: 12px;
+  }
+  .battery-text-inside {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-53%, -50%);
+    font-size: 9px;
+    font-weight: bold;
+    color: #333;
+  }
 
-        /* --- 状态栏 (Status Bar) --- */
-        .status-bar {
-            height: var(--status-bar-height);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end; /* 图标靠下对齐 */
-            padding: 0 24px 10px 24px; /* 更加精细的内边距 */
-            font-size: 14px;
-            font-weight: 600;
-            color: #000;
-            box-sizing: border-box;
-            z-index: 100;
-        }
+  /* --- 2. 顶部标题栏 (Header) --- */
+  .header-section {
+    padding: 8px 16px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: var(--bg-gray);
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-back-icon {
+    width: 24px;
+    height: 24px;
+    fill: #333;
+  }
+  .header-title-group {
+    display: flex;
+    flex-direction: column;
+  }
+  .header-title {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .header-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .header-right {
+    display: flex;
+    gap: 16px;
+    padding-top: 2px;
+  }
 
-        .status-right {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+  /* --- 3. 消息列表区域 (Message List) --- */
+  .message-list {
+    flex: 1; /* 占满剩余空间 */
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* 消息组之间的间距 */
+  }
 
-        /* 状态栏图标通用 */
-        .icon-svg { width: 18px; height: 18px; fill: #000; }
-        
-        /* 电池绘制 (CSS绘制更清晰) */
-        .battery-icon {
-            width: 20px; height: 10px;
-            border: 1.5px solid #333;
-            border-radius: 3px;
-            position: relative;
-            padding: 1px;
-            margin-left: 4px;
-        }
-        .battery-icon::after {
-            content: ''; position: absolute; right: -3px; top: 2px;
-            width: 2px; height: 4px; background: #333; border-radius: 0 1px 1px 0;
-        }
-        .battery-inner { height: 100%; background: #000; border-radius: 1px; }
+  .message-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-        /* --- 顶部导航栏 (Action Bar) --- */
-        .nav-bar {
-            height: var(--nav-bar-height);
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            background: var(--bg-color); /* 华为通常背景连通 */
-            z-index: 90;
-        }
-        
-        .nav-back { width: 24px; height: 24px; margin-right: 12px; }
-        
-        .nav-title-box { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .nav-name { font-size: 18px; font-weight: 500; color: #000; letter-spacing: 0.5px; }
-        .nav-detail { font-size: 10px; color: #888; display: none; } /* 默认隐藏号码 */
-        
-        .nav-menu { width: 24px; height: 24px; }
+  /* 核心：气泡样式 */
+  .message-bubble {
+    background-color: var(--bg-white);
+    border-radius: 12px; /* 华为的气泡圆角适中 */
+    padding: 14px 16px;
+    max-width: 90%;
+    font-size: 16px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    text-align: justify; /* 两端对齐让大段文字更好看 */
+    /* 极微妙的阴影，还原立体感 */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    word-wrap: break-word;
+  }
 
-        /* --- 消息列表 --- */
-        .message-list {
-            flex: 1;
-            padding: 10px 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px; /* 消息间距 */
-        }
+  /* 消息中的特殊链接文本（蓝色） */
+  .link-text {
+    color: var(--text-blue);
+    text-decoration: none; /* 去掉下划线，原图似乎没有 */
+  }
 
-        /* 时间戳 */
-        .time-stamp {
-            text-align: center;
-            font-size: 12px;
-            color: var(--text-time);
-            margin: 10px 0;
-        }
+  /* 消息底部的辅助信息 (日期+SIM卡槽) */
+  .message-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    margin-left: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .sim-tag {
+    background: #E0E0E0;
+    color: #666;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 9px;
+    transform: scale(0.9); /* 让标签看起来更精致小巧 */
+  }
 
-        .msg-row {
-            display: flex;
-            align-items: flex-end; /* 底部对齐 */
-            width: 100%;
-        }
-        
-        .msg-row.sent { justify-content: flex-end; }
-        
-        .avatar {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            background-color: #ddd;
-            background-size: cover;
-            background-position: center;
-            flex-shrink: 0;
-            /* 华为默认其实没有头像，微信才有，但为了模拟器通用性保留，可隐藏 */
-        }
-        
-        .msg-row.received .avatar { margin-right: 8px; }
-        .msg-row.sent .avatar { margin-left: 8px; display: none; /* 默认隐藏自己头像 */ }
+  /* --- 4. 底部输入区 (Input Area) --- */
+  .input-section {
+    background-color: var(--bg-white);
+    padding: 8px 12px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-        .bubble {
-            max-width: 70%;
-            padding: 10px 14px;
-            font-size: 16px;
-            line-height: 1.5;
-            position: relative;
-            word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* 极其微弱的阴影增加质感 */
-        }
+  /* 输入框胶囊 */
+  .input-capsule {
+    flex-grow: 1;
+    height: 38px;
+    background-color: #F2F2F2;
+    border-radius: 19px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px; /* 内部padding减小，为SIM选择器留空间 */
+    position: relative;
+  }
 
-        .msg-row.received .bubble {
-            background: var(--other-bubble-bg);
-            color: var(--text-primary);
-            border-radius: 18px 18px 18px 4px; /* 左下角小圆角 */
-        }
+  /* 华为特色的 SIM 卡选择器 */
+  .sim-selector-btn {
+    background-color: var(--accent-green);
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 8px;
+    box-shadow: 0 1px 2px rgba(36, 199, 141, 0.3);
+  }
+  .sim-selector-btn span.active {
+      font-size: 14px; /* 选中的数字大一点 */
+  }
+  .sim-selector-btn .arrow-down {
+      width: 0; height: 0; 
+      border-left: 3px solid transparent; border-right: 3px solid transparent;
+      border-top: 4px solid white;
+      margin-left: 4px;
+  }
 
-        .msg-row.sent .bubble {
-            background: var(--my-bubble-bg);
-            color: #000;
-            border-radius: 18px 18px 4px 18px; /* 右下角小圆角 */
-        }
+  .input-placeholder {
+    color: #999;
+    font-size: 15px;
+    flex: 1;
+  }
 
-        /* --- 底部输入区 --- */
-        .input-area {
-            background: #fff;
-            padding: 10px 16px 24px 16px; /* 底部留白适应手势条 */
-            display: flex;
-            align-items: center;
-            border-top: 1px solid rgba(0,0,0,0.05);
-        }
-        
-        .icon-plus { width: 26px; height: 26px; fill: #555; margin-right: 12px; }
-        
-        .input-box {
-            flex: 1;
-            background: #F2F2F2;
-            height: 40px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            color: #aaa;
-            font-size: 15px;
-        }
-
-        .icon-send { width: 26px; height: 26px; fill: #555; margin-left: 12px; }
-
-        /* 底部Home条 */
-        .home-bar {
-            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
-            width: 120px; height: 5px; background: #000; border-radius: 3px; opacity: 0.2;
-        }
-
-        /* 隐藏类 */
-        .hidden { display: none; }
-
-    </style>
+  /* --- 5. 底部导航栏 (Nav Bar) --- */
+  .nav-bar {
+    height: 48px;
+    background: var(--bg-white);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid #F7F7F7;
+    padding-bottom: 4px; /* 适配全面屏手势条区域 */
+  }
+  /* 导航栏图标特定样式 */
+  .nav-icon-svg {
+    width: 20px;
+    height: 20px;
+    fill: #666; /* 导航栏图标颜色偏浅 */
+  }
+</style>
 </head>
 <body>
 
-    <div class="controls">
-        <h2>🎨 定制您的界面</h2>
-        
-        <div class="group">
-            <label>联系人姓名</label>
-            <input type="text" id="cfg-name" value="10086" oninput="render()">
-        </div>
-        
-        <div class="group">
-            <label>状态栏时间</label>
-            <input type="text" id="cfg-time" value="16:20" oninput="render()">
-        </div>
+<div class="phone-container">
+  <div class="status-bar">
+    <div class="time">17:52</div>
+    <div class="status-right">
+      <svg class="icon-svg" style="width:18px;height:18px;fill:#2BA245" viewBox="0 0 24 24"><path d="M17,11H16.59L13.8,8.21L15.21,6.79L19.41,11H22V13H19.41L15.21,17.21L13.8,15.79L16.59,13H17C18.1,13 19,12.1 19,11C19,9.9 18.1,9 17,9M3,5H11V7H3C1.9,7 1,7.9 1,9V18C1,19.1 1.9,20 3,20H17C18.1,20 19,19.1 19,18V15H17V18H3V9H11V11H17V9C17,7.9 16.1,7 15,7H3C1.9,7 1,6.1 1,5C1,3.9 1.9,3 3,3H11V5H3Z" /></svg>
+      <svg class="icon-svg" style="width:16px;height:16px;" viewBox="0 0 24 24"><path d="M4,2A2,2 0 0,0 2,4V20A2,2 0 0,0 4,22H20A2,2 0 0,0 22,20V4A2,2 0 0,0 20,2H4M4,4H20V20H4V4M6,6V18H18V6H6M8,8H16V16H8V8Z" /></svg>
+      <svg class="icon-svg" style="width:28px;height:16px;" viewBox="0 0 36 20">
+        <path d="M1,18 L15,18 L15,4 L1,18 Z" fill="#333"/> <path d="M20,18 L34,18 L34,1 L20,18 Z" fill="#333"/> </svg>
+      <div class="battery-svg-container">
+        <svg width="24px" height="12px" viewBox="0 0 24 12">
+          <rect x="0.5" y="0.5" width="20" height="11" rx="1.5" stroke="#333" fill="none"/>
+          <path d="M22,4 L22,8" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="battery-text-inside">37</div>
+      </div>
+    </div>
+  </div>
 
-        <div class="group">
-            <label>电量 (%)</label>
-            <input type="number" id="cfg-batt" value="65" oninput="render()">
-        </div>
+  <div class="header-section">
+    <div class="header-left">
+      <svg class="header-back-icon" viewBox="0 0 24 24"><path d="M20,11H7.83l5.59-5.59L12,4l-8,8l8,8l1.41-1.41L7.83,13H20V11z"/></svg>
+      <div class="header-title-group">
+        <div class="header-title">工商银行</div>
+        <div class="header-subtitle">95588</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <svg class="icon-svg" viewBox="0 0 24 24"><path d="M20.01,15.38c-1.23,0-2.42-0.2-3.53-0.56c-0.35-0.12-0.74-0.03-1.01,0.24l-2.2,2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c0.28-0.26,0.36-0.65,0.25-1c-0.37-1.11-0.57-2.3-0.57-3.53C8.56,3.35,7.88,2.67,7.05,2.67H3.36C2.53,2.67,1.86,3.35,1.86,4.18c0,10.95,8.87,19.82,19.82,19.82c0.83,0,1.51-0.67,1.51-1.51v-3.69C23.2,17.79,22.53,17.11,21.7,17.11H20.01z"/></svg>
+      <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12,8c1.1,0,2-0.9,2-2s-0.9-2-2-2s-2,0.9-2,2S13.1,8,12,8z M12,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,10,12,10z M12,16c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,16,12,16z"/></svg>
+    </div>
+  </div>
 
-        <div class="group">
-            <label>消息操作</label>
-            <select id="msg-type">
-                <option value="received">对方发送</option>
-                <option value="sent">我发送</option>
-                <option value="time">插入时间戳</option>
-            </select>
-            <textarea id="msg-text" rows="3" placeholder="输入内容..."></textarea>
-            <button class="btn" onclick="addMsg()">添加</button>
-            <button class="btn" onclick="clearMsg()" style="background:#444; margin-top:5px;">清空</button>
-        </div>
-
-        <div class="group">
-            <label style="margin-top:20px">高级微调</label>
-            <label><input type="checkbox" id="cfg-show-avatar" checked onchange="toggleAvatar()"> 显示对方头像</label>
-            <label>对方头像URL:</label>
-            <input type="text" id="cfg-avatar-url" placeholder="图片地址..." oninput="updateAvatarUrl()">
-        </div>
-
-        <button class="btn" style="background: #28a745; margin-top: auto;" onclick="capture()">📸 生成高清截图</button>
+  <div class="message-list">
+    <div class="message-group">
+      <div class="message-bubble">
+        您尾号3810银行卡<span class="link-text">12月11日</span>15:12支出(跨行转账-刘永福)5000元。【工商银行】
+      </div>
+      <div class="message-meta">
+        周四 15:12 <span class="sim-tag">1</span>
+      </div>
     </div>
 
-    <div class="preview-area">
-        <div id="phone-shell">
-            <div id="screen">
-                <div class="camera-hole"></div>
-
-                <div class="status-bar">
-                    <span id="ui-time">16:20</span>
-                    <div class="status-right">
-                        <div style="display:flex; align-items:flex-end; gap:1px; height:12px; width:14px;">
-                            <div style="width:3px; height:40%; background:#000;"></div>
-                            <div style="width:3px; height:60%; background:#000;"></div>
-                            <div style="width:3px; height:80%; background:#000;"></div>
-                            <div style="width:3px; height:100%; background:#000;"></div>
-                        </div>
-                        <span style="font-size:10px; font-weight:bold; margin-left:2px;">5G</span>
-                        <span id="ui-batt-text" style="font-size:11px; margin-left:4px;">65%</span>
-                        <div class="battery-icon"><div class="battery-inner" id="ui-batt-fill" style="width:65%"></div></div>
-                    </div>
-                </div>
-
-                <div class="nav-bar">
-                    <svg class="nav-back" viewBox="0 0 24 24"><path d="M20,11H7.83l5.59-5.59L12,4l-8,8l8,8l1.41-1.41L7.83,13H20V11z"/></svg>
-                    <div class="nav-title-box">
-                        <div class="nav-name" id="ui-name">10086</div>
-                    </div>
-                    <svg class="nav-menu" viewBox="0 0 24 24"><path d="M12,8c1.1,0,2-0.9,2-2s-0.9-2-2-2s-2,0.9-2,2S10.9,8,12,8z M12,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,10,12,10z M12,16c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,16,12,16z"/></svg>
-                </div>
-
-                <div class="message-list" id="ui-list">
-                    <div class="time-stamp">昨天 10:23</div>
-                    <div class="msg-row received">
-                        <div class="avatar" style="background-image: url('https://ui-avatars.com/api/?name=10086&background=random');"></div>
-                        <div class="bubble">【流量提醒】您好，您本月流量剩余 20.5GB，请放心使用。</div>
-                    </div>
-                    <div class="msg-row sent">
-                        <div class="bubble">查话费</div>
-                    </div>
-                </div>
-
-                <div class="input-area">
-                    <svg class="icon-plus" viewBox="0 0 24 24"><path d="M19,13h-6v6h-2v-6H5v-2h6V5h2v6h6V13z"/></svg>
-                    <div class="input-box">短信/彩信</div>
-                    <svg class="icon-send" viewBox="0 0 24 24"><path d="M2.01,21L23,12L2.01,3L2,10l15,2l-15,2L2.01,21z"/></svg>
-                </div>
-
-                <div class="home-bar"></div>
-            </div>
-        </div>
+    <div class="message-group">
+      <div class="message-bubble">
+        安徽省摩登建筑投资咨询有限公司，您好！您在合肥明光路支行申请的网贷通(e抵快贷)已经审批通过，贷款金额为<span class="link-text">3,500,000.00</span>元，贷款以全国银行间同业拆借中心公布的最新对应期限LPR为基准利率每笔提款执行的加点数值以借款凭证记载为准，实际贷款信息以正式合同为准。【工商银行】
+      </div>
+      <div class="message-meta">
+        周五 15:46 <span class="sim-tag">1</span>
+      </div>
     </div>
 
-    <script>
-        // 核心渲染逻辑
-        function render() {
-            document.getElementById('ui-name').innerText = document.getElementById('cfg-name').value;
-            document.getElementById('ui-time').innerText = document.getElementById('cfg-time').value;
-            
-            const batt = document.getElementById('cfg-batt').value;
-            document.getElementById('ui-batt-text').innerText = batt + '%';
-            document.getElementById('ui-batt-fill').style.width = batt + '%';
-            
-            updateAvatarUrl();
-        }
+     <div class="message-group">
+      <div class="message-bubble">
+        您尾号3810银行卡<span class="link-text">12月12日</span>18:27
+      </div>
+      </div>
+  </div>
 
-        let avatarUrl = "https://ui-avatars.com/api/?name=Service&background=0a59f7&color=fff";
+  <div class="input-section">
+    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3,13h2v-2H3V13z M3,17h2v-2H3V17z M3,9h2V7H3V9z M7,13h14v-2H7V13z M7,17h14v-2H7V17z M7,7v2h14V7H7z"/></svg>
+    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19,13h-6v6h-2v-6H5v-2h6V5h2v6h6V13z"/></svg>
+    <div class="input-capsule">
+      <div class="sim-selector-btn">
+        <span class="active">1</span>2<div class="arrow-down"></div>
+      </div>
+      <div class="input-placeholder">短信/彩信</div>
+    </div>
+    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M11.99,2C6.47,2,2,6.48,2,12s4.47,10,9.99,10C17.52,22,22,17.52,22,12S17.52,2,11.99,2z M12,20c-4.42,0-8-3.58-8-8s3.58-8,8-8s8,3.58,8,8S16.42,20,12,20z M15.5,11c0.83,0,1.5-0.67,1.5-1.5S16.33,8,15.5,8S14,8.67,14,9.5S14.67,11,15.5,11z M8.5,11C9.33,11,10,10.33,10,9.5S9.33,8,8.5,8S7,8.67,7,9.5S7.67,11,8.5,11z M12,17.5c2.33,0,4.31-1.46,5.11-3.5H6.89C7.69,16.04,9.67,17.5,12,17.5z"/></svg>
+    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12,2c5.52,0,10,4.48,10,10s-4.48,10-10,10S2,17.52,2,12S6.48,2,12,2z M13,12V6h-2v6H6l6,6l6-6H13z" transform="rotate(180 12 12)"/></svg>
+  </div>
 
-        function updateAvatarUrl() {
-            const inputUrl = document.getElementById('cfg-avatar-url').value;
-            if(inputUrl) avatarUrl = inputUrl;
-            
-            // 更新现有头像
-            document.querySelectorAll('.msg-row.received .avatar').forEach(el => {
-                el.style.backgroundImage = `url('${avatarUrl}')`;
-            });
-        }
+  <div class="nav-bar">
+    <svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M15.41,16.09L10.83,11.5L15.41,6.91L14,5.5L8,11.5L14,17.5L15.41,16.09Z"/></svg>
+    <svg class="nav-icon-svg" viewBox="0 0 24 24" style="width:18px;height:18px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="#666" stroke-width="2"/></svg>
+    <svg class="nav-icon-svg" viewBox="0 0 24 24" style="width:16px;height:16px;"><rect x="4" y="4" width="16" height="16" fill="none" stroke="#666" stroke-width="2"/></svg>
+  </div>
 
-        function toggleAvatar() {
-            const show = document.getElementById('cfg-show-avatar').checked;
-            const avatars = document.querySelectorAll('.msg-row.received .avatar');
-            avatars.forEach(el => el.style.display = show ? 'block' : 'none');
-        }
+</div>
 
-        function addMsg() {
-            const type = document.getElementById('msg-type').value;
-            const text = document.getElementById('msg-text').value;
-            const list = document.getElementById('ui-list');
-
-            if (type === 'time') {
-                list.innerHTML += `<div class="time-stamp">${text || '刚刚'}</div>`;
-            } else {
-                if(!text) return;
-                const isReceived = type === 'received';
-                const avatarStyle = document.getElementById('cfg-show-avatar').checked ? '' : 'display:none';
-                
-                let html = `<div class="msg-row ${type}">`;
-                if(isReceived) {
-                    html += `<div class="avatar" style="background-image: url('${avatarUrl}'); ${avatarStyle}"></div>`;
-                }
-                html += `<div class="bubble">${text}</div></div>`;
-                list.innerHTML += html;
-            }
-            
-            list.scrollTop = list.scrollHeight;
-            document.getElementById('msg-text').value = '';
-        }
-
-        function clearMsg() {
-            document.getElementById('ui-list').innerHTML = '';
-        }
-
-        function capture() {
-            const screen = document.getElementById('screen');
-            html2canvas(screen, { scale: 3, useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'huawei_ui_v2.png';
-                link.href = canvas.toDataURL();
-                link.click();
-            });
-        }
-
-        // 初始化
-        render();
-    </script>
 </body>
 </html>
