@@ -19,6 +19,10 @@
             --color-spdb: #2258da;  /* 浦发亮蓝 */
             --color-boc: #b71c1c;   /* 中行红色 */
             --color-hfbdc: #673ab7; /* 不动产紫色 */
+            
+            /* 新增主题色 */
+            --color-scan: #455a64;  /* 扫描模拟器 - 蓝灰 */
+            --color-rand: #ff9800;  /* 随机数 - 橙色 */
         }
 
         body {
@@ -36,40 +40,42 @@
 
         .header {
             text-align: center;
-            margin: 60px 0 40px 0;
+            margin: 40px 0 30px 0; /* 间距调小 */
             animation: fadeInDown 0.8s ease;
         }
 
         .header h1 {
-            font-size: 36px;
-            margin: 0 0 10px 0;
+            font-size: 32px; /* 字体微调 */
+            margin: 0 0 8px 0;
             color: #333;
             letter-spacing: 2px;
         }
 
         .header p {
-            font-size: 16px;
+            font-size: 14px;
             color: #7f8c8d;
             margin: 0;
         }
 
-        /* Grid 布局 */
+        /* --- 核心修改：Grid 布局 --- */
         .card-container {
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 30px;
+            /* 电脑端：一行 4 个 */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; /* 间距稍微调小，更紧凑 */
             padding: 0 20px 40px 20px;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px; /* 宽度放开一点，容纳4列 */
             box-sizing: border-box;
         }
 
         .card {
             background: var(--card-bg);
             width: 100%;
-            height: 340px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            /* 高度减小，更小巧 */
+            height: 260px; 
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
             text-decoration: none;
@@ -82,17 +88,17 @@
         }
 
         .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
 
         .card-top {
-            height: 6px;
+            height: 5px; /* 彩条变细 */
             width: 100%;
         }
 
         .card-content {
-            padding: 30px 25px;
+            padding: 20px 15px; /* 内边距减小 */
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -101,20 +107,21 @@
         }
 
         .icon-circle {
-            width: 70px;
-            height: 70px;
+            /* 图标圈变小 */
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: #f8f9fa;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 25px;
+            margin-bottom: 15px; /* 间距减小 */
             transition: transform 0.3s ease;
             overflow: hidden;
         }
 
         .bank-logo {
-            width: 70%;
+            width: 65%;
             height: auto;
             object-fit: contain;
         }
@@ -124,27 +131,32 @@
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 16px; /* 标题字号微调 */
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #333;
         }
 
         .card-desc {
-            font-size: 13px;
+            font-size: 12px; /* 描述字号变小 */
             color: #999;
-            line-height: 1.5;
+            line-height: 1.4;
+            /* 限制描述最多显示两行，防止撑开 */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .card-btn {
             margin-top: auto;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 6px 15px;
+            border-radius: 15px;
+            font-size: 12px;
             font-weight: bold;
             color: #fff;
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(15px);
             transition: all 0.3s ease;
         }
 
@@ -174,6 +186,14 @@
         .card-5 .icon-circle { background: rgba(103, 58, 183, 0.08); }
         .card-5 .card-btn { background: var(--color-hfbdc); }
 
+        .card-6 .card-top { background: var(--color-scan); }
+        .card-6 .icon-circle { background: rgba(69, 90, 100, 0.08); }
+        .card-6 .card-btn { background: var(--color-scan); }
+
+        .card-7 .card-top { background: var(--color-rand); }
+        .card-7 .icon-circle { background: rgba(255, 152, 0, 0.08); }
+        .card-7 .card-btn { background: var(--color-rand); }
+
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -186,11 +206,22 @@
             font-size: 12px;
         }
 
+        /* --- 响应式适配 --- */
+        /* 平板和手机：一行 2 个 */
         @media (max-width: 900px) {
-            .card-container { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 600px) {
-            .card-container { grid-template-columns: 1fr; }
+            .card-container { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 15px; /* 手机上间距再小一点 */
+            }
+            .card {
+                height: 240px; /* 手机上卡片可以更矮一点 */
+            }
+            /* 手机上一直显示按钮，不用hover，体验更好 */
+            .card-btn {
+                opacity: 1;
+                transform: translateY(0);
+                margin-top: 10px;
+            }
         }
 
     </style>
@@ -211,9 +242,7 @@
                     <img src="images/建行logo.png" class="bank-logo" alt="CCB">
                 </div>
                 <div class="card-title">建设银行</div>
-                <div class="card-desc">
-                    建设银行信贷业务详情录入<br>关联人数据管理
-                </div>
+                <div class="card-desc">信贷业务详情录入</div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
         </a>
@@ -225,9 +254,7 @@
                     <img src="images/农行logo.png" class="bank-logo" alt="ABC">
                 </div>
                 <div class="card-title">农业银行</div>
-                <div class="card-desc">
-                    农业银行贷款审批通知单<br>支持打印与导出
-                </div>
+                <div class="card-desc">贷款审批通知单打印</div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
         </a>
@@ -239,9 +266,7 @@
                     <img src="images/浦发logo.png" class="bank-logo" alt="SPDB">
                 </div>
                 <div class="card-title">浦发银行</div>
-                <div class="card-desc">
-                    浦发银行内部OA邮件通知<br>弹窗式交互界面
-                </div>
+                <div class="card-desc">OA 审批邮件通知</div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
         </a>
@@ -252,10 +277,8 @@
                 <div class="icon-circle">
                     <img src="images/中行logo.png" class="bank-logo" alt="BOC">
                 </div>
-                <div class="card-title">签署意见书</div>
-                <div class="card-desc">
-                    中国银行批复签署意见<br>A4流版文件仿真打印
-                </div>
+                <div class="card-title">中国银行</div>
+                <div class="card-desc">批复签署意见书</div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
         </a>
@@ -266,13 +289,42 @@
                 <div class="icon-circle">
                     <img src="images/hfbdclogo.png" class="bank-logo" alt="HFBDC">
                 </div>
-                <div class="card-title">不动产登记信息</div>
-                <div class="card-desc">
-                    合肥市不动产登记信息查询<br>全真模拟、所见即所得编辑
-                </div>
+                <div class="card-title">不动产登记</div>
+                <div class="card-desc">产调信息查询</div>
                 <div class="card-btn">进入系统 &rarr;</div>
             </div>
         </a>
+
+        <a href="pages/zhengming.html" class="card card-6" target="_blank">
+            <div class="card-top"></div>
+            <div class="card-content">
+                <div class="icon-circle">
+                    <img src="images/favicon.png" class="bank-logo" alt="SCAN">
+                </div>
+                <div class="card-title">扫描模拟器</div>
+                <div class="card-desc">文档做旧与合成</div>
+                <div class="card-btn">进入工具 &rarr;</div>
+            </div>
+        </a>
+
+        <a href="pages/suijishu.html" class="card card-7" target="_blank">
+            <div class="card-top"></div>
+            <div class="card-content">
+                <div class="icon-circle">
+                    <img src="images/favicon.png" class="bank-logo" alt="RND">
+                </div>
+                <div class="card-title">随机数</div>
+                <div class="card-desc">数据生成辅助工具</div>
+                <div class="card-btn">进入工具 &rarr;</div>
+            </div>
+        </a>
+
+        <div class="card" style="opacity: 0.3; cursor: default; background: #f0f0f0; border: 2px dashed #ddd;">
+            <div class="card-content" style="justify-content: center;">
+                <div style="font-size: 30px; color: #ccc;">+</div>
+                <div class="card-desc" style="margin-top: 10px;">敬请期待</div>
+            </div>
+        </div>
 
     </div>
 
