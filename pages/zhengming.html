@@ -3,103 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>仿真打印机 - 内部专用版</title>
+    <title>扫描模拟器</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
     <style>
-        body {
-            font-family: "Microsoft YaHei", sans-serif;
-            background-color: #333;
-            color: #fff;
-            display: flex;
-            flex-direction: row;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        .controls {
-            width: 340px;
-            background: #222;
-            padding: 20px;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-
+        body { font-family: "Microsoft YaHei", sans-serif; background-color: #333; color: #fff; display: flex; height: 100vh; margin: 0; overflow: hidden; }
+        .controls { width: 340px; background: #222; padding: 20px; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.5); z-index: 10; }
         h2 { margin-top: 0; font-size: 18px; color: #ddd; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        
         .control-group { margin-bottom: 20px; }
         .control-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
-        
-        input[type="file"] {
-            width: 100%;
-            background: #444;
-            border: none;
-            padding: 8px;
-            color: #fff;
-            font-size: 12px;
-            border-radius: 4px;
-        }
-
+        input[type="file"] { width: 100%; background: #444; border: none; padding: 8px; color: #fff; font-size: 12px; border-radius: 4px; }
         input[type="range"] { width: 100%; cursor: pointer; }
         
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background: #2258da;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
-            font-weight: bold;
-            border-radius: 4px;
-            font-size: 14px;
-        }
+        .btn { width: 100%; padding: 12px; background: #2258da; color: white; border: none; cursor: pointer; margin-top: 10px; font-weight: bold; border-radius: 4px; font-size: 14px; }
         .btn:hover { background: #1a45b0; }
+        .btn.secondary { background: #444; } .btn.secondary:hover { background: #555; }
+        .btn.preset { background: #e65100; } .btn.preset:hover { background: #ef6c00; }
         
-        .btn.secondary { background: #444; }
-        .btn.secondary:hover { background: #555; }
-        
-        .btn.preset { background: #e65100; }
-        .btn.preset:hover { background: #ef6c00; }
+        /* 导出按钮组 */
+        .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-row .btn { margin-top: 0; flex: 1; } /* 按钮均分宽度 */
+        .btn.green { background: #28a745; } .btn.green:hover { background: #218838; }
 
         .file-tip { font-size: 10px; color: #888; margin-top: 4px; }
-
-        .preview-area {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #555;
-            padding: 20px;
-            overflow: auto;
-            position: relative;
-        }
-
-        canvas {
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            max-width: 100%;
-            max-height: 100%;
-            background: white;
-            transition: transform 0.2s;
-        }
-
-        .loading-mask {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 100;
-            display: none;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite;
-        }
+        .preview-area { flex: 1; display: flex; justify-content: center; align-items: center; background: #555; padding: 20px; overflow: auto; position: relative; }
+        canvas { box-shadow: 0 0 20px rgba(0,0,0,0.5); max-width: 100%; max-height: 100%; background: white; transition: transform 0.2s; }
+        .loading-mask { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { margin-top: 10px; color: white; font-size: 14px; }
     </style>
@@ -113,7 +46,6 @@
 
     <div class="controls">
         <h2>1. 上传文档</h2>
-        
         <div class="control-group">
             <label>选择文档 (支持 PDF / JPG / PNG)</label>
             <input type="file" id="docInput" accept=".pdf,image/*">
@@ -121,13 +53,11 @@
         </div>
 
         <h2>2. 选择纸张纹理</h2>
-
         <div class="control-group">
             <label>预置纹理 (zw1/zw2/zw3 随机)</label>
             <button class="btn preset" onclick="usePresetTexture()">🎲 随机切换纸纹</button>
             <div class="file-tip" id="currentTextureName">当前未加载纹理</div>
         </div>
-
         <div class="control-group">
             <label>或上传本地纹理</label>
             <input type="file" id="textureInput" accept="image/*" multiple>
@@ -135,34 +65,17 @@
         </div>
 
         <h2>3. 调整参数</h2>
+        <div class="control-group"><label>墨迹浓度: <span id="valOpacity">90%</span></label><input type="range" id="opacity" min="50" max="100" value="90"></div>
+        <div class="control-group"><label>对比度: <span id="valContrast">1.1</span></label><input type="range" id="contrast" min="0.8" max="1.5" step="0.05" value="1.1"></div>
+        <div class="control-group"><label>边缘虚化: <span id="valBlur">0.4px</span></label><input type="range" id="blur" min="0" max="2.0" step="0.1" value="0.4"></div>
+        <div class="control-group"><label>噪点强度: <span id="valNoise">20</span></label><input type="range" id="noise" min="0" max="100" value="20"></div>
+        <div class="control-group"><label>随机旋转: <span id="valRotate">0.3°</span></label><input type="range" id="rotate" min="-1.5" max="1.5" step="0.1" value="0.3"></div>
 
-        <div class="control-group">
-            <label>墨迹浓度: <span id="valOpacity">90%</span></label>
-            <input type="range" id="opacity" min="50" max="100" value="90">
+        <h2>4. 导出结果</h2>
+        <div class="btn-row">
+            <button class="btn" onclick="downloadImage()">💾 保存图片</button>
+            <button class="btn green" onclick="downloadPDF()">📄 保存 PDF</button>
         </div>
-
-        <div class="control-group">
-            <label>对比度: <span id="valContrast">1.1</span></label>
-            <input type="range" id="contrast" min="0.8" max="1.5" step="0.05" value="1.1">
-        </div>
-
-        <div class="control-group">
-            <label>边缘虚化: <span id="valBlur">0.4px</span></label>
-            <input type="range" id="blur" min="0" max="2.0" step="0.1" value="0.4">
-        </div>
-
-        <div class="control-group">
-            <label>噪点强度: <span id="valNoise">20</span></label>
-            <input type="range" id="noise" min="0" max="100" value="20">
-        </div>
-
-        <div class="control-group">
-            <label>随机旋转: <span id="valRotate">0.3°</span></label>
-            <input type="range" id="rotate" min="-1.5" max="1.5" step="0.1" value="0.3">
-        </div>
-
-        <h2>4. 导出</h2>
-        <button class="btn" onclick="downloadImage()">💾 下载合成图片</button>
     </div>
 
     <div class="preview-area">
@@ -170,9 +83,14 @@
     </div>
 
     <script>
-        // ★★★ 路径修正：从 pages 目录退回到根目录，再进 images/zw ★★★
         const presetTextures = ['zw1.jpg', 'zw2.jpg', 'zw3.jpg'];
-        const textureBasePath = '../images/zw/'; // 基础路径
+        
+        // 智能路径检测列表
+        const possiblePaths = [
+            '../images/zw/',  // 标准结构: pages/printer.html -> images/zw/
+            'images/zw/',     // 根目录结构
+            './images/zw/'    
+        ];
 
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
@@ -201,30 +119,88 @@
             });
         });
 
-        // 1. 使用预置纹理
-        function usePresetTexture() {
-            showLoading(true, "加载纹理...");
-            
-            // 随机选一个
-            const name = presetTextures[Math.floor(Math.random() * presetTextures.length)];
-            const finalPath = textureBasePath + name; // 拼接成 ../images/zw/zw1.jpg
+        // 核心：生成扫描仪风格的时间戳文件名
+        function getScanFilename(extension) {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const MM = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            return `Scan${yyyy}${MM}${dd}${hh}${mm}${ss}.${extension}`;
+        }
 
+        // 下载图片
+        function downloadImage() {
+            if(!docImg) return;
+            const link = document.createElement('a');
+            link.download = getScanFilename('jpg'); // 使用动态文件名
+            link.href = canvas.toDataURL('image/jpeg', 0.92); 
+            link.click();
+        }
+
+        // 下载 PDF (新功能)
+        function downloadPDF() {
+            if(!docImg) return;
+            
+            // 使用 jsPDF
+            const { jsPDF } = window.jspdf;
+            // 创建 A4 大小的 PDF (单位 mm)
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // 获取 canvas 图片数据
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            
+            // A4 尺寸
+            const imgWidth = 210; 
+            const pageHeight = 297;  
+            
+            // 计算等比缩放
+            // 注意：这里我们假设生成的图片就是A4比例。如果不是，可能会变形或留白
+            // 简单处理：拉伸铺满 A4，因为扫描件通常就是整页
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            // 将图片添加到 PDF (x, y, w, h)
+            pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, pageHeight);
+            
+            // 保存
+            pdf.save(getScanFilename('pdf'));
+        }
+
+        // --- 以下是原有的渲染和加载逻辑 ---
+
+        function tryLoadImage(filename, pathIndex = 0) {
+            if (pathIndex >= possiblePaths.length) {
+                showLoading(false);
+                alert("加载失败！在以下路径都没找到 " + filename + "：\n" + possiblePaths.join('\n'));
+                return;
+            }
+            const currentPath = possiblePaths[pathIndex] + filename;
             const img = new Image();
             img.crossOrigin = "Anonymous"; 
             img.onload = () => {
                 currentTextureImg = img;
-                document.getElementById('currentTextureName').innerText = "当前使用: " + name;
+                document.getElementById('currentTextureName').innerText = "当前使用: " + filename;
                 render();
                 showLoading(false);
             };
             img.onerror = () => {
-                showLoading(false);
-                alert("加载失败！请检查 " + finalPath + " 是否存在");
+                tryLoadImage(filename, pathIndex + 1);
             };
-            img.src = finalPath;
+            img.src = currentPath;
         }
 
-        // 2. 使用本地纹理
+        function usePresetTexture() {
+            showLoading(true, "加载纹理...");
+            const name = presetTextures[Math.floor(Math.random() * presetTextures.length)];
+            tryLoadImage(name, 0);
+        }
+
         function useLocalTexture() {
             if(localTextureFiles.length === 0) {
                 alert("请先点击‘或上传本地纹理’选择图片！");
@@ -334,7 +310,6 @@
                 drawNoise(ctx, canvas.width, canvas.height, noise);
             }
 
-            // 正片叠底
             ctx.globalCompositeOperation = 'multiply'; 
             ctx.globalAlpha = opacity;
             
@@ -353,7 +328,6 @@
             const imageData = ctx.getImageData(0, 0, w, h);
             const data = imageData.data;
             const density = intensity * 500;
-            
             for (let i = 0; i < density; i++) {
                 const x = Math.floor(Math.random() * w);
                 const y = Math.floor(Math.random() * h);
@@ -366,14 +340,6 @@
                 }
             }
             ctx.putImageData(imageData, 0, 0);
-        }
-
-        function downloadImage() {
-            if(!docImg) return;
-            const link = document.createElement('a');
-            link.download = '仿真合成_彩色.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 0.92); 
-            link.click();
         }
 
         function showLoading(show, text="处理中...") {
