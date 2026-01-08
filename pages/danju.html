@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>银行通用单据生成器</title>
+    <style>
+        :root {
+            --paper-width: 210mm;
+            --paper-height: 297mm;
+            --font-mono: "Consolas", "Courier New", monospace; /* 票据等宽字体 */
+            --font-song: "SimSun", "Songti SC", serif;        /* 公文宋体 */
+            --font-hei: "SimHei", "Heiti SC", sans-serif;      /* 标题黑体 */
+        }
+
+        @page { size: A4; margin: 0; }
+
+        body {
+            background-color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            font-family: var(--font-song);
+        }
+
+        /* === A4 纸张容器 === */
+        .a4-page {
+            background: white;
+            width: var(--paper-width);
+            height: var(--paper-height);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            /* 默认内边距，不同模板可覆盖 */
+            padding: 20mm; 
+        }
+
+        @media print {
+            body { background: none; padding: 0; }
+            .a4-page { box-shadow: none; margin: 0; page-break-after: always; }
+            .control-panel, .btn-float { display: none !important; }
+        }
+
+        /* === 通用元素 === */
+        [contenteditable="true"]:hover { background: rgba(255, 255, 0, 0.1); cursor: text; }
+        [contenteditable="true"]:focus { background: rgba(255, 255, 255, 0.8); outline: 1px dashed #2258da; }
+        
+        .stamp-img {
+            position: absolute;
+            z-index: 100;
+            width: 150px;
+            pointer-events: auto; /* 允许拖拽 */
+            cursor: move;
+            mix-blend-mode: multiply; /* 正片叠底 */
+        }
+
+        /* ================= 模板 1: 中信银行 (公文流式) ================= */
+        .tpl-citic {
+            font-family: var(--font-song);
+            color: #000;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        .tpl-citic .header {
+            display: flex; align-items: center; margin-bottom: 40px;
+            border-bottom: 2px solid #b71c1c; /* 红线 */
+            padding-bottom: 10px;
+        }
+        .tpl-citic .logo { height: 40px; margin-right: 15px; } /* 请确保有 images/中信logo.png */
+        .tpl-citic .bank-name { font-size: 24px; font-weight: bold; font-family: var(--font-hei); }
+        .tpl-citic .en-name { font-size: 12px; color: #666; margin-top: 2px; }
+        
+        .tpl-citic .doc-title {
+            text-align: center; font-size: 28px; font-weight: bold; margin-bottom: 40px;
+            letter-spacing: 5px; font-family: var(--font-hei);
+        }
+        
+        .tpl-citic .doc-body { text-indent: 2em; text-align: justify; }
+        .tpl-citic .bold-text { font-weight: bold; font-family: var(--font-hei); }
+        .tpl-citic .verify-code { margin-top: 40px; font-size: 14px; font-family: var(--font-mono); }
+        .tpl-citic .footer-note { margin-top: 20px; font-size: 12px; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
+        .tpl-citic .sign-area { text-align: right; margin-top: 60px; padding-right: 40px; line-height: 1.6; }
+
+        /* ================= 模板 2: 浦发银行 (回单网格) ================= */
+        .tpl-spdb {
+            font-family: var(--font-song);
+            font-size: 14px;
+        }
+        .tpl-spdb .header-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+        .tpl-spdb .logo-area img { height: 35px; }
+        .tpl-spdb .bill-title { font-size: 20px; font-weight: bold; text-align: center; font-family: var(--font-hei); }
+        
+        /* 票据网格系统 */
+        .bill-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr 100px 1fr; /* 4列结构 */
+            border: 2px solid #000;
+        }
+        .bill-cell {
+            border: 1px solid #000; /* 细边框 */
+            padding: 8px 5px;
+            display: flex; align-items: center;
+        }
+        .bill-label { font-weight: bold; color: #333; margin-right: 5px; }
+        .bill-value { font-family: var(--font-mono); color: #000; font-size: 15px; font-weight: bold; width: 100%; }
+        
+        .full-row { grid-column: 1 / -1; } /* 跨所有列 */
+        .half-row { grid-column: span 2; } /* 跨2列 */
+        
+        .bill-dashed { border-bottom: 1px dashed #000; margin: 5px 0; }
+        .spdb-footer { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; }
+
+        /* ================= 控制面板 ================= */
+        .control-panel {
+            position: fixed; bottom: 20px; right: 20px; background: white;
+            padding: 20px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            width: 250px; font-family: "Microsoft YaHei"; z-index: 1000;
+        }
+        .panel-row { margin-bottom: 15px; }
+        .panel-row label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
+        select, button { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+        button { background: #2258da; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1a45b0; }
+
+        /* 隐藏/显示模板 */
+        .template-container { display: none; }
+        .template-container.active { display: block; }
+
+    </style>
+</head>
+<body>
+
+    <div class="a4-page" id="pageArea">
+        
+        <img src="../images/citic_stamp.png" class="stamp-img" id="dragStamp" style="top: 600px; left: 450px;">
+
+        <div id="tpl-citic" class="template-container tpl-citic active">
+            <div class="header">
+                <img src="../images/中信logo.png" class="logo" alt="Logo">
+                <div>
+                    <div class="bank-name">中信银行</div>
+                    <div class="en-name">CHINA CITIC BANK</div>
+                </div>
+            </div>
+
+            <div class="doc-title">个人贷款结清证明</div>
+
+            <div class="doc-body">
+                <p>
+                    借款人：<span class="bold-text" contenteditable="true">丁康杰</span>
+                    （证件类型及号码：<span contenteditable="true">居民身份证 340102198704060515</span>）
+                </p>
+                <p>
+                    贷款协议编号为：<span class="bold-text" contenteditable="true">9007561637562160054</span>
+                    的（<span contenteditable="true">个人商用房抵押贷款-经营</span>）贷款，
+                </p>
+                <p>
+                    抵押物地址：<span contenteditable="true">合肥市庐阳区荣事达大道55号605室</span>，
+                    贷款期限自 <span contenteditable="true">2025年03月31日</span> 至 <span contenteditable="true">2055年03月31日</span>，
+                    已于 <span class="bold-text" contenteditable="true">2026年01月05日</span> 结清贷款本息。
+                </p>
+                <p>特此证明。</p>
+            </div>
+
+            <div class="verify-code">
+                验证码：<span contenteditable="true">40D028X7629F3</span>
+            </div>
+
+            <div class="sign-area">
+                <div style="font-size:18px; font-weight:bold;">中信银行股份有限公司</div>
+                <div style="margin-top:5px;">个贷证明材料</div>
+                <div style="margin-top:20px;">日期：<span contenteditable="true">2026年01月08日</span></div>
+            </div>
+
+            <div class="footer-note">
+                声明：请前往中信银行官方网站录入相关信息后进行真伪核验，为保证您的权益及证明的公正性，请不要私自核验。
+            </div>
+        </div>
+
+        <div id="tpl-spdb" class="template-container tpl-spdb">
+            <div class="header-row">
+                <div class="logo-area">
+                    <img src="../images/浦发logoh.png" alt="SPDB">
+                    <div style="font-size:12px; font-weight:bold;">上海浦东发展银行</div>
+                    <div style="font-size:10px; color:#666;">SHANGHAI PUDONG DEVELOPMENT BANK</div>
+                </div>
+                <div class="bill-title">
+                    业务凭证/回单<br>
+                    <span style="font-size:12px; font-weight:normal; font-family:Arial;">Banking Business Voucher/Receipt</span>
+                </div>
+                <div style="text-align:right; font-size:12px;">
+                    流水号：<span contenteditable="true" style="font-family:var(--font-mono)">140071629</span>
+                </div>
+            </div>
+
+            <div class="bill-grid">
+                <div class="bill-cell"><span class="bill-label">交易日期</span></div>
+                <div class="bill-cell"><span class="bill-value" contenteditable="true">2026年01月06日</span></div>
+                <div class="bill-cell"><span class="bill-label">时间</span></div>
+                <div class="bill-cell"><span class="bill-value" contenteditable="true">16:14:37</span></div>
+
+                <div class="bill-cell"><span class="bill-label">交易名称</span></div>
+                <div class="bill-cell full-row" style="grid-column: 2 / -1;">
+                    <span class="bill-value" contenteditable="true">【2215-个人贷款提前还款入账】</span>
+                </div>
+
+                <div class="bill-cell"><span class="bill-label">借款人</span></div>
+                <div class="bill-cell"><span class="bill-value" contenteditable="true">陈世国</span></div>
+                <div class="bill-cell"><span class="bill-label">借据号</span></div>
+                <div class="bill-cell"><span class="bill-value" contenteditable="true">5808202210008701</span></div>
+
+                <div class="bill-cell"><span class="bill-label">还款人</span></div>
+                <div class="bill-cell full-row" style="grid-column: 2 / -1;">
+                    <span class="bill-value" contenteditable="true">陈世国 / 627163951471003</span>
+                </div>
+
+                <div class="bill-cell"><span class="bill-label">本次还款</span></div>
+                <div class="bill-cell full-row" style="grid-column: 2 / -1;">
+                    正常本金: <span class="bill-value" contenteditable="true">CNY 2,200,000.00</span>
+                    &nbsp;&nbsp;利息: <span class="bill-value" contenteditable="true">CNY 4,016.29</span>
+                </div>
+
+                <div class="bill-cell"><span class="bill-label">贷款余额</span></div>
+                <div class="bill-cell full-row" style="grid-column: 2 / -1;">
+                    本金金额: <span class="bill-value" contenteditable="true">CNY 0.00</span>
+                </div>
+
+                <div class="bill-cell"><span class="bill-label">贷款账户</span></div>
+                <div class="bill-cell full-row" style="grid-column: 2 / -1;">
+                    <span class="bill-value" contenteditable="true">7003715180636</span>
+                </div>
+            </div>
+
+            <div class="spdb-footer">
+                <div>提示：第一联做记账凭证; 第二联做客户联; 第三联信贷部门留存</div>
+            </div>
+            
+            <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:flex-end;">
+                <div>
+                    经办柜员：<span contenteditable="true">1210359</span><br>
+                    授权柜员：<span contenteditable="true">张纯纯</span>
+                </div>
+                </div>
+
+        </div>
+
+    </div>
+
+    <div class="control-panel">
+        <h3 style="margin-top:0;">📋 单据控制台</h3>
+        
+        <div class="panel-row">
+            <label>选择银行模板</label>
+            <select id="templateSelect" onchange="switchTemplate()">
+                <option value="tpl-citic">中信银行 - 结清证明</option>
+                <option value="tpl-spdb">浦发银行 - 业务回单</option>
+            </select>
+        </div>
+
+        <div class="panel-row">
+            <label>印章管理</label>
+            <div style="font-size:12px; color:#666; margin-bottom:5px;">按住印章可直接拖拽</div>
+            <input type="range" min="50" max="300" value="150" oninput="resizeStamp(this.value)">
+        </div>
+
+        <button onclick="window.print()">🖨️ 打印 / 存为PDF</button>
+    </div>
+
+    <script>
+        // 拖拽印章逻辑 (通用)
+        const stamp = document.getElementById('dragStamp');
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        stamp.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - stamp.offsetLeft;
+            offsetY = e.clientY - stamp.offsetTop;
+            stamp.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                stamp.style.left = (e.clientX - offsetX) + 'px';
+                stamp.style.top = (e.clientY - offsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            stamp.style.cursor = 'move';
+        });
+
+        function resizeStamp(size) {
+            stamp.style.width = size + 'px';
+        }
+
+        // 切换模板逻辑
+        function switchTemplate() {
+            const selectedId = document.getElementById('templateSelect').value;
+            
+            // 1. 隐藏所有模板
+            document.querySelectorAll('.template-container').forEach(el => el.classList.remove('active'));
+            // 2. 显示选中模板
+            document.getElementById(selectedId).classList.add('active');
+
+            // 3. 自动切换印章图片 (优化体验)
+            if (selectedId === 'tpl-citic') {
+                // 中信结清通常是红色圆章或专用章
+                // 假设您有这个图，没有的话暂时用通用的
+                // stamp.src = "../images/citic_stamp.png"; 
+            } else if (selectedId === 'tpl-spdb') {
+                // 浦发回单通常是 蓝色椭圆章 "业务核算章"
+                // stamp.src = "../images/spdb_stamp_blue.png";
+            }
+        }
+    </script>
+</body>
+</html>
