@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机字符生成器</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            width: 480px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 30px 0;
+            font-size: 24px;
+            color: #ff9800;
+        }
+
+        .group { margin-bottom: 25px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #555;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: "Consolas", monospace;
+            font-size: 16px;
+            box-sizing: border-box;
+            resize: vertical;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+        textarea:focus { border-color: #ff9800; }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .options-panel {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .row:last-child { margin-bottom: 0; }
+
+        input[type="checkbox"], input[type="radio"] { cursor: pointer; accent-color: #ff9800; }
+        
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .sub-settings {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e0e0e0;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 14px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .btn-generate:hover { background: #f57c00; }
+
+        .result-wrapper { position: relative; }
+
+        .btn-copy {
+            position: absolute; right: 10px; top: 10px;
+            background: #eee; border: none; padding: 5px 12px;
+            border-radius: 4px; font-size: 12px; cursor: pointer; color: #555;
+        }
+        .btn-copy:hover { background: #e0e0e0; }
+
+        /* 高亮显示前缀 */
+        .highlight-prefix {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎲 随机字符生成器</h1>
+
+        <div class="group">
+            <label>1. 输入原始字符串 (在此粘贴)</label>
+            <textarea id="inputStr" rows="2" placeholder="例如：340104199001011234" oninput="updateLen()"></textarea>
+            <div class="info-row">
+                <span>自动识别长度</span>
+                <span>当前长度: <b id="lenVal" style="color:#ff9800">0</b> 位</span>
+            </div>
+        </div>
+
+        <div class="group options-panel">
+            
+            <div class="row">
+                <input type="checkbox" id="enableKeep" onchange="toggleKeep()">
+                <label for="enableKeep" style="margin:0; font-weight:normal; cursor:pointer">保留前几位 (固定格式)</label>
+            </div>
+            <div class="sub-settings" id="keepSettings" style="display: none; background: #fff3e0; padding: 10px; border-radius: 4px;">
+                <div class="row">
+                    <span style="font-size:14px; color:#555">保留位数:</span>
+                    <input type="number" id="keepCount" value="6" min="1" oninput="updateLen()">
+                    <span style="font-size:12px; color:#999" id="remainTip">(剩余 0 位随机)</span>
+                </div>
+            </div>
+
+            <div style="height: 1px; background: #eee; margin: 10px 0;"></div>
+
+            <div class="row">
+                <input type="checkbox" id="hasLetters" onchange="toggleLetters()">
+                <label for="hasLetters" style="margin:0; font-weight:normal; cursor:pointer">包含字母 (在随机部分)</label>
+            </div>
+
+            <div class="sub-settings" id="letterSettings">
+                <div class="row">
+                    <span style="font-size:14px; color:#555">字母数量:</span>
+                    <input type="number" id="letterCount" value="2" min="1" max="100">
+                </div>
+                <div class="row">
+                    <span style="font-size:14px; color:#555">字母大小写:</span>
+                    <label style="font-weight:normal; font-size:13px; margin:0"><input type="radio" name="letterCase" value="upper" checked> 大写</label>
+                    <label style="font-weight:normal; font-size:13px; margin:0"><input type="radio" name="letterCase" value="lower"> 小写</label>
+                    <label style="font-weight:normal; font-size:13px; margin:0"><input type="radio" name="letterCase" value="mixed"> 混合</label>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-generate" onclick="generate()">⚡ 生成随机结果</button>
+
+        <div class="group" style="margin-top: 30px;">
+            <label>2. 生成结果</label>
+            <div class="result-wrapper">
+                <textarea id="outputStr" rows="2" readonly placeholder="点击上方按钮生成..."></textarea>
+                <button class="btn-copy" onclick="copyResult()">复制</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 更新长度显示
+        function updateLen() {
+            const str = document.getElementById('inputStr').value;
+            const totalLen = str.length;
+            document.getElementById('lenVal').innerText = totalLen;
+
+            // 如果开启了保留模式，更新提示
+            if(document.getElementById('enableKeep').checked) {
+                let keep = parseInt(document.getElementById('keepCount').value) || 0;
+                if(keep > totalLen) keep = totalLen;
+                const remain = totalLen - keep;
+                document.getElementById('remainTip').innerText = `(前 ${keep} 位固定，后 ${remain} 位随机)`;
+            }
+        }
+
+        function toggleKeep() {
+            const isChecked = document.getElementById('enableKeep').checked;
+            document.getElementById('keepSettings').style.display = isChecked ? 'block' : 'none';
+            updateLen();
+        }
+
+        function toggleLetters() {
+            const isChecked = document.getElementById('hasLetters').checked;
+            document.getElementById('letterSettings').style.display = isChecked ? 'block' : 'none';
+        }
+
+        function generate() {
+            const input = document.getElementById('inputStr').value;
+            const length = input.length;
+
+            if (length === 0) {
+                alert("请先输入原始字符串！");
+                return;
+            }
+
+            // 1. 处理保留前缀
+            let keepLen = 0;
+            let prefix = "";
+            if (document.getElementById('enableKeep').checked) {
+                keepLen = parseInt(document.getElementById('keepCount').value) || 0;
+                if (keepLen > length) keepLen = length;
+                prefix = input.substring(0, keepLen); // 提取前缀
+            }
+
+            // 2. 计算需要生成的随机长度
+            const genLen = length - keepLen;
+
+            if (genLen === 0) {
+                // 如果全保留了，直接返回原字符（或者前缀）
+                document.getElementById('outputStr').value = prefix;
+                return;
+            }
+
+            // 3. 生成随机部分
+            const hasLetters = document.getElementById('hasLetters').checked;
+            let randomArr = [];
+
+            if (!hasLetters) {
+                // 纯数字
+                for (let i = 0; i < genLen; i++) {
+                    randomArr.push(getRandomDigit());
+                }
+            } else {
+                // 字母混合
+                let letterCount = parseInt(document.getElementById('letterCount').value) || 0;
+                // 校验：字母不能超过随机部分的总长
+                if (letterCount > genLen) letterCount = genLen;
+
+                const numberCount = genLen - letterCount;
+                const caseType = document.querySelector('input[name="letterCase"]:checked').value;
+
+                // 生成字母
+                for (let i = 0; i < letterCount; i++) {
+                    randomArr.push(getRandomLetter(caseType));
+                }
+                // 生成数字
+                for (let i = 0; i < numberCount; i++) {
+                    randomArr.push(getRandomDigit());
+                }
+                // 打乱
+                shuffleArray(randomArr);
+            }
+
+            // 4. 拼接并输出
+            const result = prefix + randomArr.join('');
+            document.getElementById('outputStr').value = result;
+        }
+
+        function getRandomDigit() {
+            return Math.floor(Math.random() * 10).toString();
+        }
+
+        function getRandomLetter(caseType) {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            let pool = "";
+            if (caseType === 'upper') pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            else if (caseType === 'lower') pool = "abcdefghijklmnopqrstuvwxyz";
+            else pool = chars;
+            return pool.charAt(Math.floor(Math.random() * pool.length));
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function copyResult() {
+            const output = document.getElementById('outputStr');
+            if (!output.value) return;
+            output.select();
+            document.execCommand('copy');
+            
+            const btn = document.querySelector('.btn-copy');
+            const originalText = btn.innerText;
+            btn.innerText = "已复制!";
+            setTimeout(() => { btn.innerText = originalText; }, 1500);
+        }
+    </script>
+</body>
+</html>
