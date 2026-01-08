@@ -6,19 +6,16 @@
     <title>中信银行 - 个人贷款结清证明</title>
     <style>
         :root {
-            --font-fangsong: "FangSong", "STFangsong", "SimSun", serif; /* 仿宋 */
-            --font-hei: "SimHei", "Heiti SC", sans-serif;
-            --margin-x: 140px; /* 左右边距 */
-            --margin-top: 100px; /* Logo 距离顶部 */
+            --font-fangsong: "FangSong", "STFangsong", "SimSun", serif;
+            --margin-x: 100px; 
+            --margin-top: 100px;
+            --font-size-std: 12pt; /* 小四号字标准 */
         }
 
-        @page {
-            size: A4;
-            margin: 0;
-        }
+        @page { size: A4; margin: 0; }
 
         body {
-            background-color: #333; /*深色背景衬托A4纸*/
+            background-color: #333;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -26,7 +23,6 @@
             font-family: var(--font-fangsong);
         }
 
-        /* A4 纸张容器 */
         .a4-page {
             background: white;
             width: 210mm;
@@ -34,312 +30,297 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             position: relative;
             box-sizing: border-box;
-            /* 关键布局参数 */
             padding-top: var(--margin-top); 
             padding-left: var(--margin-x);
             padding-right: var(--margin-x);
             overflow: hidden; 
         }
 
-        /* 打印时隐藏背景和控制台 */
         @media print {
             body { background: none; padding: 0; }
-            .a4-page { box-shadow: none; margin: 0; page-break-after: always; height: auto; min-height: 297mm;}
+            .a4-page { box-shadow: none; margin: 0; height: auto; min-height: 297mm;}
             .controls { display: none !important; }
-            /* 打印时保持边距 */
-            @page { margin: 0; }
         }
 
-        /* === 内容样式 === */
-        
-        /* 头部 Logo */
-        .header {
-            margin-bottom: 40px;
-            /* Logo 大小由 JS 控制 */
-        }
+        /* === 头部 === */
+        .header { margin-bottom: 40px; }
         .header img {
-            width: 120px; /* 默认值 */
+            width: 120px; 
             display: block;
         }
 
-        /* 标题 */
+        /* === 标题 === */
         .doc-title {
             text-align: center;
-            font-size: 22pt; /* 二号左右，或者根据视觉调整 */
-            font-weight: bold;
-            font-family: var(--font-hei); /* 标题通常是黑体或加粗宋体 */
+            font-size: 30px; 
+            font-weight: bold; 
             margin-bottom: 50px;
             letter-spacing: 2px;
-        }
-
-        /* 正文 */
-        .doc-body {
-            font-size: 14pt; /* 四号字 approx 14pt */
-            line-height: 2.0; /* 2倍行距 */
-            text-align: justify; /* 两端对齐 */
             color: #000;
         }
 
-        .doc-body p {
-            margin: 0;
+        /* === 统一正文样式 (正文、验证码、声明、日期) === */
+        .std-text {
+            font-size: var(--font-size-std); /* 小四号 */
+            line-height: 2.0; /* 2倍行距 */
+            color: #000;
+            font-weight: normal;
+            text-align: left; /* 取消两端对齐 */
+        }
+
+        .doc-body {
             text-indent: 2em; /* 首行缩进 */
+            margin-bottom: 40px; /* 段落间距 */
         }
 
-        /* 验证码与声明 */
+        /* 下划线填空样式 */
+        .fill-item {
+            border-bottom: 1px solid #000; 
+            display: inline-block;
+            min-width: 60px; 
+            text-align: center;
+            padding: 0 5px;
+            line-height: 1.2; 
+            text-indent: 0; 
+            font-family: var(--font-fangsong); 
+        }
+
+        /* === 验证码 === */
         .verify-section {
-            margin-top: 40px;
-            font-size: 10.5pt; /* 五号字 */
-            line-height: 1.5;
+            /* 字号继承 .std-text */
+            margin-bottom: 10px;
         }
 
+        /* === 声明 (唯一加粗) === */
         .disclaimer {
-            margin-top: 10px;
-            font-size: 9pt; /* 小五号 */
-            color: #666;
-            border-top: 1px solid #ccc;
-            padding-top: 5px;
-            line-height: 1.4;
+            /* 字号继承 .std-text */
+            /* 去掉 border-top */
+            font-weight: bold; /* 只有这里加粗 */
         }
 
-        /* 落款区 */
-        .footer {
-            margin-top: 60px;
+        /* === 落款日期 === */
+        .footer-date {
+            margin-top: 80px; 
             text-align: right;
-            font-size: 14pt;
-            font-weight: bold;
-            font-family: var(--font-hei);
-            line-height: 1.8;
-            position: relative;
-            padding-right: 20px; /* 稍微右缩进一点 */
+            padding-right: 10px;
+            /* 字号继承 .std-text */
         }
 
-        /* 可编辑区域高亮 */
-        [contenteditable]:hover {
-            background-color: rgba(255, 255, 0, 0.1);
-            cursor: text;
-        }
-        [contenteditable]:focus {
-            background-color: rgba(230, 247, 255, 0.5);
-            outline: none;
-        }
-
-        /* 印章 */
+        /* === 印章 === */
         .stamp-container {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; /* 让鼠标能穿透容器点文字 */
+            pointer-events: none; 
             overflow: hidden;
         }
         .stamp-img {
             position: absolute;
-            width: 150px; /* 默认宽度 */
-            top: 650px; 
-            left: 450px;
+            width: 150px; 
+            top: 600px; 
+            left: 400px;
             cursor: move;
-            pointer-events: auto; /* 恢复印章的鼠标事件 */
-            mix-blend-mode: multiply; /* 正片叠底：去白底，红印叠加 */
+            pointer-events: auto;
+            mix-blend-mode: multiply;
             z-index: 100;
         }
 
-        /* 控制面板 */
+        /* === 控制面板 === */
         .controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            width: 220px;
-            font-family: sans-serif;
-            font-size: 12px;
-            z-index: 9999;
+            position: fixed; bottom: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 15px; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            width: 260px; font-family: sans-serif; font-size: 12px; z-index: 9999;
         }
-        .control-group { margin-bottom: 12px; }
-        .control-group label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="range"] { width: 100%; }
+        .control-group { margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+        .control-group label { font-weight: bold; min-width: 60px; }
+        input[type="range"] { flex: 1; }
+        
         button {
-            width: 100%; padding: 8px; 
-            background: #b71c1c; color: white; 
-            border: none; border-radius: 4px; cursor: pointer;
-            font-weight: bold; margin-top: 5px;
+            width: 100%; padding: 8px; margin-top: 5px;
+            background: #b71c1c; color: white; border: none; border-radius: 4px; 
+            cursor: pointer; font-weight: bold;
         }
         button:hover { background: #8e1616; }
-        button.secondary { background: #555; margin-top: 10px; }
         
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
-        .file-input-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .btn-upload {
-            background: #2196F3;
-            color: white;
-            padding: 8px;
-            text-align: center;
-            border-radius: 4px;
-            display: block;
-            font-weight: bold;
-        }
+        .btn-mini { width: auto; padding: 2px 8px; font-size: 12px; background: #2196F3; margin: 0; }
+        .file-btn { position: relative; overflow: hidden; background: #FF9800; color: white; padding: 8px; text-align: center; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .file-btn input { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+
+        [contenteditable]:hover { background-color: rgba(255, 255, 0, 0.1); cursor: text; }
+        [contenteditable]:focus { background-color: rgba(230, 247, 255, 0.5); outline: none; }
 
     </style>
 </head>
 <body>
 
     <div class="a4-page">
-        
         <div class="header">
-            <img src="../../images/中信logo.png" id="bankLogo" alt="中信银行">
+            <img src="中信logo.jpg" id="bankLogo" alt="中信银行">
         </div>
 
         <div class="doc-title" contenteditable="true">
             个人贷款结清证明
         </div>
 
-        <div class="doc-body">
-            <p>
-                借款人：<span contenteditable="true" style="font-weight: bold;">丁康杰</span>
-                （证件类型及号码：<span contenteditable="true">居民身份证 340102198704060515</span>）
-            </p>
-            <p>
-                贷款协议编号为：<span contenteditable="true" style="font-weight: bold;">9007561637562160054</span> 
-                的（<span contenteditable="true">个人商用房抵押贷款-经营</span>）贷款，
-            </p>
-            <p>
-                抵押物地址：<span contenteditable="true">合肥市庐阳区荣事达大道55号605室</span>，
-                贷款期限自 <span contenteditable="true">2025年03月31日</span> 
-                至 <span contenteditable="true">2055年03月31日</span>，
-                已于 <span contenteditable="true">2026年01月05日</span> 结清贷款本息。
-            </p>
-            <p>
-                特此证明。
-            </p>
+        <div class="doc-body std-text">
+            借款人：<span class="fill-item" contenteditable="true">丁康杰</span>
+            （证件类型及号码：<span class="fill-item" contenteditable="true" style="min-width: 260px;">居民身份证号340102198704060515</span>）
+            贷款协议编号为：<span class="fill-item" contenteditable="true" style="min-width: 200px;">9007561637562160054</span> 
+            的（<span class="fill-item" contenteditable="true">个人商用房抵押贷款-经营</span>）贷款，
+            抵押物地址：<span class="fill-item" contenteditable="true" style="min-width: 320px;">合肥市庐阳区荣事达大道55号605室</span>，
+            贷款期限自 <span class="fill-item" contenteditable="true">2025 年 03 月 31 日</span> 
+            至 <span class="fill-item" contenteditable="true">2055 年 03 月 31 日</span>，
+            已于 <span class="fill-item" contenteditable="true">2026 年 01 月 05 日</span> 结清贷款本息。
+            <br>
+            特此证明。
         </div>
 
-        <div class="verify-section">
-            验证码：<span contenteditable="true" style="font-family: Arial, sans-serif;">40D028X7629F3</span>
+        <div class="verify-section std-text">
+            验证码：<span class="fill-item" contenteditable="true" id="verifyCode" style="min-width: 150px; border:none; text-align:left; font-family:Arial;">40D028X7629F3</span>
         </div>
 
-        <div class="disclaimer" contenteditable="true">
+        <div class="disclaimer std-text" contenteditable="true">
             声明：请前往中信银行官方网站录入相关信息后进行真伪核验，为保证您的权益及证明的公正性，请不要私自核验。
         </div>
 
-        <div class="footer">
-            <div contenteditable="true">中信银行股份有限公司</div>
-            <div contenteditable="true" style="margin-top: 10px;">个贷证明材料</div>
-            <div style="margin-top: 30px; font-weight: normal; font-family: var(--font-fangsong); font-size: 14pt;">
-                日期：<span contenteditable="true">2026年01月08日</span>
-            </div>
+        <div class="footer-date std-text">
+            日期：<span class="fill-item" contenteditable="true" style="border:none;">2026 年 01 月 08 日</span>
         </div>
 
-        <div class="stamp-container" id="stampContainer">
+        <div class="stamp-container">
             <img src="" class="stamp-img" id="dragStamp" style="display: none;">
         </div>
-
     </div>
 
     <div class="controls">
         <div class="control-group">
-            <label>Logo 大小 (px)</label>
+            <label>Logo大小</label>
             <input type="range" min="50" max="300" value="120" id="logoSizeRange">
-            <div style="text-align:right; color:#666;" id="logoSizeVal">120px</div>
         </div>
 
-        <div class="control-group">
-            <label>印章操作</label>
-            <div class="file-input-wrapper">
-                <div class="btn-upload">📂 上传印章图片</div>
+        <div class="control-group" style="border-top:1px dashed #ccc; padding-top:10px; margin-top:5px;">
+            <label>验证码</label>
+            <button class="btn-mini" onclick="generateCode()">🎲 随机生成</button>
+        </div>
+
+        <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+            <div class="file-btn">
+                📂 上传印章图片
                 <input type="file" id="stampUpload" accept="image/*">
+            </div>
+            
+            <div id="stampControls" style="display:none;">
+                <div class="control-group">
+                    <label>大小</label>
+                    <input type="range" min="50" max="300" value="150" id="stampSize">
+                </div>
+                <div class="control-group">
+                    <label>左右</label>
+                    <input type="range" min="0" max="800" value="400" id="stampX">
+                </div>
+                <div class="control-group">
+                    <label>上下</label>
+                    <input type="range" min="0" max="1000" value="600" id="stampY">
+                </div>
             </div>
         </div>
 
-        <div class="control-group" id="stampControls" style="display:none;">
-            <label>印章大小 (px)</label>
-            <input type="range" min="50" max="300" value="150" id="stampSizeRange">
-        </div>
-
-        <button onclick="window.print()">🖨️ 打印 / 存为PDF</button>
-        <button class="secondary" onclick="toggleEditHighlight()">👁️ 隐藏编辑框高亮</button>
+        <button onclick="window.print()" style="margin-top:15px;">🖨️ 打印 / 存为PDF</button>
     </div>
 
     <script>
-        // --- 1. Logo 调整 ---
+        // Logo 调整
         const logoImg = document.getElementById('bankLogo');
-        const logoRange = document.getElementById('logoSizeRange');
-        const logoVal = document.getElementById('logoSizeVal');
-
-        logoRange.addEventListener('input', (e) => {
-            const size = e.target.value;
-            logoImg.style.width = size + 'px';
-            logoVal.innerText = size + 'px';
+        document.getElementById('logoSizeRange').addEventListener('input', (e) => {
+            logoImg.style.width = e.target.value + 'px';
         });
 
-        // --- 2. 印章上传与显示 ---
-        const stampUpload = document.getElementById('stampUpload');
-        const dragStamp = document.getElementById('dragStamp');
-        const stampControls = document.getElementById('stampControls');
-        const stampSizeRange = document.getElementById('stampSizeRange');
+        // 验证码生成 (13位 = 10数字 + 3大写字母)
+        function generateCode() {
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const digits = "0123456789";
+            let resultArr = [];
 
-        stampUpload.addEventListener('change', (e) => {
+            // 取3个字母
+            for(let i=0; i<3; i++) {
+                resultArr.push(letters.charAt(Math.floor(Math.random() * letters.length)));
+            }
+            // 取10个数字
+            for(let i=0; i<10; i++) {
+                resultArr.push(digits.charAt(Math.floor(Math.random() * digits.length)));
+            }
+
+            // 洗牌算法
+            for (let i = resultArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [resultArr[i], resultArr[j]] = [resultArr[j], resultArr[i]];
+            }
+
+            document.getElementById('verifyCode').innerText = resultArr.join('');
+        }
+
+        // 印章逻辑
+        const stampImg = document.getElementById('dragStamp');
+        const stampControls = document.getElementById('stampControls');
+        const rangeSize = document.getElementById('stampSize');
+        const rangeX = document.getElementById('stampX');
+        const rangeY = document.getElementById('stampY');
+
+        document.getElementById('stampUpload').addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
+            if(file) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    dragStamp.src = event.target.result;
-                    dragStamp.style.display = 'block';
+                reader.onload = (evt) => {
+                    stampImg.src = evt.target.result;
+                    stampImg.style.display = 'block';
                     stampControls.style.display = 'block';
-                }
+                    updateStampPos();
+                };
                 reader.readAsDataURL(file);
             }
         });
 
-        stampSizeRange.addEventListener('input', (e) => {
-            dragStamp.style.width = e.target.value + 'px';
+        function updateStampPos() {
+            stampImg.style.width = rangeSize.value + 'px';
+            stampImg.style.left = rangeX.value + 'px';
+            stampImg.style.top = rangeY.value + 'px';
+        }
+        
+        [rangeSize, rangeX, rangeY].forEach(el => {
+            el.addEventListener('input', updateStampPos);
         });
 
-        // --- 3. 印章拖拽逻辑 ---
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-
-        dragStamp.addEventListener('mousedown', (e) => {
-            e.preventDefault(); // 防止图片被原生拖动
-            isDragging = true;
+        // 鼠标拖拽
+        let isDrag = false, startX, startY, initLeft, initTop;
+        
+        stampImg.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isDrag = true;
             startX = e.clientX;
             startY = e.clientY;
-            initialLeft = dragStamp.offsetLeft;
-            initialTop = dragStamp.offsetTop;
-            dragStamp.style.cursor = 'grabbing';
+            initLeft = stampImg.offsetLeft;
+            initTop = stampImg.offsetTop;
+            stampImg.style.cursor = 'grabbing';
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                dragStamp.style.left = (initialLeft + dx) + 'px';
-                dragStamp.style.top = (initialTop + dy) + 'px';
-            }
+            if(!isDrag) return;
+            let dx = e.clientX - startX;
+            let dy = e.clientY - startY;
+            let newLeft = initLeft + dx;
+            let newTop = initTop + dy;
+            
+            stampImg.style.left = newLeft + 'px';
+            stampImg.style.top = newTop + 'px';
+            rangeX.value = newLeft;
+            rangeY.value = newTop;
         });
 
         document.addEventListener('mouseup', () => {
-            isDragging = false;
-            dragStamp.style.cursor = 'move';
+            isDrag = false;
+            stampImg.style.cursor = 'move';
         });
-
-        // --- 4. 辅助功能 ---
-        function toggleEditHighlight() {
-            // 只是为了预览时好看，把focus样式去掉
-            document.body.focus(); 
-            alert("已通过 CSS 控制，鼠标移开即无高亮。打印时也不会有高亮。");
-        }
     </script>
 </body>
 </html>
