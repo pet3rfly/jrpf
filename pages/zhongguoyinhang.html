@@ -10,6 +10,7 @@
             --font-yahei: "Microsoft YaHei", "Segoe UI", sans-serif;
             --border-color: #000;
             --text-color: #000;
+            --theme-color: #b71c1c; /* 中行红 */
         }
 
         @page { size: A4; margin: 0; }
@@ -78,16 +79,16 @@
         /* 表格通用样式 */
         table {
             width: 100%; border-collapse: collapse; margin-bottom: 25px;
-            table-layout: fixed; /* 关键：固定布局 */
+            table-layout: fixed; 
         }
 
         th, td {
             border: 1px solid var(--border-color);
-            padding: 4px 2px; /* 减小左右内边距，防止撑开 */
+            padding: 4px 2px;
             text-align: center; vertical-align: middle;
-            font-size: 10px; /* 正文10px */
+            font-size: 10px;
             font-family: var(--font-song);
-            word-wrap: break-word; /* 防止长数字撑破 */
+            word-wrap: break-word;
         }
 
         tr { height: 36px; }
@@ -124,41 +125,71 @@
         /* 控制面板 */
         .control-panel {
             position: fixed; bottom: 20px; right: 20px; background: #fff;
-            border: 1px solid #ccc; padding: 15px; z-index: 10000;
-            width: 280px; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: 1px solid #ccc; padding: 0; z-index: 10000;
+            width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.15);
             border-radius: 8px; font-size: 12px; font-family: var(--font-yahei);
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            max-height: 80vh; overflow-y: auto;
         }
+        
         .control-panel.collapsed {
-            width: 40px; height: 40px; padding: 0; border-radius: 50%;
-            background: #b71c1c; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--theme-color); cursor: pointer;
+            border: none; display: flex; align-items: center; justify-content: center;
         }
-        .control-panel.collapsed .panel-content { display: none; }
-        .toggle-icon { display: none; color: white; font-size: 20px; }
+        .control-panel.collapsed .panel-content { opacity: 0; pointer-events: none; }
+        .toggle-icon { display: none; color: white; font-size: 24px; }
         .control-panel.collapsed .toggle-icon { display: block; }
+
+        .panel-content { padding: 15px; opacity: 1; transition: opacity 0.3s; }
+
         .panel-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px;
+            border-bottom: 2px solid var(--theme-color); 
+            margin-bottom: 15px; padding-bottom: 8px;
         }
+        .panel-header h4 { margin: 0; color: var(--theme-color); font-size: 14px; }
+
         .minimize-btn { 
-            cursor: pointer; font-size: 16px; width: 16px; height: 16px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; color: #666;
+            cursor: pointer; font-size: 20px; color: #999; 
+            width: 24px; height: 24px; line-height: 20px; text-align: center;
         }
-        .minimize-btn:hover { background-color: #f0f0f0; }
-        .control-row { margin-bottom: 10px; }
-        .control-row label { display: block; margin-bottom: 3px; font-weight: bold; color: #555; }
-        .control-row input, .control-row select { width: 95%; padding: 5px; border: 1px solid #ddd; }
-        .slider-container { display: flex; align-items: center; justify-content: space-between; }
-        .slider-container input { width: 70%; }
-        .btn-action { width: 100%; padding: 6px; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer; margin-top: 5px; }
+        .minimize-btn:hover { color: #333; background: #eee; border-radius: 4px; }
+
+        .section-title {
+            font-weight: bold; color: #666; margin: 15px 0 5px 0; font-size: 12px;
+            border-left: 3px solid var(--theme-color); padding-left: 6px;
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .control-row label { color: #555; font-weight: bold; width: 70px; }
+        .control-row input, .control-row select { flex: 1; padding: 4px; border: 1px solid #ddd; border-radius: 4px; margin-left: 5px;}
+        .slider-container { flex: 1; display: flex; align-items: center; gap: 5px; margin-left: 5px; }
+        .slider-container input { flex: 1; }
+
+        .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; }
+        .btn-full:hover { background: #e0e0e0; }
+        .btn-primary { background: var(--theme-color); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        
+        .cloud-status { font-size: 10px; color: #999; text-align: right; margin-top: 2px; }
+        .cloud-status.success { color: green; }
+        .cloud-status.error { color: red; }
+        .cloud-row { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-cloud { flex: 1; font-size: 12px; padding: 5px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
+        .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
+
         .print-btn-float {
             position: fixed; top: 20px; right: 20px; padding: 10px 20px;
-            background: #b71c1c; color: #fff; border: none; border-radius: 4px;
+            background: var(--theme-color); color: #fff; border: none; border-radius: 4px;
             cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             font-size: 14px; font-family: var(--font-yahei); z-index: 10001;
         }
         .print-btn-float:hover { background: #d32f2f; }
+
     </style>
 </head>
 <body>
@@ -287,27 +318,26 @@
         </div>
     </div>
 
-    <div class="control-panel" id="controlPanel">
-        <div class="toggle-icon" onclick="toggleControlPanel()">⚙</div>
+    <div class="control-panel" id="controlPanel" onclick="handlePanelClick(event)">
+        <div class="toggle-icon">⚙</div>
+        
         <div class="panel-content">
             <div class="panel-header">
-                <h4>内容设置</h4>
-                <span class="minimize-btn" onclick="toggleControlPanel()" title="收起">_</span>
+                <h4>设置与档案</h4>
+                <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
             </div>
-            <div class="control-row">
-                <label>工作流水 (年份+9位)</label>
-                <button class="btn-action" onclick="refreshSerial()">刷新流水号</button>
-            </div>
+
+            <div class="section-title">内容设置</div>
             <div class="control-row">
                 <label>借款人</label>
                 <input type="text" id="inpBorrower" value="严仁玲" oninput="updateContent()">
             </div>
             <div class="control-row">
-                <label>贷款金额 (元)</label>
+                <label>金额</label>
                 <input type="number" id="inpAmount" value="4800000" oninput="updateContent()">
             </div>
             <div class="control-row">
-                <label>贷款期限 (月)</label>
+                <label>期限(月)</label>
                 <select id="selTerm" onchange="updateContent()">
                     <option value="12">12</option>
                     <option value="24">24</option>
@@ -318,37 +348,109 @@
                 </select>
             </div>
             <div class="control-row">
-                <label>经办 (刷新生成)</label>
-                <button class="btn-action" onclick="refreshHandler()">刷新经办人</button>
-                <input type="text" id="inpHandler" value="9235394" readonly style="background:#eee; margin-top:5px;">
+                <label>流水号</label>
+                <button class="btn-full" style="width:auto; flex:1; margin:0;" onclick="refreshSerial()">🎲 刷新</button>
             </div>
             <div class="control-row">
-                <label>水印密度 (左密 - 右疏)</label>
+                <label>经办人</label>
+                <button class="btn-full" style="width:auto; flex:1; margin:0;" onclick="refreshHandler()">🎲 刷新</button>
+            </div>
+            <input type="hidden" id="inpSerialHidden">
+            <input type="hidden" id="inpHandlerHidden">
+
+            <div class="section-title">水印设置</div>
+            <div class="control-row">
+                <label>密度</label>
                 <div class="slider-container">
                     <input type="range" id="inpDensity" min="0.5" max="3.0" step="0.1" value="0.7" oninput="updateContent()">
                     <span id="txtDensity">0.7</span>
                 </div>
             </div>
             <div class="control-row">
-                <label>水印字号 (px)</label>
+                <label>字号</label>
                 <div class="slider-container">
                     <input type="range" id="inpFontSize" min="12" max="36" step="1" value="13" oninput="updateContent()">
                     <span id="txtFontSize">13</span>
                 </div>
             </div>
+
+            <div class="section-title">本地档案库</div>
+            <div class="control-row">
+                <input type="text" id="dbSaveName" placeholder="档案名 (自动生成)" style="margin-left:0;">
+                <button class="btn-primary" onclick="saveToDB()" style="margin-left:5px;">保存</button>
+            </div>
+            <div class="control-row">
+                <select id="dbList" onchange="loadFromDB()" style="margin-left:0;">
+                    <option value="">-- 历史记录 --</option>
+                </select>
+                <button class="btn-danger" onclick="deleteFromDB()" style="margin-left:5px;">删</button>
+            </div>
+
+            <div class="section-title">GitHub 云同步</div>
+            <div class="control-row">
+                <input type="password" id="ghToken" placeholder="粘贴 Token" onchange="saveToken()" style="margin-left:0;">
+            </div>
+            <div class="cloud-status" id="cloudStatus">未配置</div>
+            <div class="cloud-row">
+                <button class="btn-cloud btn-upload" onclick="syncToCloud('upload')">⬆ 上传到云</button>
+                <button class="btn-cloud btn-download" onclick="syncToCloud('download')">⬇ 从云下载</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // === 配置与存档键名 ===
+        const fieldIds = [
+            "inpBorrower", "inpAmount", "selTerm", "inpDensity", "inpFontSize", 
+            "inpSerialHidden", "inpHandlerHidden" // 存档隐藏域
+        ];
+        const DB_KEY = "BOC_BANK_DB";
+        const GIST_FILENAME = "boc_bank_db.json";
+        const GIST_DESC = "BOC System Database Backup";
+        const AUTO_SAVE_KEY = "BOC_LAST_SESSION";
+
         window.onload = function() {
+            // 1. 初始化日期
             const now = new Date();
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
             document.getElementById('txtFooterDate').innerText = `${yyyy}/${mm}/${dd}`;
+
+            // 2. 初始化默认值 (如果还没有隐藏值)
+            if(!document.getElementById('inpSerialHidden').value) refreshSerial();
+            if(!document.getElementById('inpHandlerHidden').value) refreshHandler();
+
+            // 3. 尝试加载自动保存 (会覆盖上面的默认值)
+            loadLastState();
+
+            // 4. 刷新视图
             updateContent();
+
+            // 5. 初始化数据库和Token
+            refreshList();
+            const savedToken = localStorage.getItem('GH_TOKEN');
+            if(savedToken) {
+                document.getElementById('ghToken').value = savedToken;
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
         };
 
+        // 全局自动保存监听
+        document.addEventListener('input', () => { saveCurrentState(); });
+        document.addEventListener('change', () => { saveCurrentState(); });
+
+        // --- UI 逻辑 ---
+        function handlePanelClick(e) {
+            const panel = document.getElementById('controlPanel');
+            if (panel.classList.contains('collapsed')) {
+                panel.classList.remove('collapsed');
+            }
+        }
+        function minimizePanel(e) {
+            e.stopPropagation(); 
+            document.getElementById('controlPanel').classList.add('collapsed');
+        }
         function toggleControlPanel() {
             document.getElementById('controlPanel').classList.toggle('collapsed');
         }
@@ -358,30 +460,42 @@
             let random9 = "";
             for(let i=0; i<9; i++) { random9 += Math.floor(Math.random() * 10); }
             const serial = year + random9;
-            document.getElementById('txtSerialHeader').innerText = serial;
-            document.getElementById('txtSerialTable').innerText = serial;
+            // 存入隐藏域以便保存
+            document.getElementById('inpSerialHidden').value = serial;
+            updateContent();
+            saveCurrentState(); // 手动触发保存
         }
 
         function refreshHandler() {
             let random6 = "";
             for(let i=0; i<6; i++) { random6 += Math.floor(Math.random() * 10); }
             const handler = "9" + random6;
-            document.getElementById('inpHandler').value = handler;
+            // 存入隐藏域
+            document.getElementById('inpHandlerHidden').value = handler;
             updateContent();
+            saveCurrentState();
         }
 
         function updateContent() {
             const borrower = document.getElementById('inpBorrower').value;
             const amount = document.getElementById('inpAmount').value;
             const term = document.getElementById('selTerm').value;
-            const handler = document.getElementById('inpHandler').value;
             const density = parseFloat(document.getElementById('inpDensity').value);
             const fontSize = parseInt(document.getElementById('inpFontSize').value);
             
+            // 从隐藏域读取随机生成的号码
+            const serial = document.getElementById('inpSerialHidden').value || "2018632086193";
+            const handler = document.getElementById('inpHandlerHidden').value || "9235394";
+
             document.getElementById('txtDensity').innerText = density;
             document.getElementById('txtFontSize').innerText = fontSize;
             document.getElementById('txtBorrowerTable').innerText = borrower;
+            
+            // 更新流水号
+            document.getElementById('txtSerialHeader').innerText = serial;
+            document.getElementById('txtSerialTable').innerText = serial;
 
+            // 格式化金额
             const moneyFloat = parseFloat(amount);
             if (!isNaN(moneyFloat)) {
                 const formatted = moneyFloat.toLocaleString('en-US', {
@@ -394,6 +508,8 @@
 
             document.getElementById('txtTermTable').innerText = term;
             document.getElementById('txtHandlerTable').innerText = handler;
+            
+            // 更新水印
             updateWatermark(handler, density, fontSize);
         }
 
@@ -410,7 +526,7 @@
             const baseWidthPercent = 33.3;
             let itemWidthPercent = baseWidthPercent * density;
             if (itemWidthPercent > 100) itemWidthPercent = 100;
-            const total = 30; 
+            const total = 50; // 增加数量防止空白
 
             for(let i=0; i<total; i++) {
                 const div = document.createElement('div');
@@ -420,6 +536,137 @@
                 div.style.fontSize = fontSize + 'px';
                 div.style.height = '150px'; 
                 container.appendChild(div);
+            }
+        }
+
+        // --- 存档 & 云同步核心逻辑 ---
+        
+        function saveCurrentState() {
+            const data = {};
+            fieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) data[id] = el.value;
+            });
+            localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(data));
+        }
+
+        function loadLastState() {
+            const saved = localStorage.getItem(AUTO_SAVE_KEY);
+            if(saved) {
+                const data = JSON.parse(saved);
+                fieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el && data[id] !== undefined) el.value = data[id];
+                });
+            }
+        }
+
+        function saveToDB() {
+            const custName = document.getElementById('inpBorrower').value.trim() || "未命名";
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}`;
+            
+            let saveName = document.getElementById('dbSaveName').value.trim();
+            if(!saveName) saveName = `${custName}_${timeStr}`;
+
+            const data = {};
+            fieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) data[id] = el.value;
+            });
+
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            allData[saveName] = data;
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+
+            alert(`✅ 已保存: ${saveName}`);
+            refreshList();
+            document.getElementById('dbSaveName').value = "";
+        }
+
+        function loadFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            const data = allData[name];
+            if(data) {
+                fieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el && data[id] !== undefined) el.value = data[id];
+                });
+                updateContent();
+            }
+        }
+
+        function deleteFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            if(!confirm(`删除 [${name}] ?`)) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            delete allData[name];
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            refreshList();
+        }
+
+        function refreshList() {
+            const select = document.getElementById('dbList');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- 历史记录 --</option>';
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            Object.keys(allData).reverse().forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = key;
+                select.appendChild(opt);
+            });
+            if(allData[currentVal]) select.value = currentVal;
+        }
+
+        function saveToken() {
+            const token = document.getElementById('ghToken').value.trim();
+            if(token) {
+                localStorage.setItem('GH_TOKEN', token);
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
+        }
+
+        async function syncToCloud(action) {
+            const token = localStorage.getItem('GH_TOKEN');
+            if(!token) { alert("请先输入 GitHub Token！"); return; }
+            const statusDiv = document.getElementById('cloudStatus');
+            statusDiv.innerText = "连接中...";
+            statusDiv.className = "cloud-status";
+
+            try {
+                const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `token ${token}` } });
+                if(!userRes.ok) throw new Error("Token 无效");
+
+                const gistsRes = await fetch('https://api.github.com/gists', { headers: { Authorization: `token ${token}` } });
+                const gists = await gistsRes.json();
+                let targetGist = gists.find(g => g.description === GIST_DESC && g.files[GIST_FILENAME]);
+                let gistId = targetGist ? targetGist.id : null;
+
+                if (action === 'upload') {
+                    const content = localStorage.getItem(DB_KEY) || "{}";
+                    const payload = { description: GIST_DESC, public: false, files: { [GIST_FILENAME]: { content: content } } };
+                    let url = 'https://api.github.com/gists';
+                    let method = 'POST';
+                    if (gistId) { url += `/${gistId}`; method = 'PATCH'; }
+                    
+                    await fetch(url, { method: method, headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    statusDiv.innerText = "✅ 上传成功"; statusDiv.classList.add("success"); alert("同步完成");
+
+                } else if (action === 'download') {
+                    if (!gistId) { alert("云端无文件"); return; }
+                    const detailRes = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { Authorization: `token ${token}` } });
+                    const detail = await detailRes.json();
+                    localStorage.setItem(DB_KEY, detail.files[GIST_FILENAME].content);
+                    refreshList();
+                    loadFromDB(); // 自动加载最新
+                    statusDiv.innerText = "✅ 下载成功"; statusDiv.classList.add("success"); alert("已恢复");
+                }
+            } catch (error) {
+                statusDiv.innerText = "❌ " + error.message; statusDiv.classList.add("error");
             }
         }
     </script>
