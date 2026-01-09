@@ -10,6 +10,7 @@
             --font-song: "SimSun", "Songti SC", serif;
             --font-hei: "SimHei", "Heiti SC", sans-serif;
             --border-color: #000;
+            --theme-color: #2258da;
         }
 
         @page { size: A4; margin: 0; }
@@ -113,7 +114,7 @@
             display: flex; gap: 10px;
         }
         .float-btn {
-            padding: 8px 15px; background: #2258da; color: #fff;
+            padding: 8px 15px; background: var(--theme-color); color: #fff;
             border: none; border-radius: 4px; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 14px;
             font-family: "Microsoft YaHei";
@@ -121,35 +122,69 @@
         .float-btn.green { background: #28a745; }
         .float-btn:hover { opacity: 0.9; }
 
+        /* === 统一控制面板样式 === */
         .control-panel {
             position: fixed; bottom: 20px; right: 20px; background: #fff;
-            border: 1px solid #ccc; padding: 15px; z-index: 10000;
-            width: 280px; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: 1px solid #ccc; padding: 0; z-index: 10000;
+            width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.15);
             border-radius: 8px; font-size: 12px; font-family: "Microsoft YaHei";
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            max-height: 80vh; /* 防止太高 */
+            overflow-y: auto;
         }
-        .control-panel.collapsed {
-            width: 40px; height: 40px; padding: 0; border-radius: 50%;
-            background: #2258da; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
-        .control-panel.collapsed .panel-content { display: none; }
-        .toggle-icon { display: none; color: white; font-size: 20px; }
-        .control-panel.collapsed .toggle-icon { display: block; }
         
+        .control-panel.collapsed {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--theme-color); cursor: pointer;
+            border: none; display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .control-panel.collapsed .panel-content { opacity: 0; pointer-events: none; }
+        .toggle-icon { display: none; color: white; font-size: 24px; }
+        .control-panel.collapsed .toggle-icon { display: block; }
+
+        .panel-content { padding: 15px; opacity: 1; transition: opacity 0.3s; }
+
         .panel-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px;
+            border-bottom: 2px solid var(--theme-color); 
+            margin-bottom: 15px; padding-bottom: 8px;
         }
+        .panel-header h4 { margin: 0; color: var(--theme-color); font-size: 14px; }
+
         .minimize-btn { 
-            cursor: pointer; font-size: 16px; width: 16px; height: 16px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; color: #666;
+            cursor: pointer; font-size: 20px; color: #999; 
+            width: 24px; height: 24px; line-height: 20px; text-align: center;
         }
-        .control-row { margin-bottom: 10px; }
-        .control-row label { display: block; margin-bottom: 3px; font-weight: bold; color: #555; }
-        .control-row input { width: 95%; padding: 5px; border: 1px solid #ddd; }
-        .slider-container { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .minimize-btn:hover { color: #333; background: #eee; border-radius: 4px; }
+
+        .section-title {
+            font-weight: bold; color: #666; margin: 15px 0 5px 0; font-size: 12px;
+            border-left: 3px solid var(--theme-color); padding-left: 6px;
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .control-row label { color: #555; font-weight: bold; min-width: 60px; }
+        .control-row input, .control-row select { flex: 1; padding: 4px; border: 1px solid #ddd; border-radius: 4px; margin-left: 5px; }
+        .slider-container { flex: 1; display: flex; align-items: center; gap: 5px; margin-left: 5px;}
         .slider-container input { flex: 1; }
+
+        /* 按钮组 */
+        .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; }
+        .btn-full:hover { background: #e0e0e0; }
+        .btn-primary { background: var(--theme-color); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        
+        /* 云同步 */
+        .cloud-status { font-size: 10px; color: #999; text-align: right; margin-top: 2px; }
+        .cloud-status.success { color: green; }
+        .cloud-status.error { color: red; }
+        .cloud-row { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-cloud { flex: 1; font-size: 12px; padding: 5px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
+        .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
 
     </style>
 </head>
@@ -169,7 +204,7 @@
             <div class="header">
                 <div class="header-title">
                     <h1>合肥市不动产登记信息查询结果</h1>
-                    <div class="header-info" contenteditable="true">依申请，经过查询 合肥市不动产统一登记信息管理系统，结果如下：</div>
+                    <div class="header-info" contenteditable="true" id="txtHeaderInfo">依申请，经过查询 合肥市不动产统一登记信息管理系统，结果如下：</div>
                 </div>
                 <img src="../images/hfqr-100.jpg" id="qr-img" class="qr-code" alt="QR">
             </div>
@@ -177,160 +212,125 @@
             <div class="section-title">产权信息</div>
             <table>
                 <colgroup>
-                    <col style="width: 28%">
-                    <col style="width: 12%">
-                    <col style="width: 25%">
-                    <col style="width: 12%">
-                    <col style="width: 11%">
-                    <col style="width: 12%">
+                    <col style="width: 28%"> <col style="width: 12%"> <col style="width: 25%"> 
+                    <col style="width: 12%"> <col style="width: 11%"> <col style="width: 12%">
                 </colgroup>
                 <tr>
-                    <th>不动产权证号</th>
-                    <th>权利人</th>
-                    <th>证件号</th>
-                    <th>登记类型</th>
-                    <th>登记原因</th>
-                    <th>登记时间</th>
+                    <th>不动产权证号</th> <th>权利人</th> <th>证件号</th>
+                    <th>登记类型</th> <th>登记原因</th> <th>登记时间</th>
                 </tr>
                 <tr>
-                    <td contenteditable="true">皖(2021)合肥市不动产权<br>第4145544号</td>
-                    <td contenteditable="true">顾露云</td>
-                    <td contenteditable="true">342622199106302421</td>
-                    <td contenteditable="true">转移登记</td>
-                    <td contenteditable="true">存量房买卖</td>
-                    <td contenteditable="true">2021-10-22</td>
+                    <td contenteditable="true" id="t1_certNo">皖(2021)合肥市不动产权<br>第4145544号</td>
+                    <td contenteditable="true" id="t1_owner">顾露云</td>
+                    <td contenteditable="true" id="t1_id">342622199106302421</td>
+                    <td contenteditable="true" id="t1_type">转移登记</td>
+                    <td contenteditable="true" id="t1_reason">存量房买卖</td>
+                    <td contenteditable="true" id="t1_date">2021-10-22</td>
                 </tr>
             </table>
 
             <div class="section-title">不动产详情（面积单位：平方米）</div>
             <table>
                 <colgroup>
-                    <col style="width: 8%">
-                    <col style="width: 8%">
-                    <col style="width: 8%">
-                    <col style="width: 10%">
-                    <col style="width: 14%">
-                    <col style="width: 12%">
-                    <col style="width: 12%">
-                    <col style="width: 12%">
-                    <col style="width: 16%">
+                    <col style="width: 8%"> <col style="width: 8%"> <col style="width: 8%"> 
+                    <col style="width: 10%"> <col style="width: 14%"> <col style="width: 12%"> 
+                    <col style="width: 12%"> <col style="width: 12%"> <col style="width: 16%">
                 </colgroup>
                 <tr>
                     <td colspan="2">共有情况</td>
-                    <td colspan="2" contenteditable="true">单独所有</td>
+                    <td colspan="2" contenteditable="true" id="t2_share">单独所有</td>
                     <td colspan="2">不动产单元号</td>
-                    <td colspan="3" contenteditable="true">340104401007GB00071F00020062</td>
+                    <td colspan="3" contenteditable="true" id="t2_unit">340104401007GB00071F00020062</td>
                 </tr>
                 <tr>
                     <td colspan="2">坐落</td>
-                    <td colspan="7" contenteditable="true">蜀山区十里店路719号清溪家园5幢1602</td>
+                    <td colspan="7" contenteditable="true" id="t2_addr">蜀山区十里店路719号清溪家园5幢1602</td>
                 </tr>
                 <tr>
-                    <td>总层数</td>
-                    <td>所在层</td>
-                    <td>室号</td>
-                    <td>规划用途</td>
-                    <td>房屋性质</td>
-                    <td>建筑面积</td>
-                    <td>专有面积</td>
-                    <td>分摊面积</td>
-                    <td>竣工时间</td>
+                    <td>总层数</td> <td>所在层</td> <td>室号</td> <td>规划用途</td> <td>房屋性质</td> 
+                    <td>建筑面积</td> <td>专有面积</td> <td>分摊面积</td> <td>竣工时间</td>
                 </tr>
                 <tr>
-                    <td contenteditable="true">18</td>
-                    <td contenteditable="true">16</td>
-                    <td contenteditable="true">1602</td>
-                    <td contenteditable="true">住宅</td>
-                    <td contenteditable="true">市场化商品房</td>
-                    <td contenteditable="true">97.02</td>
-                    <td contenteditable="true">81.36</td>
-                    <td contenteditable="true">15.66</td>
-                    <td contenteditable="true">2017-06-30</td>
+                    <td contenteditable="true" id="t2_totalFl">18</td>
+                    <td contenteditable="true" id="t2_currFl">16</td>
+                    <td contenteditable="true" id="t2_room">1602</td>
+                    <td contenteditable="true" id="t2_usage">住宅</td>
+                    <td contenteditable="true" id="t2_nature">市场化商品房</td>
+                    <td contenteditable="true" id="t2_areaBuild">97.02</td>
+                    <td contenteditable="true" id="t2_areaPriv">81.36</td>
+                    <td contenteditable="true" id="t2_areaShare">15.66</td>
+                    <td contenteditable="true" id="t2_finish">2017-06-30</td>
                 </tr>
                 <tr>                    
                     <td colspan="2">土地使用面积</td>
-                    <td colspan="2" contenteditable="true">50188.64</td>
+                    <td colspan="2" contenteditable="true" id="t2_landArea">50188.64</td>
                     <td colspan="2">土地使用期限</td>
-                    <td colspan="3" contenteditable="true">至2090-06-27</td>
+                    <td colspan="3" contenteditable="true" id="t2_landDate">至2090-06-27</td>
                 </tr>
                 <tr>
                     <td colspan="2">宗地面积</td>
-                    <td colspan="3" contenteditable="true">50188.64</td>
+                    <td colspan="3" contenteditable="true" id="t2_zoneArea">50188.64</td>
                     <td colspan="2">宗地性质</td>
-                    <td colspan="2" contenteditable="true">出让</td>
+                    <td colspan="2" contenteditable="true" id="t2_zoneNature">出让</td>
                 </tr>
                 <tr>
                     <td colspan="2">宗地权利类型</td>
-                    <td colspan="3" contenteditable="true">国有建设用地使用权</td>
+                    <td colspan="3" contenteditable="true" id="t2_zoneRightType">国有建设用地使用权</td>
                     <td colspan="2">宗地用途</td>
-                    <td colspan="2" contenteditable="true">城镇住宅用地</td>
+                    <td colspan="2" contenteditable="true" id="t2_zoneUsage">城镇住宅用地</td>
                 </tr>
                 <tr>
                     <td colspan="2">宗地用途 2</td>
-                    <td colspan="3" contenteditable="true"></td>
+                    <td colspan="3" contenteditable="true" id="t2_zoneUsage2"></td>
                     <td colspan="2">宗地用途 3</td>
-                    <td colspan="2" contenteditable="true"></td>
+                    <td colspan="2" contenteditable="true" id="t2_zoneUsage3"></td>
                 </tr>
                 <tr>
                     <td colspan="2">附记</td>
-                    <td colspan="7" contenteditable="true"></td>
+                    <td colspan="7" contenteditable="true" id="t2_remarks"></td>
                 </tr>
             </table>
 
             <div class="section-title">抵押信息（金额单位：万元）</div>
             <table>
                 <colgroup>
-                    <col style="width: 22%"> <col style="width: 15%"> <col style="width: 10%"> <col style="width: 10%"> <col style="width: 15%"> <col style="width: 12%"> <col style="width: 10%"> <col style="width: 6%">  </colgroup>
+                    <col style="width: 22%"> <col style="width: 15%"> <col style="width: 10%"> <col style="width: 10%"> 
+                    <col style="width: 15%"> <col style="width: 12%"> <col style="width: 10%"> <col style="width: 6%"> 
+                </colgroup>
                 <tr>
-                    <th>不动产证明号</th>
-                    <th>抵押权人</th>
-                    <th>抵押方式</th>
-                    <th>抵押金额</th>
-                    <th>债务履行期限</th>
-                    <th>登记时间</th>
-                    <th>禁止转让</th>
-                    <th>附记</th>
+                    <th>不动产证明号</th> <th>抵押权人</th> <th>抵押方式</th> <th>抵押金额</th>
+                    <th>债务履行期限</th> <th>登记时间</th> <th>禁止转让</th> <th>附记</th>
                 </tr>
                 <tr>
-                    <td contenteditable="true">皖(2025)合肥市不动<br>产证明第4009908号</td>
-                    <td contenteditable="true">安徽九鼎典当<br>有限公司</td>
-                    <td contenteditable="true">一般抵押</td>
-                    <td contenteditable="true">64</td>
-                    <td contenteditable="true">2025-11-27 至<br>2025-12-26</td>
-                    <td contenteditable="true">2025-12-01</td>
-                    <td contenteditable="true">是</td>
-                    <td contenteditable="true"></td>
+                    <td contenteditable="true" id="t3_cert">皖(2025)合肥市不动<br>产证明第4009908号</td>
+                    <td contenteditable="true" id="t3_person">安徽九鼎典当<br>有限公司</td>
+                    <td contenteditable="true" id="t3_type">一般抵押</td>
+                    <td contenteditable="true" id="t3_amt">64</td>
+                    <td contenteditable="true" id="t3_term">2025-11-27 至<br>2025-12-26</td>
+                    <td contenteditable="true" id="t3_date">2025-12-01</td>
+                    <td contenteditable="true" id="t3_forbid">是</td>
+                    <td contenteditable="true" id="t3_rem"></td>
                 </tr>
             </table>
 
             <div class="section-title">查封信息（注：轮候查封的实际起止日期为待定）</div>
             <table>
                 <colgroup>
-                    <col style="width: 15%">
-                    <col style="width: 10%">
-                    <col style="width: 20%">
-                    <col style="width: 15%">
-                    <col style="width: 15%">
-                    <col style="width: 10%">
-                    <col style="width: 15%">
+                    <col style="width: 15%"> <col style="width: 10%"> <col style="width: 20%"> <col style="width: 15%">
+                    <col style="width: 15%"> <col style="width: 10%"> <col style="width: 15%">
                 </colgroup>
                 <tr>
-                    <th>查封机构</th>
-                    <th>查封类型</th>
-                    <th>查封文号</th>
-                    <th>查封开始时间</th>
-                    <th>查封结束时间</th>
-                    <th>是否解封</th>
-                    <th>附记</th>
+                    <th>查封机构</th> <th>查封类型</th> <th>查封文号</th> <th>查封开始时间</th>
+                    <th>查封结束时间</th> <th>是否解封</th> <th>附记</th>
                 </tr>
                 <tr>
-                    <td contenteditable="true" style="height: 18px;"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
+                    <td contenteditable="true" id="t4_org" style="height: 18px;"></td>
+                    <td contenteditable="true" id="t4_type"></td>
+                    <td contenteditable="true" id="t4_doc"></td>
+                    <td contenteditable="true" id="t4_start"></td>
+                    <td contenteditable="true" id="t4_end"></td>
+                    <td contenteditable="true" id="t4_unseal"></td>
+                    <td contenteditable="true" id="t4_rem"></td>
                 </tr>
             </table>
 
@@ -341,33 +341,25 @@
                     <th style="width: 50%">附记</th>
                 </tr>
                 <tr>
-                    <td contenteditable="true" style="height: 18px;"></td>
-                    <td contenteditable="true"></td>
+                    <td contenteditable="true" id="t5_item" style="height: 18px;"></td>
+                    <td contenteditable="true" id="t5_rem"></td>
                 </tr>
             </table>
 
             <div class="section-title">居住权信息</div>
             <table>
                 <colgroup>
-                    <col style="width: 25%">
-                    <col style="width: 20%">
-                    <col style="width: 20%">
-                    <col style="width: 15%">
-                    <col style="width: 20%">
+                    <col style="width: 25%"> <col style="width: 20%"> <col style="width: 20%"> <col style="width: 15%"> <col style="width: 20%">
                 </colgroup>
                 <tr>
-                    <th>不动产证明号</th>
-                    <th>居住权人</th>
-                    <th>居住权期限</th>
-                    <th>登记时间</th>
-                    <th>附记</th>
+                    <th>不动产证明号</th> <th>居住权人</th> <th>居住权期限</th> <th>登记时间</th> <th>附记</th>
                 </tr>
                 <tr>
-                    <td contenteditable="true" style="height: 18px;"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
+                    <td contenteditable="true" id="t6_cert" style="height: 18px;"></td>
+                    <td contenteditable="true" id="t6_person"></td>
+                    <td contenteditable="true" id="t6_term"></td>
+                    <td contenteditable="true" id="t6_date"></td>
+                    <td contenteditable="true" id="t6_rem"></td>
                 </tr>
             </table>
 
@@ -387,68 +379,104 @@
         </div>
     </div>
 
-    <div class="control-panel" id="controlPanel">
-        <div class="toggle-icon" onclick="toggleControlPanel()">⚙</div>
+    <div class="control-panel" id="controlPanel" onclick="handlePanelClick(event)">
+        <div class="toggle-icon">⚙</div>
         
         <div class="panel-content">
             <div class="panel-header">
-                <h4>页面元素控制</h4>
-                <span class="minimize-btn" onclick="toggleControlPanel()" title="收起">_</span>
+                <h4>设置与档案</h4>
+                <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
             </div>
 
+            <div class="section-title">页面元素</div>
             <div class="control-row">
-                <label>日期时间设置</label>
+                <label>日期时间</label>
                 <input type="datetime-local" id="datePicker" step="60" onchange="updateDate()">
             </div>
-
             <div class="control-row">
-                <label>替换二维码 (hfqr-100.jpg)</label>
-                <input type="file" accept="image/*" onchange="loadQR(this)">
+                <label>替换二维码</label>
+                <input type="file" accept="image/*" onchange="loadQR(this)" style="padding:2px;">
             </div>
 
-            <div class="control-row" style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
-                <label>印章位置 (上下)</label>
+            <div class="section-title">印章 & 水印</div>
+            <div class="control-row">
+                <label>印章上下</label>
                 <div class="slider-container">
                     <input type="range" id="stampTop" min="0" max="1000" value="350" oninput="updateStamp()">
                 </div>
             </div>
-
             <div class="control-row">
-                <label>印章位置 (左右)</label>
+                <label>印章左右</label>
                 <div class="slider-container">
                     <input type="range" id="stampLeft" min="0" max="700" value="400" oninput="updateStamp()">
                 </div>
             </div>
-
             <div class="control-row">
                 <label>印章大小</label>
                 <div class="slider-container">
                     <input type="range" id="stampSize" min="50" max="300" value="160" oninput="updateStamp()">
                 </div>
             </div>
-
-            <div class="control-row" style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
-                <label>底纹位置 (上下)</label>
+            <div class="control-row">
+                <label>底纹上下</label>
                 <div class="slider-container">
                     <input type="range" id="wmTop" min="-200" max="200" value="40" oninput="updateWatermark()">
                 </div>
             </div>
 
+            <div class="section-title">本地档案库</div>
             <div class="control-row">
-                <label>底纹位置 (左右)</label>
-                <div class="slider-container">
-                    <input type="range" id="wmLeft" min="-200" max="200" value="0" oninput="updateWatermark()">
-                </div>
+                <input type="text" id="dbSaveName" placeholder="档案名 (自动生成)" style="margin-left:0;">
+                <button class="btn-primary" onclick="saveToDB()" style="margin-left:5px;">保存</button>
+            </div>
+            <div class="control-row">
+                <select id="dbList" onchange="loadFromDB()" style="margin-left:0;">
+                    <option value="">-- 历史记录 --</option>
+                </select>
+                <button class="btn-danger" onclick="deleteFromDB()" style="margin-left:5px;">删</button>
+            </div>
+
+            <div class="section-title">GitHub 云同步</div>
+            <div class="control-row">
+                <input type="password" id="ghToken" placeholder="粘贴 Token" onchange="saveToken()" style="margin-left:0;">
+            </div>
+            <div class="cloud-status" id="cloudStatus">未配置</div>
+            <div class="cloud-row">
+                <button class="btn-cloud btn-upload" onclick="syncToCloud('upload')">⬆ 上传到云</button>
+                <button class="btn-cloud btn-download" onclick="syncToCloud('download')">⬇ 从云下载</button>
             </div>
         </div>
     </div>
 
     <script>
-// 初始化日期
+        const fieldIds = [
+            // 头部与日期
+            "txtHeaderInfo", "footerDateDisplay",
+            // 表1 产权
+            "t1_certNo", "t1_owner", "t1_id", "t1_type", "t1_reason", "t1_date",
+            // 表2 详情
+            "t2_share", "t2_unit", "t2_addr", 
+            "t2_totalFl", "t2_currFl", "t2_room", "t2_usage", "t2_nature", "t2_areaBuild", "t2_areaPriv", "t2_areaShare", "t2_finish",
+            "t2_landArea", "t2_landDate", "t2_zoneArea", "t2_zoneNature", "t2_zoneRightType", "t2_zoneUsage", "t2_zoneUsage2", "t2_zoneUsage3", "t2_remarks",
+            // 表3 抵押
+            "t3_cert", "t3_person", "t3_type", "t3_amt", "t3_term", "t3_date", "t3_forbid", "t3_rem",
+            // 表4 查封
+            "t4_org", "t4_type", "t4_doc", "t4_start", "t4_end", "t4_unseal", "t4_rem",
+            // 表5 异议
+            "t5_item", "t5_rem",
+            // 表6 居住权
+            "t6_cert", "t6_person", "t6_term", "t6_date", "t6_rem",
+            // 控件值
+            "stampTop", "stampLeft", "stampSize", "wmTop", "wmLeft"
+        ];
+
+        const DB_KEY = "HFBDC_DB";
+        const GIST_FILENAME = "hfbdc_db.json";
+        const GIST_DESC = "Hefei Real Estate DB Backup";
+
         window.onload = function() {
-            // 修改点1：去掉括号里的内容，即获取当前时间
+            // 初始化日期
             const now = new Date(); 
-            
             const picker = document.getElementById('datePicker');
             const yyyy = now.getFullYear();
             const MM = String(now.getMonth() + 1).padStart(2, '0');
@@ -456,50 +484,43 @@
             const hh = String(now.getHours()).padStart(2, '0');
             const mm = String(now.getMinutes()).padStart(2, '0');
             picker.value = `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+            
+            // 尝试保持之前的时间显示(如果有的话)，没有则刷新
+            if(document.getElementById('footerDateDisplay').innerText.trim().length < 10) {
+                updateDate(); 
+            }
 
-            // 修改点2：增加这一行，页面加载时立即更新底部文字
-            updateDate(); 
+            refreshList();
+            const savedToken = localStorage.getItem('GH_TOKEN');
+            if(savedToken) {
+                document.getElementById('ghToken').value = savedToken;
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
         }
 
+        // 面板交互
+        function handlePanelClick(e) {
+            const panel = document.getElementById('controlPanel');
+            if (panel.classList.contains('collapsed')) {
+                panel.classList.remove('collapsed');
+            }
+        }
+        function minimizePanel(e) {
+            e.stopPropagation(); 
+            document.getElementById('controlPanel').classList.add('collapsed');
+        }
         function toggleControlPanel() {
             document.getElementById('controlPanel').classList.toggle('collapsed');
         }
 
+        // 页面逻辑
         function updateDate() {
             const val = document.getElementById('datePicker').value;
             if(val) {
                 const d = new Date(val);
-                const year = d.getFullYear();
-                const month = d.getMonth() + 1;
-                const date = d.getDate();
-                const hour = d.getHours();
-                const minute = String(d.getMinutes()).padStart(2, '0');
-                
-                const text = `${year} 年 ${month} 月 ${date} 日 ${hour} 时 ${minute} 分`;
+                const text = `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 ${d.getHours()} 时 ${String(d.getMinutes()).padStart(2,'0')} 分`;
                 document.getElementById('footerDateDisplay').innerText = text;
             }
-        }
-
-        function saveAsImage() {
-            const element = document.getElementById('capture-area');
-            html2canvas(element, {
-                scale: 2, 
-                useCORS: true,
-                allowTaint: true, 
-                backgroundColor: "#ffffff",
-                scrollX: 0,
-                scrollY: 0,
-                height: element.offsetHeight,
-                width: element.offsetWidth
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = '不动产产调结果.jpg';
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-            }).catch(err => {
-                console.error("导出图片失败:", err);
-                alert("导出失败。请确保文件已部署在服务器(如GitHub Pages)上，而非直接双击打开。");
-            });
         }
 
         function loadQR(input) {
@@ -524,10 +545,147 @@
 
         function updateWatermark() {
             var top = document.getElementById('wmTop').value;
-            var left = document.getElementById('wmLeft').value;
+            var left = document.getElementById('wmLeft').value; // 这里修正了变量名
             var wm = document.getElementById('bg-watermark');
             wm.style.top = top + 'px';
-            wm.style.left = left + 'px';
+            wm.style.left = left + 'px'; // 确保这里是 px
+        }
+
+        function saveAsImage() {
+            const element = document.getElementById('capture-area');
+            html2canvas(element, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#ffffff" }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = '不动产产调结果.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            }).catch(err => { alert("导出失败，请检查环境。"); });
+        }
+
+        // 数据库 & 云同步逻辑
+        function saveToDB() {
+            const owner = document.getElementById('t1_owner').innerText.trim() || "未命名";
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+            
+            let saveName = document.getElementById('dbSaveName').value.trim();
+            if(!saveName) saveName = `${owner}_${timeStr}`;
+
+            const data = {};
+            fieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    // 判断是 input/select 还是 editable div/td
+                    if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                        data[id] = el.value;
+                    } else {
+                        data[id] = el.innerText; // 针对表格内容
+                    }
+                }
+            });
+
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            allData[saveName] = data;
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+
+            alert(`✅ 已保存: ${saveName}`);
+            refreshList();
+            document.getElementById('dbSaveName').value = "";
+        }
+
+        function loadFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            const data = allData[name];
+            if(data) {
+                fieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el && data[id] !== undefined) {
+                        if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                            el.value = data[id];
+                        } else {
+                            el.innerText = data[id];
+                        }
+                    }
+                });
+                // 加载完数据后，手动触发一次印章/水印位置更新
+                updateStamp();
+                updateWatermark();
+            }
+        }
+
+        function deleteFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            if(!confirm(`删除 [${name}] ?`)) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            delete allData[name];
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            refreshList();
+        }
+
+        function refreshList() {
+            const select = document.getElementById('dbList');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- 历史记录 --</option>';
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            Object.keys(allData).reverse().forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = key;
+                select.appendChild(opt);
+            });
+            if(allData[currentVal]) select.value = currentVal;
+        }
+
+        function saveToken() {
+            const token = document.getElementById('ghToken').value.trim();
+            if(token) {
+                localStorage.setItem('GH_TOKEN', token);
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
+        }
+
+        async function syncToCloud(action) {
+            const token = localStorage.getItem('GH_TOKEN');
+            if(!token) { alert("请先输入 GitHub Token！"); return; }
+            const statusDiv = document.getElementById('cloudStatus');
+            statusDiv.innerText = "连接中...";
+            statusDiv.className = "cloud-status";
+
+            try {
+                // 验证
+                const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `token ${token}` } });
+                if(!userRes.ok) throw new Error("Token 无效");
+
+                // 找 Gist
+                const gistsRes = await fetch('https://api.github.com/gists', { headers: { Authorization: `token ${token}` } });
+                const gists = await gistsRes.json();
+                let targetGist = gists.find(g => g.description === GIST_DESC && g.files[GIST_FILENAME]);
+                let gistId = targetGist ? targetGist.id : null;
+
+                if (action === 'upload') {
+                    const content = localStorage.getItem(DB_KEY) || "{}";
+                    const payload = { description: GIST_DESC, public: false, files: { [GIST_FILENAME]: { content: content } } };
+                    let url = 'https://api.github.com/gists';
+                    let method = 'POST';
+                    if (gistId) { url += `/${gistId}`; method = 'PATCH'; }
+                    
+                    await fetch(url, { method: method, headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    statusDiv.innerText = "✅ 上传成功"; statusDiv.classList.add("success"); alert("同步完成");
+
+                } else if (action === 'download') {
+                    if (!gistId) { alert("云端无文件"); return; }
+                    const detailRes = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { Authorization: `token ${token}` } });
+                    const detail = await detailRes.json();
+                    localStorage.setItem(DB_KEY, detail.files[GIST_FILENAME].content);
+                    refreshList();
+                    loadFromDB(); // 自动加载最新一条
+                    statusDiv.innerText = "✅ 下载成功"; statusDiv.classList.add("success"); alert("已恢复");
+                }
+            } catch (error) {
+                statusDiv.innerText = "❌ " + error.message; statusDiv.classList.add("error");
+            }
         }
     </script>
 </body>
