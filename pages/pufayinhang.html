@@ -121,15 +121,13 @@
             font-size: 24px; font-weight: normal; margin: 0 0 15px 0; color: #000;
         }
 
-        /* ----- 新增布局：头部Meta行 (包含左侧信息和右侧按钮) ----- */
         .meta-header-row {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start; /* 顶部对齐 */
-            margin-bottom: 5px; /* 与灰色块的间距 */
+            align-items: flex-start; 
+            margin-bottom: 5px; 
         }
 
-        /* 左侧信息区 */
         .meta-left {
             display: flex;
             flex-direction: column;
@@ -141,15 +139,14 @@
         .meta-time { font-size: 14px; color: var(--text-meta); margin-left: 20px; font-family: Arial, sans-serif; } 
         .sent-to { font-size: 14px; color: var(--text-meta); }
 
-/* 修改后的 .info-actions，增加了右边距 */
-.info-actions {
-    display: flex; 
-    flex-direction: column; 
-    align-items: flex-end; 
-    gap: 5px;
-    margin-top: 2px;
-    margin-right: 20px; /* 新增：距离右边的间距 */
-}
+        .info-actions {
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end; 
+            gap: 5px;
+            margin-top: 2px;
+            margin-right: 20px; 
+        }
         .action-icons { display: flex; gap: 10px; align-items: center;}
         .action-icons img { width: 16px; height: 16px; display: block; cursor: pointer; opacity: 0.7; }
         .action-icons img:hover { opacity: 1; }
@@ -157,7 +154,6 @@
         .hide-info-btn { color: var(--link-blue); font-size: 12px; cursor: pointer; text-decoration: none; }
         .hide-info-btn:hover { text-decoration: underline; }
 
-        /* 灰色详情块 (内部不再有按钮) */
         .info-block {
             background-color: var(--bg-gray);
             padding: 15px 20px;
@@ -177,44 +173,69 @@
         .mail-body { font-size: 15px; line-height: 1.6; color: #000; word-break: break-all; }
         .normal-link { color: inherit; text-decoration: none; cursor: text; font-family: Arial, sans-serif; }
 
-        /* ================= 控制面板 ================= */
+        /* ================= 升级版控制面板 (合并样式) ================= */
         .control-panel {
             position: fixed; bottom: 20px; right: 20px; background: #fff;
-            border: 1px solid #ccc; padding: 15px; z-index: 10000;
-            width: 260px; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: 1px solid #ccc; padding: 0; z-index: 10000;
+            width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.15);
             border-radius: 8px; font-size: 12px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
         }
+        
         .control-panel.collapsed {
-            width: 40px; height: 40px; padding: 0; border-radius: 50%;
+            width: 48px; height: 48px; border-radius: 50%;
             background: var(--link-blue); cursor: pointer;
+            border: none;
             display: flex; align-items: center; justify-content: center;
         }
-        .control-panel.collapsed .panel-content { display: none; }
-        .toggle-icon { display: none; color: white; font-size: 20px; }
+        .control-panel.collapsed .panel-content { opacity: 0; pointer-events: none; }
+        .toggle-icon { display: none; color: white; font-size: 24px; }
         .control-panel.collapsed .toggle-icon { display: block; }
-        
+
+        .panel-content { padding: 15px; opacity: 1; transition: opacity 0.3s; }
+
         .panel-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px;
+            border-bottom: 2px solid var(--link-blue); 
+            margin-bottom: 15px; padding-bottom: 8px;
         }
-        
-        /* 16px 方形折叠按钮 */
-        .minimize-btn { 
-            cursor: pointer; font-size: 16px; width: 16px; height: 16px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; color: #666;
-        }
-        .minimize-btn:hover { color: #000; background-color: #f0f0f0; border-radius: 2px;}
+        .panel-header h4 { margin: 0; color: var(--link-blue); font-size: 14px; }
 
-        .control-row { margin-bottom: 10px; }
-        .control-row label { display: block; margin-bottom: 3px; color: #555; font-weight: bold;}
-        .control-row input, .control-row select { width: 95%; padding: 5px; border: 1px solid #ddd; }
+        .minimize-btn { 
+            cursor: pointer; font-size: 20px; color: #999; 
+            width: 24px; height: 24px; line-height: 20px; text-align: center;
+        }
+        .minimize-btn:hover { color: #333; background: #eee; border-radius: 4px; }
+
+        .section-title {
+            font-weight: bold; color: #666; margin: 15px 0 5px 0; font-size: 12px;
+            border-left: 3px solid var(--link-blue); padding-left: 6px;
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .control-row label { color: #555; font-weight: bold; width: 70px; }
+        .control-row input, .control-row select { flex: 1; padding: 4px; border: 1px solid #ddd; border-radius: 4px; }
         
-        .slider-container { display: flex; align-items: center; justify-content: space-between; }
-        .slider-container input { width: 70%; }
+        .slider-container { flex: 1; display: flex; align-items: center; gap: 5px; }
+        .slider-container input { flex: 1; }
+
+        /* 按钮组 */
+        .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; }
+        .btn-full:hover { background: #e0e0e0; }
+
+        .btn-primary { background: var(--link-blue); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         
-        .btn-action { width: 100%; padding: 6px; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer; margin-top: 5px; }
+        /* 云同步 */
+        .cloud-status { font-size: 10px; color: #999; text-align: right; margin-top: 2px; }
+        .cloud-status.success { color: green; }
+        .cloud-status.error { color: red; }
+        .cloud-row { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-cloud { flex: 1; font-size: 12px; padding: 5px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
+        .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
 
     </style>
 </head>
@@ -284,17 +305,18 @@
         </div>
     </div>
 
-    <div class="control-panel" id="controlPanel">
-        <div class="toggle-icon" onclick="toggleControlPanel()">⚙</div>
+    <div class="control-panel" id="controlPanel" onclick="handlePanelClick(event)">
+        <div class="toggle-icon">⚙</div>
         
         <div class="panel-content">
             <div class="panel-header">
-                <h4>邮件内容配置</h4>
-                <span class="minimize-btn" onclick="toggleControlPanel()" title="收起">_</span>
+                <h4>邮件配置 & 档案</h4>
+                <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
             </div>
 
+            <div class="section-title">邮件内容</div>
             <div class="control-row">
-                <label>支行名称</label>
+                <label>支行</label>
                 <select id="selBranch" onchange="updateContent()">
                     <option value="高新科技">高新科技 (默认)</option>
                     <option value="瑶海">瑶海</option>
@@ -304,57 +326,74 @@
                     <option value="宁国路">宁国路</option>
                 </select>
             </div>
-
             <div class="control-row">
-                <label>客户经理姓名</label>
+                <label>经理</label>
                 <input type="text" id="inpManager" value="刘立伟" oninput="updateContent()">
             </div>
-
             <div class="control-row">
-                <label>姓名拼音 (影响水印/邮箱)</label>
+                <label>拼音</label>
                 <input type="text" id="inpPinyin" value="llw" oninput="updateContent()">
             </div>
-
             <div class="control-row">
-                <label>借款人姓名 (显示后一位)</label>
+                <label>借款人</label>
                 <input type="text" id="inpCustomer" value="静" oninput="updateContent()">
             </div>
-
             <div class="control-row">
-                <label>合同号 (5801200 + 12位)</label>
-                <button class="btn-action" onclick="refreshContract()">刷新合同号</button>
+                <label>合同号</label>
+                <button class="btn-full" style="margin:0; width:auto; flex:1;" onclick="refreshContract()">🎲 刷新</button>
             </div>
-
             <div class="control-row">
-                <label>金额 (元)</label>
+                <label>金额</label>
                 <input type="text" id="inpAmount" value="860000" oninput="updateContent()">
             </div>
-
             <div class="control-row">
-                <label>日期时间 (默认当前)</label>
+                <label>时间</label>
                 <input type="datetime-local" id="inpDate" step="1" onchange="updateContent()">
             </div>
-
+            
+            <div class="section-title">水印调节</div>
             <div class="control-row">
-                <label>水印密度 (左密 - 右疏)</label>
+                <label>密度</label>
                 <div class="slider-container">
                     <input type="range" id="inpDensity" min="1.0" max="3.0" step="0.1" value="2.0" oninput="updateContent()">
                     <span id="txtDensity">2.0</span>
                 </div>
             </div>
-
             <div class="control-row">
-                <label>水印字号 (px)</label>
+                <label>字号</label>
                 <div class="slider-container">
                     <input type="range" id="inpFontSize" min="24" max="72" step="2" value="48" oninput="updateContent()">
                     <span id="txtFontSize">48</span>
                 </div>
+            </div>
+
+            <div class="section-title">本地档案库</div>
+            <div class="control-row">
+                <input type="text" id="dbSaveName" placeholder="档案名 (自动生成)" style="margin-left:0;">
+                <button class="btn-primary" onclick="saveToDB()" style="margin-left:5px;">保存</button>
+            </div>
+            <div class="control-row">
+                <select id="dbList" onchange="loadFromDB()" style="margin-left:0;">
+                    <option value="">-- 历史记录 --</option>
+                </select>
+                <button class="btn-danger" onclick="deleteFromDB()" style="margin-left:5px;">删</button>
+            </div>
+
+            <div class="section-title">GitHub 云同步</div>
+            <div class="control-row">
+                <input type="password" id="ghToken" placeholder="粘贴 Token" onchange="saveToken()" style="margin-left:0;">
+            </div>
+            <div class="cloud-status" id="cloudStatus">未配置</div>
+            <div class="cloud-row">
+                <button class="btn-cloud btn-upload" onclick="syncToCloud('upload')">⬆ 上传到云</button>
+                <button class="btn-cloud btn-download" onclick="syncToCloud('download')">⬇ 从云下载</button>
             </div>
         </div>
     </div>
 
     <script>
         window.onload = function() {
+            // 初始化时间
             const now = new Date();
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -362,17 +401,38 @@
             const HH = String(now.getHours()).padStart(2, '0');
             const MM = String(now.getMinutes()).padStart(2, '0');
             const ss = String(now.getSeconds()).padStart(2, '0');
-            
             const nowStr = `${yyyy}-${mm}-${dd}T${HH}:${MM}:${ss}`;
-            document.getElementById('inpDate').value = nowStr;
             
+            document.getElementById('inpDate').value = nowStr;
             updateContent();
+
+            // 数据库初始化
+            refreshList();
+
+            // Token 初始化
+            const savedToken = localStorage.getItem('GH_TOKEN');
+            if(savedToken) {
+                document.getElementById('ghToken').value = savedToken;
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
         };
 
+        // UI 交互
+        function handlePanelClick(e) {
+            const panel = document.getElementById('controlPanel');
+            if (panel.classList.contains('collapsed')) {
+                panel.classList.remove('collapsed');
+            }
+        }
+        function minimizePanel(e) {
+            e.stopPropagation(); 
+            document.getElementById('controlPanel').classList.add('collapsed');
+        }
         function toggleControlPanel() {
             document.getElementById('controlPanel').classList.toggle('collapsed');
         }
 
+        // 业务逻辑
         function refreshContract() {
             const prefix = "5801200";
             let suffix = "";
@@ -405,7 +465,6 @@
                 const HH = String(d.getHours()).padStart(2, '0');
                 const MM = String(d.getMinutes()).padStart(2, '0');
                 const ss = String(d.getSeconds()).padStart(2, '0');
-                
                 formattedDate = `${yyyy}-${mm}-${dd} ${HH}:${MM}:${ss}`;
                 dateForWatermark = `${yyyy}-${mm}-${dd}`;
             }
@@ -416,7 +475,6 @@
             document.getElementById('txtManagerEmail').innerText = pinyin + "@spdb.com.cn";
             document.getElementById('txtCustomerName').innerText = customer;
             document.getElementById('txtAmount').innerText = amount;
-            
             document.getElementById('txtDateTimeTop').innerText = formattedDate;
             document.getElementById('txtDateTimeMeta').innerText = formattedDate;
 
@@ -426,17 +484,10 @@
         function updateWatermark(pinyin, dateStr, density, fontSize) {
             const container = document.getElementById('watermark-layer');
             container.innerHTML = ''; 
-
             const text = `浦发银行 ${pinyin.toUpperCase()} ${dateStr}`;
-            
-            const baseW = 400;
-            const baseH = 200;
-            const itemW = baseW * density;
-            const itemH = baseH * density;
-
-            const winW = window.innerWidth;
-            const winH = window.innerHeight;
-            
+            const baseW = 400; const baseH = 200;
+            const itemW = baseW * density; const itemH = baseH * density;
+            const winW = window.innerWidth; const winH = window.innerHeight;
             const cols = Math.ceil(winW / itemW) + 2;
             const rows = Math.ceil(winH / itemH) + 2;
             const total = cols * rows;
@@ -453,6 +504,169 @@
         }
         
         window.addEventListener('resize', () => { updateContent(); });
+
+        /* ================= 数据库 & 云同步 ================= */
+        // 注意：这里加入了 txtContract，它是 span，需要特殊处理
+        const fieldIds = [
+            'selBranch', 'inpManager', 'inpPinyin', 'inpCustomer', 
+            'txtContract', 'inpAmount', 'inpDate', 'inpDensity', 'inpFontSize'
+        ];
+        
+        const DB_KEY = "SPDB_BANK_DB";
+        const GIST_FILENAME = "spdb_bank_db.json";
+        const GIST_DESC = "SPDB System Database Backup";
+
+        function saveToDB() {
+            const custName = document.getElementById('inpCustomer').value.trim() || "未命名";
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            let saveName = document.getElementById('dbSaveName').value.trim();
+            if(!saveName) saveName = `${custName}_${timeStr}`;
+
+            const data = {};
+            fieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                        data[id] = el.value;
+                    } else {
+                        // 针对 span (合同号)
+                        data[id] = el.innerText;
+                    }
+                }
+            });
+
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            allData[saveName] = data;
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+
+            alert(`✅ 已保存到本地: ${saveName}`);
+            refreshList();
+            document.getElementById('dbSaveName').value = "";
+        }
+
+        function loadFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            const data = allData[name];
+            if(data) {
+                fieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el && data[id] !== undefined) {
+                        if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                            el.value = data[id];
+                        } else {
+                            el.innerText = data[id];
+                        }
+                    }
+                });
+                // 读取数据后，必须刷新页面内容和水印
+                updateContent();
+            }
+        }
+
+        function deleteFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            if(!confirm(`删除 [${name}] ?`)) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            delete allData[name];
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            refreshList();
+        }
+
+        function refreshList() {
+            const select = document.getElementById('dbList');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- 历史记录 --</option>';
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            Object.keys(allData).reverse().forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = key;
+                select.appendChild(opt);
+            });
+            if(allData[currentVal]) select.value = currentVal;
+        }
+
+        function saveToken() {
+            const token = document.getElementById('ghToken').value.trim();
+            if(token) {
+                localStorage.setItem('GH_TOKEN', token);
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
+        }
+
+        async function syncToCloud(action) {
+            const token = localStorage.getItem('GH_TOKEN');
+            if(!token) {
+                alert("请先输入 GitHub Token！");
+                return;
+            }
+            const statusDiv = document.getElementById('cloudStatus');
+            statusDiv.innerText = "正在连接...";
+            statusDiv.className = "cloud-status";
+
+            try {
+                const userRes = await fetch('https://api.github.com/user', {
+                    headers: { Authorization: `token ${token}` }
+                });
+                if(!userRes.ok) throw new Error("Token 无效");
+                
+                const gistsRes = await fetch('https://api.github.com/gists', {
+                    headers: { Authorization: `token ${token}` }
+                });
+                const gists = await gistsRes.json();
+                
+                let targetGist = gists.find(g => g.description === GIST_DESC && g.files[GIST_FILENAME]);
+                let gistId = targetGist ? targetGist.id : null;
+
+                if (action === 'upload') {
+                    const content = localStorage.getItem(DB_KEY) || "{}";
+                    const payload = {
+                        description: GIST_DESC,
+                        public: false,
+                        files: { [GIST_FILENAME]: { content: content } }
+                    };
+                    let url = 'https://api.github.com/gists';
+                    let method = 'POST';
+                    if (gistId) {
+                        url += `/${gistId}`;
+                        method = 'PATCH';
+                    }
+                    await fetch(url, {
+                        method: method,
+                        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    statusDiv.innerText = "✅ 上传成功";
+                    statusDiv.classList.add("success");
+                    alert("云端同步完成！");
+
+                } else if (action === 'download') {
+                    if (!gistId) {
+                        alert("云端无备份！");
+                        statusDiv.innerText = "云端无文件";
+                        return;
+                    }
+                    const detailRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    const detail = await detailRes.json();
+                    const content = detail.files[GIST_FILENAME].content;
+                    localStorage.setItem(DB_KEY, content);
+                    refreshList();
+                    statusDiv.innerText = "✅ 下载成功";
+                    statusDiv.classList.add("success");
+                    alert("数据已恢复！");
+                }
+            } catch (error) {
+                statusDiv.innerText = "❌ " + error.message;
+                statusDiv.classList.add("error");
+            }
+        }
     </script>
 </body>
 </html>
