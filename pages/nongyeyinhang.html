@@ -27,13 +27,13 @@
             width: 1200px;
             margin: 0 auto;
             position: relative;
+            padding-bottom: 80px; 
         }
 
         /* ---------------- 头部区域 ---------------- */
         .header {
             text-align: center;
             margin-bottom: 0;
-            /* 1. 顶部间距增加：原先靠body padding，现在额外增加 60px */
             margin-top: 60px; 
             position: relative;
             display: flex;
@@ -136,7 +136,6 @@
             text-align: left; 
         }
 
-        /* 无痕下拉菜单 */
         .clean-select {
             width: 100%; height: 100%; border: none; outline: none;
             background: transparent; font-family: var(--main-font);
@@ -146,7 +145,6 @@
         }
         .clean-select::-ms-expand { display: none; }
 
-        /* 分栏布局 */
         .split-cell-container { display: flex; width: 100%; height: 100%; align-items: stretch; }
         .split-value { flex: 3; border-right: none; padding: 0 10px; display: flex; align-items: center; }
         .split-unit { flex: 1; display: flex; align-items: center; justify-content: flex-start; padding-left: 0px; color: #000; }
@@ -158,46 +156,63 @@
         /* ---------------- 控制面板 ---------------- */
         .control-panel {
             position: fixed; bottom: 20px; right: 20px; background: #fff;
-            border: 1px solid #ccc; padding: 15px; z-index: 9999;
-            width: 240px; box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 8px; font-size: 12px; font-family: var(--main-font);
-            transition: all 0.3s ease;
+            border: 1px solid #ccc; padding: 0; z-index: 9999;
+            width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            border-radius: 8px; font-size: 13px; font-family: "Microsoft YaHei";
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
         }
+        
         .control-panel.collapsed {
-            width: 40px; height: 40px; padding: 0; border-radius: 50%;
+            width: 48px; height: 48px; border-radius: 50%;
             background: var(--theme-color); cursor: pointer;
+            border: none;
             display: flex; align-items: center; justify-content: center;
         }
-        .control-panel.collapsed .panel-content { display: none; }
-        .toggle-icon { display: none; color: white; font-size: 20px; }
+        .control-panel.collapsed .panel-content { opacity: 0; pointer-events: none; }
+        .toggle-icon { display: none; color: white; font-size: 24px; }
         .control-panel.collapsed .toggle-icon { display: block; }
+
+        .panel-content { padding: 15px; opacity: 1; transition: opacity 0.3s; }
 
         .panel-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px;
+            border-bottom: 2px solid var(--theme-color); 
+            margin-bottom: 15px; padding-bottom: 8px;
         }
-        .panel-header h4 { margin: 0; color: #333; }
-        /* 新的折叠按钮样式 (16px方形) */
-.minimize-btn { 
-    cursor: pointer; 
-    font-size: 16px; 
-    width: 16px; 
-    height: 16px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-weight: bold;
-    color: #666;
-}
-.minimize-btn:hover {
-    color: #000;
-    background-color: #f0f0f0;
-    border-radius: 2px;
-}
-        .control-row { margin-bottom: 10px; }
-        .control-row label { display: block; margin-bottom: 4px; font-weight: bold; color: #555; }
-        .control-row select, .control-row input { width: 95%; padding: 4px; }
-        .btn-action { width: 100%; padding: 6px 0; background-color: #f0f0f0; border: 1px solid #ccc; cursor: pointer; margin-top: 5px; }
+        .panel-header h4 { margin: 0; color: var(--theme-color); font-size: 16px; }
+        
+        .minimize-btn { 
+            cursor: pointer; font-size: 20px; color: #999; 
+            width: 24px; height: 24px; line-height: 20px; text-align: center;
+        }
+        .minimize-btn:hover { color: #333; background: #eee; border-radius: 4px; }
+
+        .section-title {
+            font-weight: bold; color: #666; margin: 15px 0 5px 0; font-size: 12px;
+            border-left: 3px solid var(--theme-color); padding-left: 6px;
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .control-row label { color: #555; }
+        .control-row select, .control-row input { flex: 1; margin-left: 8px; padding: 4px; border: 1px solid #ddd; border-radius: 4px; }
+        
+        .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; }
+        .btn-full:hover { background: #e0e0e0; }
+
+        .btn-primary { background: var(--theme-color); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background: #ff5252; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        
+        /* 云同步相关样式 */
+        .cloud-status { font-size: 10px; color: #999; text-align: right; margin-top: 2px; }
+        .cloud-status.success { color: green; }
+        .cloud-status.error { color: red; }
+        .cloud-row { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-cloud { flex: 1; font-size: 12px; padding: 5px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
+        .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
+
     </style>
 </head>
 <body>
@@ -209,7 +224,7 @@
                 打印日期：<span id="printDateText">2025年12月18日</span>
                 <input type="date" id="printDateInput" onchange="updatePrintDate(this.value)" onclick="this.showPicker()">
             </div>
-            <button class="export-btn">导出为Word文档</button>
+            <button class="export-btn" onclick="window.print()">打印/导出PDF</button>
         </div>
 
         <table class="loan-table">
@@ -219,78 +234,78 @@
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">客户名称</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="周荣"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="custName" value="周荣"></div></td>
                 <td><div class="cell-content"><span class="label-text">客户代码</span></div></td>
                 <td><div class="cell-content"><input type="text" class="table-input" id="custCode" value="1639504313407339"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">业务品种</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="房抵贷——经营"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="bizType" value="房抵贷——经营"></div></td>
                 <td><div class="cell-content"><span class="label-text">是否低风险</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="是"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="riskLevel" value="是"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">是否循环贷款单笔用信审批</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="否"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="isLoopSingle" value="否"></div></td>
                 <td><div class="cell-content"><span class="label-text">关联循环合同编号</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="loopContractNo"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">合作品种编号</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="coopVarietyNo"></div></td>
                 <td><div class="cell-content"><span class="label-text">合作项目编号</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="coopProjectNo"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">合作项目名称</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="coopProjectName"></div></td>
                 <td><div class="cell-content"><span class="label-text">特色产品</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="featureProduct"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">贷款性质</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="自营常规贷款"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="loanNature" value="自营常规贷款"></div></td>
                 <td><div class="cell-content"><span class="label-text">委托人分类</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="trusteeClass"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">贷款金额</span></div></td>
                 <td>
                     <div class="split-cell-container">
-                        <div class="split-value"><input type="text" class="table-input" value="4,500,000.00"></div>
+                        <div class="split-value"><input type="text" class="table-input" id="loanAmt" value="4,500,000.00"></div>
                         <div class="split-unit">元</div>
                     </div>
                 </td>
                 <td><div class="cell-content"><span class="label-text">期限</span></div></td>
                 <td>
                     <div class="split-cell-container">
-                        <div class="split-value"><input type="text" class="table-input" value="36"></div>
+                        <div class="split-value"><input type="text" class="table-input" id="termMonth" value="36"></div>
                         <div class="split-unit">月</div>
                     </div>
                 </td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">是否循环</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="否"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="isLoop" value="否"></div></td>
                 <td><div class="cell-content"><span class="label-text">循环审批方式</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="loopMethod"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">循环额度金额</span></div></td>
                 <td>
                     <div class="split-cell-container">
-                        <div class="split-value"><input type="text" class="table-input" value="0.00"></div>
+                        <div class="split-value"><input type="text" class="table-input" id="loopAmt" value="0.00"></div>
                         <div class="split-unit">元</div>
                     </div>
                 </td>
                 <td><div class="cell-content"><span class="label-text">循环额度期限</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="loopTerm"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">首笔贷款业务品种</span></div></td>
                 <td>
                     <div class="cell-content">
-                        <select class="clean-select">
+                        <select class="clean-select" id="firstBizType">
                             <option selected>房抵贷——经营</option>
                             <option>房抵贷——消费</option>
                         </select>
@@ -300,57 +315,57 @@
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">贷款用途</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="经营"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="loanUse" value="经营"></div></td>
                 <td><div class="cell-content"><span class="label-text">贷款用途说明</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="loanUseDesc"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">首付金额</span></div></td>
                 <td>
                     <div class="split-cell-container">
-                        <div class="split-value"><input type="text" class="table-input" value="0.00"></div>
+                        <div class="split-value"><input type="text" class="table-input" id="downPayAmt" value="0.00"></div>
                         <div class="split-unit">元</div>
                     </div>
                 </td>
                 <td><div class="cell-content"><span class="label-text">首付比例</span></div></td>
                 <td>
                     <div class="cell-content">
-                        <input type="text" class="table-input" value="0.00 %" onfocus="removeSuffix(this, ' %')" onblur="addSuffixRatio(this)">
+                        <input type="text" class="table-input" id="downPayRatio" value="0.00 %" onfocus="removeSuffix(this, ' %')" onblur="addSuffixRatio(this)">
                     </div>
                 </td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">还款来源</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="经营收入"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="repaySource" value="经营收入"></div></td>
                 <td><div class="cell-content"><span class="label-text">担保方式</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="抵押"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="guaranteeMode" value="抵押"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">是否有共同借款人</span></div></td>
                 <td>
                     <div class="cell-content">
-                        <select class="clean-select">
+                        <select class="clean-select" id="hasCoBorrower">
                             <option selected>否</option>
                             <option>是</option>
                         </select>
                     </div>
                 </td>
                 <td><div class="cell-content"><span class="label-text">是否公积金组合贷款</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="否"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="isFundCombo" value="否"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">还款方式</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="一次性还本按约还息"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="repayMethod" value="一次性还本按约还息"></div></td>
                 <td><div class="cell-content"><span class="label-text">基准利率类别</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="贷款市场报价利率"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="baseRateType" value="贷款市场报价利率"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">执行利率类别</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="浮动利率"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="execRateType" value="浮动利率"></div></td>
                 <td><div class="cell-content"><span class="label-text">利率浮动周期</span></div></td>
                 <td>
                     <div class="cell-content">
-                        <select class="clean-select">
+                        <select class="clean-select" id="rateLoopCycle">
                             <option selected>按12个月</option>
                             <option>按36个月</option>
                             <option>按60个月</option>
@@ -360,17 +375,17 @@
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">利率浮动方式</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="浮点"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="rateFloatType" value="浮点"></div></td>
                 <td><div class="cell-content"><span class="label-text">利率浮动幅度</span></div></td>
                 <td>
                     <div class="cell-content">
-                        <input type="text" class="table-input" value="31.00000 万分之" onfocus="removeSuffix(this, ' 万分之')" onblur="addSuffixFloat(this)">
+                        <input type="text" class="table-input" id="rateFloatValue" value="31.00000 万分之" onfocus="removeSuffix(this, ' 万分之')" onblur="addSuffixFloat(this)">
                     </div>
                 </td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">审批意见</span></div></td>
-                <td><div class="cell-content"><input type="text" class="table-input" value="同意"></div></td>
+                <td><div class="cell-content"><input type="text" class="table-input" id="approveOpinion" value="同意"></div></td>
                 <td><div class="cell-content"><span class="label-text">审批机构</span></div></td>
                 <td><div class="cell-content"><input type="text" class="table-input" id="approvalOrg" value="合肥望江东路支行行长室"></div></td>
             </tr>
@@ -382,58 +397,73 @@
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">信用发放条件</span></div></td>
-                <td colspan="3"><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td colspan="3"><div class="cell-content"><input type="text" class="table-input" id="creditCondition"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">其他要求</span></div></td>
-                <td colspan="3"><div class="cell-content"><input type="text" class="table-input"></div></td>
+                <td colspan="3"><div class="cell-content"><input type="text" class="table-input" id="otherReq"></div></td>
             </tr>
             <tr>
                 <td><div class="cell-content"><span class="label-text">审批意见说明</span></div></td>
-                <td colspan="3"><div class="cell-content"><input type="text" class="table-input" value="同意"></div></td>
+                <td colspan="3"><div class="cell-content"><input type="text" class="table-input" id="approveOpinionDesc" value="同意"></div></td>
             </tr>
         </table>
-
+        
         <div class="footer-note">
             循环额度与首笔用信同时审批时，贷款金额即首笔用信金额，期限即首笔用信期限。
         </div>
     </div>
 
-    <div class="control-panel" id="controlPanel">
-        <div class="toggle-icon" onclick="toggleControlPanel()">⚙</div>
+    <div class="control-panel" id="controlPanel" onclick="handlePanelClick(event)">
+        <div class="toggle-icon">⚙</div>
         
         <div class="panel-content">
             <div class="panel-header">
-                <h4>操作与设置</h4>
-                <span class="minimize-btn" onclick="toggleControlPanel()">_</span>
+                <h4>设置与档案</h4>
+                <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
             </div>
 
-            <div class="control-row">
-                <button class="btn-action" onclick="refreshNumbers()">刷新编号</button>
-            </div>
+            <div class="section-title">常用操作</div>
+            <button class="btn-full" onclick="refreshNumbers()">🎲 刷新随机编号</button>
 
             <div class="control-row">
-                <label>选择支行：</label>
-                <select id="branchSelect" onchange="updateBranchInfo()">
-                    </select>
+                <label>选择支行:</label>
+                <select id="branchSelect" onchange="updateBranchInfo()"></select>
             </div>
-
             <div class="control-row">
-                <label>批复日期 (影响截止日期)：</label>
+                <label>批复日期:</label>
                 <input type="date" id="panelApproveDate" onchange="updateDateLogic()">
             </div>
-            
+
+            <div class="section-title">本地档案库</div>
+            <div class="control-row">
+                <input type="text" id="dbSaveName" placeholder="档案名 (自动生成)">
+                <button class="btn-primary" onclick="saveToDB()">保存</button>
+            </div>
+            <div class="control-row">
+                <select id="dbList" onchange="loadFromDB()">
+                    <option value="">-- 历史记录 --</option>
+                </select>
+                <button class="btn-danger" onclick="deleteFromDB()">删</button>
+            </div>
+
+            <div class="section-title">GitHub 云同步 (Gist)</div>
+            <div class="control-row">
+                <input type="password" id="ghToken" placeholder="粘贴 GitHub Token" onchange="saveToken()">
+            </div>
+            <div class="cloud-status" id="cloudStatus">未配置</div>
+            <div class="cloud-row">
+                <button class="btn-cloud btn-upload" onclick="syncToCloud('upload')">⬆ 上传到云</button>
+                <button class="btn-cloud btn-download" onclick="syncToCloud('download')">⬇ 从云下载</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const branches = [
-            "七里塘", "万达广场", "临泉路", "临湖", "北城", "南岗", "史河路", 
-            "城东", "天柱路", "天鹅湖", "小庙", "新政务区", "望江东路", "桃花工业园区", "磨店"
-        ];
+        const branches = ["七里塘", "万达广场", "临泉路", "临湖", "北城", "南岗", "史河路", "城东", "天柱路", "天鹅湖", "小庙", "新政务区", "望江东路", "桃花工业园区", "磨店"];
 
         window.onload = function() {
-            // 1. 填充支行
+            // 初始化支行
             const select = document.getElementById('branchSelect');
             branches.forEach(br => {
                 const option = document.createElement('option');
@@ -443,98 +473,238 @@
                 select.appendChild(option);
             });
 
-            // 2. 自动设置日期为今天
+            // 初始化日期
             const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const todayStr = `${yyyy}-${mm}-${dd}`;
-            
-            // 设置中文格式给打印日期
-            const printDateStr = `${yyyy}年${mm}月${dd}日`;
-            document.getElementById('printDateText').innerText = printDateStr;
-
-            // 设置输入框
+            const todayStr = today.toISOString().split('T')[0];
             document.getElementById('panelApproveDate').value = todayStr;
             document.getElementById('printDateInput').value = todayStr;
-            
-            // 立即计算截止日期
+            updatePrintDate(todayStr);
             updateDateLogic();
+            
+            // 数据库初始化
+            refreshList();
+            
+            // 云同步初始化
+            const savedToken = localStorage.getItem('GH_TOKEN');
+            if(savedToken) {
+                document.getElementById('ghToken').value = savedToken;
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
         };
 
+        // UI交互
+        function handlePanelClick(e) {
+            const panel = document.getElementById('controlPanel');
+            if (panel.classList.contains('collapsed')) {
+                panel.classList.remove('collapsed');
+            }
+        }
+        function minimizePanel(e) {
+            e.stopPropagation(); 
+            document.getElementById('controlPanel').classList.add('collapsed');
+        }
         function removeSuffix(el, suffix) {
-            let val = el.value;
-            if (val.endsWith(suffix)) {
-                el.value = val.replace(suffix, '');
-            }
+            if (el.value.endsWith(suffix)) el.value = el.value.replace(suffix, '');
         }
-
         function addSuffixRatio(el) {
-            let val = el.value.trim();
-            if (!val) return;
-            val = val.replace(' %', '').replace('%', '');
+            let val = el.value.trim().replace(/[% ]/g, '');
             let num = parseFloat(val);
-            if (!isNaN(num)) {
-                el.value = num.toFixed(2) + ' %';
-            } else {
-                el.value = val; 
-            }
+            el.value = isNaN(num) ? val : num.toFixed(2) + ' %';
         }
-
         function addSuffixFloat(el) {
-            let val = el.value.trim();
-            if (!val) return;
-            val = val.replace(' 万分之', '');
+            let val = el.value.trim().replace(' 万分之', '');
             let num = parseFloat(val);
-            if (!isNaN(num)) {
-                el.value = num.toFixed(5) + ' 万分之';
-            } else {
-                el.value = val;
-            }
+            el.value = isNaN(num) ? val : num.toFixed(5) + ' 万分之';
         }
 
+        // 业务逻辑
         function refreshNumbers() {
-            const appPrefix = "343002025";
-            let appSuffix = "";
-            for(let i=0; i<8; i++) appSuffix += Math.floor(Math.random() * 10);
-            document.getElementById('appNumber').value = appPrefix + appSuffix;
-
-            const custPrefix = "1639500";
-            let custSuffix = "";
-            for(let i=0; i<10; i++) custSuffix += Math.floor(Math.random() * 10);
-            document.getElementById('custCode').value = custPrefix + custSuffix;
+            document.getElementById('appNumber').value = "343002025" + Math.floor(Math.random()*100000000);
+            document.getElementById('custCode').value = "1639500" + Math.floor(Math.random()*10000000000);
         }
-
         function updateBranchInfo() {
-            const branchName = document.getElementById('branchSelect').value;
-            const opOrg = `合肥${branchName}支行`;
-            document.getElementById('operatingOrg').value = opOrg;
-            const appOrg = `合肥${branchName}支行行长室`;
-            document.getElementById('approvalOrg').value = appOrg;
+            const br = document.getElementById('branchSelect').value;
+            document.getElementById('operatingOrg').value = `合肥${br}支行`;
+            document.getElementById('approvalOrg').value = `合肥${br}支行行长室`;
         }
-
         function updateDateLogic() {
-            const panelDateStr = document.getElementById('panelApproveDate').value;
-            if(!panelDateStr) return;
-            const date = new Date(panelDateStr);
+            const dStr = document.getElementById('panelApproveDate').value;
+            if(!dStr) return;
+            const date = new Date(dStr);
             date.setDate(date.getDate() + 60);
-            const yyyy = date.getFullYear();
-            const mm = String(date.getMonth() + 1).padStart(2, '0');
-            const dd = String(date.getDate()).padStart(2, '0');
-            document.getElementById('tableEndDate').value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('tableEndDate').value = date.toISOString().split('T')[0];
         }
-
         function updatePrintDate(val) {
             if(!val) return;
-            const date = new Date(val);
-            const yyyy = date.getFullYear();
-            const mm = String(date.getMonth() + 1).padStart(2, '0');
-            const dd = String(date.getDate()).padStart(2, '0');
-            document.getElementById('printDateText').innerText = `${yyyy}年${mm}月${dd}日`;
+            const d = new Date(val);
+            document.getElementById('printDateText').innerText = `${d.getFullYear()}年${String(d.getMonth()+1).padStart(2,'0')}月${String(d.getDate()).padStart(2,'0')}日`;
         }
 
-        function toggleControlPanel() {
-            document.getElementById('controlPanel').classList.toggle('collapsed');
+        /* ================= 本地数据库逻辑 ================= */
+        const fieldIds = [
+            "printDateInput", "appNumber", "custName", "custCode", "bizType", "riskLevel",
+            "isLoopSingle", "loopContractNo", "coopVarietyNo", "coopProjectNo", "coopProjectName",
+            "featureProduct", "loanNature", "trusteeClass", "loanAmt", "termMonth", "isLoop",
+            "loopMethod", "loopAmt", "loopTerm", "firstBizType", "loanUse", "loanUseDesc",
+            "downPayAmt", "downPayRatio", "repaySource", "guaranteeMode", "hasCoBorrower",
+            "isFundCombo", "repayMethod", "baseRateType", "execRateType", "rateLoopCycle",
+            "rateFloatType", "rateFloatValue", "approveOpinion", "approvalOrg", "operatingOrg",
+            "tableEndDate", "creditCondition", "otherReq", "approveOpinionDesc"
+        ];
+        const DB_KEY = "AGRI_BANK_DB";
+        const GIST_FILENAME = "agri_bank_db.json";
+        const GIST_DESC = "Bank System Database Backup";
+
+        function saveToDB() {
+            const custName = document.getElementById('custName').value.trim() || "未命名";
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            let saveName = document.getElementById('dbSaveName').value.trim();
+            if(!saveName) saveName = `${custName}_${timeStr}`;
+
+            const data = {};
+            fieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) data[id] = el.value;
+            });
+
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            allData[saveName] = data;
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+
+            alert(`✅ 已保存到本地: ${saveName}`);
+            refreshList();
+            document.getElementById('dbSaveName').value = "";
+        }
+
+        function loadFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            const data = allData[name];
+            if(data) {
+                fieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el && data[id] !== undefined) el.value = data[id];
+                });
+                updatePrintDate(data['printDateInput']);
+            }
+        }
+
+        function deleteFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            if(!confirm(`删除 [${name}] ?`)) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            delete allData[name];
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            refreshList();
+        }
+
+        function refreshList() {
+            const select = document.getElementById('dbList');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- 历史记录 --</option>';
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            Object.keys(allData).reverse().forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = key;
+                select.appendChild(opt);
+            });
+            if(allData[currentVal]) select.value = currentVal;
+        }
+
+        /* ================= 云同步逻辑 (GitHub Gist) ================= */
+        function saveToken() {
+            const token = document.getElementById('ghToken').value.trim();
+            if(token) {
+                localStorage.setItem('GH_TOKEN', token);
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
+        }
+
+        async function syncToCloud(action) {
+            const token = localStorage.getItem('GH_TOKEN');
+            if(!token) {
+                alert("请先输入 GitHub Token！");
+                return;
+            }
+            const statusDiv = document.getElementById('cloudStatus');
+            statusDiv.innerText = "正在连接 GitHub...";
+            statusDiv.className = "cloud-status";
+
+            try {
+                // 1. 查找是否存在指定的 Gist
+                const userRes = await fetch('https://api.github.com/user', {
+                    headers: { Authorization: `token ${token}` }
+                });
+                if(!userRes.ok) throw new Error("Token 无效");
+                
+                // 搜索用户的 gists
+                const gistsRes = await fetch('https://api.github.com/gists', {
+                    headers: { Authorization: `token ${token}` }
+                });
+                const gists = await gistsRes.json();
+                
+                let targetGist = gists.find(g => g.description === GIST_DESC && g.files[GIST_FILENAME]);
+                let gistId = targetGist ? targetGist.id : null;
+
+                if (action === 'upload') {
+                    // 上传：本地 -> 云端
+                    const content = localStorage.getItem(DB_KEY) || "{}";
+                    const payload = {
+                        description: GIST_DESC,
+                        public: false,
+                        files: { [GIST_FILENAME]: { content: content } }
+                    };
+
+                    let url = 'https://api.github.com/gists';
+                    let method = 'POST';
+                    if (gistId) {
+                        url += `/${gistId}`;
+                        method = 'PATCH';
+                    }
+
+                    await fetch(url, {
+                        method: method,
+                        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    statusDiv.innerText = "✅ 上传成功！";
+                    statusDiv.classList.add("success");
+                    alert("云端同步完成！");
+
+                } else if (action === 'download') {
+                    // 下载：云端 -> 本地
+                    if (!gistId) {
+                        alert("云端还没有备份文件！请先上传。");
+                        statusDiv.innerText = "云端无文件";
+                        return;
+                    }
+                    // 获取 gist 详情（包含原始内容）
+                    const detailRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    const detail = await detailRes.json();
+                    const content = detail.files[GIST_FILENAME].content;
+                    
+                    localStorage.setItem(DB_KEY, content);
+                    refreshList();
+                    
+                    statusDiv.innerText = "✅ 下载成功！";
+                    statusDiv.classList.add("success");
+                    alert("已从云端恢复数据！");
+                }
+
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerText = "❌ 失败: " + error.message;
+                statusDiv.classList.add("error");
+                alert("同步失败，请检查 Token 或网络。");
+            }
         }
     </script>
 </body>
