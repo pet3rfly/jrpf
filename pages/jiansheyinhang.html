@@ -34,7 +34,7 @@
             position: fixed;
             top: 0;
             left: -100px;
-            width: 150%; /* 稍微加大一点，防止疏散后边缘露白 */
+            width: 150%; 
             height: 150%;
             pointer-events: none;
             z-index: 0; 
@@ -47,19 +47,12 @@
         .watermark-row {
             display: flex;
             width: 100%;
-            /* 行间距不再由CSS固定，改为JS控制，以配合疏密调整 */
             flex-wrap: nowrap;
         }
 
-        /* 这里的左移也需要根据疏密程度动态调整吗？
-           为了简单稳定，保持固定的错位视觉效果通常就够了，
-           或者我们可以让错位距离设为宽度的一半。
-           这里暂时保持CSS控制，视觉上“砖墙”效果依然存在。
-        */
         .watermark-row:nth-child(even) { margin-left: 80px; }
 
         .watermark-item {
-            /* 宽高现在由JS动态赋值，CSS里只需定义对齐方式 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -67,8 +60,6 @@
             transform: rotate(-30deg);
             user-select: none;
             flex-shrink: 0;
-            
-            /* 水印强制使用微软雅黑 */
             font-family: "Microsoft YaHei", sans-serif !important; 
         }
 
@@ -172,7 +163,6 @@
             cursor: pointer;
         }
         
-        /* 日期输入框定制 */
         input[type="date"] {
             font-family: inherit;
             position: relative;
@@ -188,86 +178,65 @@
 
         #fileInput { display: none; }
 
-        /* 控制面板 */
+        /* ================= 全能控制面板 ================= */
         .control-panel {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #fff;
-            border: 1px solid #ccc;
-            padding: 15px;
-            z-index: 9999;
-            width: 220px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 8px;
-            font-size: 12px;
-            transition: all 0.3s ease;
-            font-family: "Microsoft YaHei", sans-serif; 
-        }
-
-        .control-panel.collapsed {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: 50%;
-            background: var(--theme-color); 
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; bottom: 20px; right: 20px; background: #fff;
+            border: 1px solid #ccc; padding: 0; z-index: 9999;
+            width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            border-radius: 8px; font-size: 12px; font-family: "Microsoft YaHei";
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            max-height: 85vh; overflow-y: auto;
         }
         
-        .control-panel.collapsed .panel-content { display: none; }
-        .toggle-icon { display: none; color: white; font-size: 20px; }
+        .control-panel.collapsed {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--theme-color); cursor: pointer;
+            border: none; display: flex; align-items: center; justify-content: center;
+        }
+        .control-panel.collapsed .panel-content { opacity: 0; pointer-events: none; }
+        .toggle-icon { display: none; color: white; font-size: 24px; }
         .control-panel.collapsed .toggle-icon { display: block; }
 
+        .panel-content { padding: 15px; opacity: 1; transition: opacity 0.3s; }
+
         .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid var(--theme-color); 
+            margin-bottom: 15px; padding-bottom: 8px;
         }
-        .panel-header h4 { margin: 0; color: #333; }
-    /* 新的折叠按钮样式 (16px方形) */
+        .panel-header h4 { margin: 0; color: var(--theme-color); font-size: 14px; }
+
         .minimize-btn { 
-    cursor: pointer; 
-    font-size: 16px; 
-    width: 16px; 
-    height: 16px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-weight: bold;
-    color: #666;
-}
-.minimize-btn:hover {
-    color: #000;
-    background-color: #f0f0f0;
-    border-radius: 2px;
-}
-
-        .control-panel input[type="text"], .control-panel select { width: 90%; padding: 5px; margin-bottom: 8px; border: 1px solid #ddd; }
-        
-        /* 滑块样式 */
-        .slider-container { margin-bottom: 15px; }
-        .slider-label { display: flex; justify-content: space-between; color: #666; margin-bottom: 2px;}
-        input[type=range] { width: 100%; cursor: pointer; }
-
-        .control-btn-group { display: flex; gap: 5px; margin-top: 10px; }
-        .btn-tool {
-            flex: 1;
-            padding: 6px 0;
-            cursor: pointer;
-            border: 1px solid #999;
-            background: #f8f8f8;
-            border-radius: 4px;
-            font-weight: bold;
+            cursor: pointer; font-size: 20px; color: #999; 
+            width: 24px; height: 24px; line-height: 20px; text-align: center;
         }
-        .btn-refresh { color: #d9534f; border-color: #d43f3a; }
-        .btn-logo { color: #5cb85c; border-color: #4cae4c; }
-        .btn-update { color: #337ab7; border-color: #2e6da4; width: 100%; margin-top: 5px;}
+        .minimize-btn:hover { color: #333; background: #eee; border-radius: 4px; }
+
+        .section-title {
+            font-weight: bold; color: #666; margin: 15px 0 5px 0; font-size: 12px;
+            border-left: 3px solid var(--theme-color); padding-left: 6px;
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .control-row label { color: #555; font-weight: bold; width: 60px; }
+        .control-row input, .control-row select { flex: 1; padding: 4px; border: 1px solid #ddd; border-radius: 4px; margin-left: 5px; }
+        .slider-container { flex: 1; display: flex; align-items: center; gap: 5px; margin-left: 5px; }
+        .slider-container input { flex: 1; }
+
+        .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; }
+        .btn-full:hover { background: #e0e0e0; }
+        .btn-primary { background: var(--theme-color); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        
+        .cloud-status { font-size: 10px; color: #999; text-align: right; margin-top: 2px; }
+        .cloud-status.success { color: green; }
+        .cloud-status.error { color: red; }
+        .cloud-row { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-cloud { flex: 1; font-size: 12px; padding: 5px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
+        .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
 
     </style>
 </head>
@@ -294,7 +263,7 @@
             </div>
             <div class="form-group">
                 <label>ALS账号：</label>
-                <input type="text">
+                <input type="text" id="alsAccount">
             </div>
 
             <div class="form-group">
@@ -303,42 +272,42 @@
             </div>
             <div class="form-group">
                 <label>客户姓名：</label>
-                <input type="text" value="宗文成">
+                <input type="text" id="customerName" value="宗文成">
             </div>
 
             <div class="form-group">
                 <label>币种：</label>
-                <select>
+                <select id="currency">
                     <option selected>人民币元</option>
                     <option>美元</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>产品代码：</label>
-                <input type="text" value="9613">
+                <input type="text" id="productCode" value="9613">
             </div>
 
             <div class="form-group">
                 <label>关联贷款类型：</label>
-                <select><option>请选择</option></select>
+                <select id="linkedLoanType"><option>请选择</option></select>
             </div>
             <div class="form-group">
                 <label>关联贷款申请顺序号：</label>
-                <input type="text">
+                <input type="text" id="linkedLoanSeq">
             </div>
 
             <div class="form-group">
                 <label>额度类型：</label>
-                <select><option selected>小企业小额贷款额度</option></select>
+                <select id="limitType"><option selected>小企业小额贷款额度</option></select>
             </div>
             <div class="form-group">
                 <label>额度用途：</label>
-                <select><option selected>小企业贷款:生产经营</option></select>
+                <select id="limitUse"><option selected>小企业贷款:生产经营</option></select>
             </div>
 
             <div class="form-group">
                 <label>担保方式：</label>
-                <select>
+                <select id="guaranteeMode">
                     <option selected>抵押</option>
                     <option>质押</option>
                     <option>保证</option>
@@ -346,7 +315,7 @@
             </div>
             <div class="form-group">
                 <label>放款方式：</label>
-                <select><option selected>抵押权登记放款</option></select>
+                <select id="loanMode"><option selected>抵押权登记放款</option></select>
             </div>
 
             <div class="form-group">
@@ -369,7 +338,7 @@
 
             <div class="form-group">
                 <label>期限(月)：</label>
-                <input type="text" value="36">
+                <input type="text" id="termMonth" value="36">
             </div>
             <div class="form-group">
                 <label>截止日期：</label>
@@ -378,26 +347,26 @@
 
             <div class="form-group">
                 <label>额度是否循环：</label>
-                <select>
+                <select id="isLoop">
                     <option selected>是</option>
                     <option>否</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>业务状态：</label>
-                <select><option selected>抵押</option></select>
+                <select id="bizStatus"><option selected>抵押</option></select>
             </div>
 
             <div class="form-group">
                 <label>额度状态：</label>
-                <select>
+                <select id="limitStatus">
                     <option selected>处理中</option>
                     <option>生效</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>担保物是否自动记帐：</label>
-                <select>
+                <select id="autoAccount1">
                     <option selected>是</option>
                     <option>否</option>
                 </select>
@@ -405,14 +374,14 @@
 
             <div class="form-group">
                 <label>担保物是否自动记帐：</label>
-                <select>
+                <select id="autoAccount2">
                     <option>请选择</option>
                     <option>是</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>保证方式：</label>
-                <select><option>请选择</option></select>
+                <select id="guaranteeType"><option>请选择</option></select>
             </div>
 
             <div class="form-group">
@@ -426,16 +395,16 @@
 
             <div class="form-group">
                 <label>云快贷贷款种类：</label>
-                <select><option>请选择</option></select>
+                <select id="cloudLoanType"><option>请选择</option></select>
             </div>
             <div class="form-group">
                 <label>受理渠道：</label>
-                <select><option selected>员工渠道</option></select>
+                <select id="channel"><option selected>员工渠道</option></select>
             </div>
 
             <div class="form-group">
                 <label>是否阶段性担保：</label>
-                <select>
+                <select id="phaseGuarantee">
                     <option selected>否</option>
                     <option>是</option>
                 </select>
@@ -444,49 +413,93 @@
         </div>
     </div>
 
-    <div class="control-panel" id="controlPanel">
-        <div class="toggle-icon" onclick="toggleControlPanel()">⚙</div>
+    <div class="control-panel" id="controlPanel" onclick="handlePanelClick(event)">
+        <div class="toggle-icon">⚙</div>
         
         <div class="panel-content">
             <div class="panel-header">
-                <h4>操作与设置</h4>
-                <span class="minimize-btn" onclick="toggleControlPanel()" title="收起">_</span>
+                <h4>设置与档案</h4>
+                <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
             </div>
             
-            <label style="font-weight:bold; display:block; margin-bottom:5px;">页面字体 (不含水印)：</label>
-            <select id="fontSwitcher" onchange="changeFont(this.value)" style="margin-bottom:15px;">
-                <option value='"SimSun", "Songti SC", serif'>宋体 (推荐)</option>
-                <option value='"Microsoft YaHei", sans-serif'>微软雅黑</option>
-            </select>
-
-            <div class="slider-container">
-                <div class="slider-label">
-                    <span>水印疏密</span>
-                    <span id="densityVal">1.5x</span>
+            <div class="section-title">页面样式</div>
+            <div class="control-row">
+                <label>字体</label>
+                <select id="fontSwitcher" onchange="changeFont(this.value)">
+                    <option value='"SimSun", "Songti SC", serif'>宋体 (推荐)</option>
+                    <option value='"Microsoft YaHei", sans-serif'>微软雅黑</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <label>水印疏密</label>
+                <div class="slider-container">
+                    <input type="range" id="wmDensity" min="1.0" max="3.0" step="0.1" value="1.5" oninput="updateWatermark()">
+                    <span id="densityVal" style="width:30px; text-align:right;">1.5x</span>
                 </div>
-                <input type="range" id="wmDensity" min="1.0" max="3.0" step="0.1" value="1.5" oninput="updateWatermark()">
             </div>
 
-            <div class="control-btn-group" style="margin-bottom: 15px;">
-                <button class="btn-tool btn-refresh" onclick="generateNumbers()">刷新编号</button>
-                <button class="btn-tool btn-logo" onclick="document.getElementById('fileInput').click()">上传LOGO</button>
+            <button class="btn-full" onclick="generateNumbers()">🎲 刷新随机编号</button>
+            <button class="btn-full" onclick="document.getElementById('fileInput').click()">🖼️ 上传LOGO (背景)</button>
+            
+            <div class="section-title">水印文字</div>
+            <div class="control-row">
+                <label>姓名</label>
+                <input type="text" id="wmName" value="方春苗" oninput="handleNameChange(this.value)">
             </div>
-            
-            <div style="border-top:1px dashed #ddd; margin:10px 0;"></div>
+            <div class="control-row">
+                <label>工号</label>
+                <input type="text" id="wmID" value="34001307" oninput="handleIDChange(this.value)">
+            </div>
+            <div class="control-row">
+                <label>拼音</label>
+                <input type="text" id="wmPinyin" value="fangchunmiao" oninput="updateWatermark()">
+            </div>
 
-            <h4 style="margin-bottom:10px;">水印文字设置</h4>
-            
-            <input type="text" id="wmName" placeholder="姓名" value="方春苗" oninput="handleNameChange(this.value)">
-            <input type="text" id="wmID" placeholder="工号/机构号" value="34001307" oninput="handleIDChange(this.value)">
-            <input type="text" id="wmPinyin" placeholder="拼音 (手动输入)" value="fangchunmiao">
-            
-            <button class="btn-tool btn-update" onclick="updateWatermark()">更新文字水印</button>
+            <div class="section-title">本地档案库</div>
+            <div class="control-row">
+                <input type="text" id="dbSaveName" placeholder="档案名 (自动生成)" style="margin-left:0;">
+                <button class="btn-primary" onclick="saveToDB()" style="margin-left:5px;">保存</button>
+            </div>
+            <div class="control-row">
+                <select id="dbList" onchange="loadFromDB()" style="margin-left:0;">
+                    <option value="">-- 历史记录 --</option>
+                </select>
+                <button class="btn-danger" onclick="deleteFromDB()" style="margin-left:5px;">删</button>
+            </div>
+
+            <div class="section-title">GitHub 云同步</div>
+            <div class="control-row">
+                <input type="password" id="ghToken" placeholder="粘贴 Token" onchange="saveToken()" style="margin-left:0;">
+            </div>
+            <div class="cloud-status" id="cloudStatus">未配置</div>
+            <div class="cloud-row">
+                <button class="btn-cloud btn-upload" onclick="syncToCloud('upload')">⬆ 上传到云</button>
+                <button class="btn-cloud btn-download" onclick="syncToCloud('download')">⬇ 从云下载</button>
+            </div>
         </div>
     </div>
 
     <script>
         // ================= 配置区域 =================
         const DEFAULT_LOGO_PATH = '../images/logo.png'; 
+        
+        // 关键字段ID列表 (用于存档)
+        const fieldIds = [
+            "contractId", "alsAccount", "customerId", "customerName", "currency", 
+            "productCode", "linkedLoanType", "linkedLoanSeq", "limitType", "limitUse", 
+            "guaranteeMode", "loanMode", "creditTotal", "creditAvail", "creditInit", 
+            "startDate", "termMonth", "endDate", "isLoop", "bizStatus", "limitStatus", 
+            "autoAccount1", "autoAccount2", "guaranteeType", "hostOrgId", "managerName", 
+            "cloudLoanType", "channel", "phaseGuarantee",
+            // 水印与设置
+            "wmName", "wmID", "wmPinyin", "wmDensity", "fontSwitcher"
+        ];
+
+        const DB_KEY = "CCB_BANK_DB";
+        const GIST_FILENAME = "ccb_bank_db.json";
+        const GIST_DESC = "CCB System Database Backup";
+        const AUTO_SAVE_KEY = "CCB_LAST_SESSION";
+
         // ==========================================
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -494,12 +507,44 @@
             const img = new Image();
             img.onload = function() { formArea.style.backgroundImage = `url(${DEFAULT_LOGO_PATH})`; };
             img.src = DEFAULT_LOGO_PATH;
-        });
 
+            // 1. 初始化日期计算
+            calculateEndDate();
+            
+            // 2. 尝试加载自动保存
+            loadLastState();
+
+            // 3. 刷新水印
+            updateWatermark();
+
+            // 4. 初始化数据库列表和Token
+            refreshList();
+            const savedToken = localStorage.getItem('GH_TOKEN');
+            if(savedToken) {
+                document.getElementById('ghToken').value = savedToken;
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
+        });
+        
+        // 全局监听：任何改动都触发自动保存
+        document.addEventListener('input', () => { saveCurrentState(); });
+        document.addEventListener('change', () => { saveCurrentState(); });
+
+        // --- 核心业务逻辑 ---
         function changeFont(fontName) {
             document.documentElement.style.setProperty('--main-font', fontName);
         }
 
+        function handlePanelClick(e) {
+            const panel = document.getElementById('controlPanel');
+            if (panel.classList.contains('collapsed')) {
+                panel.classList.remove('collapsed');
+            }
+        }
+        function minimizePanel(e) {
+            e.stopPropagation(); 
+            document.getElementById('controlPanel').classList.add('collapsed');
+        }
         function toggleControlPanel() {
             document.getElementById('controlPanel').classList.toggle('collapsed');
         }
@@ -573,7 +618,6 @@
                 endDateInput.value = `${yyyy}-${mm}-${dd}`;
             }
         }
-        calculateEndDate(); 
         startDateInput.addEventListener('change', calculateEndDate);
 
         function generateNumbers() {
@@ -585,6 +629,7 @@
             for(let i=0; i<8; i++) randomSuffixCustomer += Math.floor(Math.random() * 10);
             document.getElementById('contractId').value = fixedPrefixContract + randomSuffixContract;
             document.getElementById('customerId').value = fixedPrefixCustomer + randomSuffixCustomer;
+            saveCurrentState(); // 刷新后自动保存
         }
 
         const fileInput = document.getElementById('fileInput');
@@ -607,24 +652,20 @@
             const id = document.getElementById('wmID').value;
             const pinyin = document.getElementById('wmPinyin').value;
             
-            // 获取密度系数
             const density = parseFloat(document.getElementById('wmDensity').value);
             document.getElementById('densityVal').innerText = density + "x";
 
             container.innerHTML = ''; 
             
-            // 基础尺寸 (密度1.0时的尺寸)
             const baseW = 200;
             const baseH = 100;
-            const baseRowMargin = 30; // 行间距基数
+            const baseRowMargin = 30; 
 
-            // 动态尺寸
             const itemWidth = baseW * density;
             const itemHeight = baseH * density;
             const rowMargin = baseRowMargin * density;
 
             const windowHeight = window.innerHeight;
-            // 行数计算：考虑放大后的高度和行间距
             const rowCount = Math.ceil(windowHeight / (itemHeight + rowMargin)) + 4;
             
             const windowWidth = window.innerWidth;
@@ -633,14 +674,12 @@
             for (let r = 0; r < rowCount; r++) {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'watermark-row';
-                // 动态设置行高和边距
                 rowDiv.style.marginBottom = rowMargin + 'px';
 
                 for (let c = 0; c < colCount; c++) {
                     const div = document.createElement('div');
                     div.className = 'watermark-item';
                     
-                    // 动态设置每个格子的宽高
                     div.style.width = itemWidth + 'px';
                     div.style.height = itemHeight + 'px';
 
@@ -659,7 +698,142 @@
         }
 
         window.addEventListener('resize', updateWatermark);
-        window.onload = updateWatermark;
+
+        // --- 数据库 & 云同步逻辑 ---
+        
+        // 自动保存
+        function saveCurrentState() {
+            const data = {};
+            fieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) data[id] = el.value;
+            });
+            localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(data));
+        }
+
+        // 加载上次状态
+        function loadLastState() {
+            const saved = localStorage.getItem(AUTO_SAVE_KEY);
+            if(saved) {
+                const data = JSON.parse(saved);
+                fieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el && data[id] !== undefined) el.value = data[id];
+                });
+            }
+        }
+
+        // 存档到本地库
+        function saveToDB() {
+            const custName = document.getElementById('customerName').value.trim() || "未命名";
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+            
+            let saveName = document.getElementById('dbSaveName').value.trim();
+            if(!saveName) saveName = `${custName}_${timeStr}`;
+
+            const data = {};
+            fieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) data[id] = el.value;
+            });
+
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            allData[saveName] = data;
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+
+            alert(`✅ 已保存: ${saveName}`);
+            refreshList();
+            document.getElementById('dbSaveName').value = "";
+        }
+
+        function loadFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            const data = allData[name];
+            if(data) {
+                fieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el && data[id] !== undefined) el.value = data[id];
+                });
+                updateWatermark(); // 刷新水印
+            }
+        }
+
+        function deleteFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            if(!confirm(`删除 [${name}] ?`)) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            delete allData[name];
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            refreshList();
+        }
+
+        function refreshList() {
+            const select = document.getElementById('dbList');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- 历史记录 --</option>';
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            Object.keys(allData).reverse().forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = key;
+                select.appendChild(opt);
+            });
+            if(allData[currentVal]) select.value = currentVal;
+        }
+
+        function saveToken() {
+            const token = document.getElementById('ghToken').value.trim();
+            if(token) {
+                localStorage.setItem('GH_TOKEN', token);
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
+        }
+
+        async function syncToCloud(action) {
+            const token = localStorage.getItem('GH_TOKEN');
+            if(!token) { alert("请先输入 GitHub Token！"); return; }
+            const statusDiv = document.getElementById('cloudStatus');
+            statusDiv.innerText = "连接中...";
+            statusDiv.className = "cloud-status";
+
+            try {
+                // 验证
+                const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `token ${token}` } });
+                if(!userRes.ok) throw new Error("Token 无效");
+
+                // 找 Gist
+                const gistsRes = await fetch('https://api.github.com/gists', { headers: { Authorization: `token ${token}` } });
+                const gists = await gistsRes.json();
+                let targetGist = gists.find(g => g.description === GIST_DESC && g.files[GIST_FILENAME]);
+                let gistId = targetGist ? targetGist.id : null;
+
+                if (action === 'upload') {
+                    const content = localStorage.getItem(DB_KEY) || "{}";
+                    const payload = { description: GIST_DESC, public: false, files: { [GIST_FILENAME]: { content: content } } };
+                    let url = 'https://api.github.com/gists';
+                    let method = 'POST';
+                    if (gistId) { url += `/${gistId}`; method = 'PATCH'; }
+                    
+                    await fetch(url, { method: method, headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    statusDiv.innerText = "✅ 上传成功"; statusDiv.classList.add("success"); alert("同步完成");
+
+                } else if (action === 'download') {
+                    if (!gistId) { alert("云端无文件"); return; }
+                    const detailRes = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { Authorization: `token ${token}` } });
+                    const detail = await detailRes.json();
+                    localStorage.setItem(DB_KEY, detail.files[GIST_FILENAME].content);
+                    refreshList();
+                    loadFromDB(); // 自动加载最新一条
+                    statusDiv.innerText = "✅ 下载成功"; statusDiv.classList.add("success"); alert("已恢复");
+                }
+            } catch (error) {
+                statusDiv.innerText = "❌ " + error.message; statusDiv.classList.add("error");
+            }
+        }
     </script>
 </body>
 </html>
