@@ -347,6 +347,18 @@
                     <option value="360">360</option>
                 </select>
             </div>
+            
+            <div class="section-title">时间设置</div>
+            <div class="control-row">
+                <label>打印日期</label>
+                <input type="date" id="inpDatePrint" onchange="updateContent()">
+            </div>
+            <div class="control-row">
+                <label>流水日期</label>
+                <input type="date" id="inpDateWatermark" onchange="updateContent()">
+            </div>
+
+            <div class="section-title">编号生成</div>
             <div class="control-row">
                 <label>流水号</label>
                 <button class="btn-full" style="width:auto; flex:1; margin:0;" onclick="refreshSerial()">🎲 刷新</button>
@@ -358,7 +370,7 @@
             <input type="hidden" id="inpSerialHidden">
             <input type="hidden" id="inpHandlerHidden">
 
-            <div class="section-title">水印设置</div>
+            <div class="section-title">水印调节</div>
             <div class="control-row">
                 <label>密度</label>
                 <div class="slider-container">
@@ -399,10 +411,11 @@
     </div>
 
     <script>
-        // === 配置与存档键名 ===
+        // === 配置与存档键名 (更新日期字段) ===
         const fieldIds = [
             "inpBorrower", "inpAmount", "selTerm", "inpDensity", "inpFontSize", 
-            "inpSerialHidden", "inpHandlerHidden" // 存档隐藏域
+            "inpDatePrint", "inpDateWatermark", // 双日期
+            "inpSerialHidden", "inpHandlerHidden"
         ];
         const DB_KEY = "BOC_BANK_DB";
         const GIST_FILENAME = "boc_bank_db.json";
@@ -410,14 +423,17 @@
         const AUTO_SAVE_KEY = "BOC_LAST_SESSION";
 
         window.onload = function() {
-            // 1. 初始化日期
+            // 1. 初始化日期为今天
             const now = new Date();
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
-            document.getElementById('txtFooterDate').innerText = `${yyyy}/${mm}/${dd}`;
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            
+            document.getElementById('inpDatePrint').value = todayStr;
+            document.getElementById('inpDateWatermark').value = todayStr;
 
-            // 2. 初始化默认值 (如果还没有隐藏值)
+            // 2. 初始化默认值
             if(!document.getElementById('inpSerialHidden').value) refreshSerial();
             if(!document.getElementById('inpHandlerHidden').value) refreshHandler();
 
@@ -460,17 +476,15 @@
             let random9 = "";
             for(let i=0; i<9; i++) { random9 += Math.floor(Math.random() * 10); }
             const serial = year + random9;
-            // 存入隐藏域以便保存
             document.getElementById('inpSerialHidden').value = serial;
             updateContent();
-            saveCurrentState(); // 手动触发保存
+            saveCurrentState(); 
         }
 
         function refreshHandler() {
             let random6 = "";
             for(let i=0; i<6; i++) { random6 += Math.floor(Math.random() * 10); }
             const handler = "9" + random6;
-            // 存入隐藏域
             document.getElementById('inpHandlerHidden').value = handler;
             updateContent();
             saveCurrentState();
@@ -482,8 +496,9 @@
             const term = document.getElementById('selTerm').value;
             const density = parseFloat(document.getElementById('inpDensity').value);
             const fontSize = parseInt(document.getElementById('inpFontSize').value);
+            const datePrint = document.getElementById('inpDatePrint').value;
+            const dateWatermark = document.getElementById('inpDateWatermark').value;
             
-            // 从隐藏域读取随机生成的号码
             const serial = document.getElementById('inpSerialHidden').value || "2018632086193";
             const handler = document.getElementById('inpHandlerHidden').value || "9235394";
 
@@ -491,11 +506,9 @@
             document.getElementById('txtFontSize').innerText = fontSize;
             document.getElementById('txtBorrowerTable').innerText = borrower;
             
-            // 更新流水号
             document.getElementById('txtSerialHeader').innerText = serial;
             document.getElementById('txtSerialTable').innerText = serial;
 
-            // 格式化金额
             const moneyFloat = parseFloat(amount);
             if (!isNaN(moneyFloat)) {
                 const formatted = moneyFloat.toLocaleString('en-US', {
@@ -509,24 +522,34 @@
             document.getElementById('txtTermTable').innerText = term;
             document.getElementById('txtHandlerTable').innerText = handler;
             
+            // 更新页脚日期
+            if(datePrint) {
+                const d = new Date(datePrint);
+                const footerStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+                document.getElementById('txtFooterDate').innerText = footerStr;
+            }
+
+            // 更新水印日期字符串 (YYYYMMDD)
+            let wmDateStr = "";
+            if(dateWatermark) {
+                const d = new Date(dateWatermark);
+                wmDateStr = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+            }
+
             // 更新水印
-            updateWatermark(handler, density, fontSize);
+            updateWatermark(handler, density, fontSize, wmDateStr);
         }
 
-        function updateWatermark(handler, density, fontSize) {
+        function updateWatermark(handler, density, fontSize, dateStr) {
             const container = document.getElementById('watermark-layer');
             container.innerHTML = ''; 
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const dateStr = `${yyyy}${mm}${dd}`; 
+            
             const text = `${handler} ${dateStr}`;
             
             const baseWidthPercent = 33.3;
             let itemWidthPercent = baseWidthPercent * density;
             if (itemWidthPercent > 100) itemWidthPercent = 100;
-            const total = 50; // 增加数量防止空白
+            const total = 50; 
 
             for(let i=0; i<total; i++) {
                 const div = document.createElement('div');
