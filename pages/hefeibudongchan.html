@@ -75,11 +75,17 @@
         .header-info { font-size: 16px; text-align: left; margin: 0; }
         .qr-code { width: 120px; height: 120px; object-fit: contain; }
 
+        /* === 修正：纯宋体、不加粗、左对齐 === */
         .section-title {
             font-size: 16px; 
-            font-weight: normal; 
-            margin: 10px 0 2px 0;
+            font-weight: normal; /* 不加粗 */
+            color: #000;
             font-family: var(--font-song);
+            margin: 15px 0 5px 0;
+            text-align: left;
+            padding-left: 2px;
+            border: none;
+            background: none;
         }
 
         table {
@@ -96,6 +102,7 @@
             vertical-align: middle;
             line-height: 1.1; word-break: break-all;
             font-weight: normal;
+            font-family: var(--font-song);
         }
         
         td[contenteditable="true"] { outline: none; }
@@ -130,8 +137,7 @@
             border-radius: 8px; font-size: 12px; font-family: "Microsoft YaHei";
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             overflow: hidden;
-            max-height: 80vh; /* 防止太高 */
-            overflow-y: auto;
+            max-height: 80vh; overflow-y: auto;
         }
         
         .control-panel.collapsed {
@@ -159,11 +165,11 @@
         }
         .minimize-btn:hover { color: #333; background: #eee; border-radius: 4px; }
 
-        .section-title {
+        .section-title-panel {
             font-weight: bold; color: #666; margin: 15px 0 5px 0; font-size: 12px;
             border-left: 3px solid var(--theme-color); padding-left: 6px;
         }
-        .section-title:first-child { margin-top: 0; }
+        .section-title-panel:first-child { margin-top: 0; }
 
         .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
         .control-row label { color: #555; font-weight: bold; min-width: 60px; }
@@ -171,13 +177,11 @@
         .slider-container { flex: 1; display: flex; align-items: center; gap: 5px; margin-left: 5px;}
         .slider-container input { flex: 1; }
 
-        /* 按钮组 */
         .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; }
         .btn-full:hover { background: #e0e0e0; }
         .btn-primary { background: var(--theme-color); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         .btn-danger { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         
-        /* 云同步 */
         .cloud-status { font-size: 10px; color: #999; text-align: right; margin-top: 2px; }
         .cloud-status.success { color: green; }
         .cloud-status.error { color: red; }
@@ -364,8 +368,7 @@
             </table>
 
             <div class="footer-date" id="footerDateDisplay" contenteditable="true">
-                2025 年 12 月 22 日 14 时 52 分
-            </div>
+                </div>
 
             <div class="footer-notes">
                 说明：<br>
@@ -388,7 +391,7 @@
                 <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
             </div>
 
-            <div class="section-title">页面元素</div>
+            <div class="section-title-panel">页面元素</div>
             <div class="control-row">
                 <label>日期时间</label>
                 <input type="datetime-local" id="datePicker" step="60" onchange="updateDate()">
@@ -398,7 +401,7 @@
                 <input type="file" accept="image/*" onchange="loadQR(this)" style="padding:2px;">
             </div>
 
-            <div class="section-title">印章 & 水印</div>
+            <div class="section-title-panel">印章 & 水印</div>
             <div class="control-row">
                 <label>印章上下</label>
                 <div class="slider-container">
@@ -424,7 +427,7 @@
                 </div>
             </div>
 
-            <div class="section-title">本地档案库</div>
+            <div class="section-title-panel">本地档案库</div>
             <div class="control-row">
                 <input type="text" id="dbSaveName" placeholder="档案名 (自动生成)" style="margin-left:0;">
                 <button class="btn-primary" onclick="saveToDB()" style="margin-left:5px;">保存</button>
@@ -436,7 +439,7 @@
                 <button class="btn-danger" onclick="deleteFromDB()" style="margin-left:5px;">删</button>
             </div>
 
-            <div class="section-title">GitHub 云同步</div>
+            <div class="section-title-panel">GitHub 云同步</div>
             <div class="control-row">
                 <input type="password" id="ghToken" placeholder="粘贴 Token" onchange="saveToken()" style="margin-left:0;">
             </div>
@@ -450,23 +453,15 @@
 
     <script>
         const fieldIds = [
-            // 头部与日期
             "txtHeaderInfo", "footerDateDisplay",
-            // 表1 产权
             "t1_certNo", "t1_owner", "t1_id", "t1_type", "t1_reason", "t1_date",
-            // 表2 详情
             "t2_share", "t2_unit", "t2_addr", 
             "t2_totalFl", "t2_currFl", "t2_room", "t2_usage", "t2_nature", "t2_areaBuild", "t2_areaPriv", "t2_areaShare", "t2_finish",
             "t2_landArea", "t2_landDate", "t2_zoneArea", "t2_zoneNature", "t2_zoneRightType", "t2_zoneUsage", "t2_zoneUsage2", "t2_zoneUsage3", "t2_remarks",
-            // 表3 抵押
             "t3_cert", "t3_person", "t3_type", "t3_amt", "t3_term", "t3_date", "t3_forbid", "t3_rem",
-            // 表4 查封
             "t4_org", "t4_type", "t4_doc", "t4_start", "t4_end", "t4_unseal", "t4_rem",
-            // 表5 异议
             "t5_item", "t5_rem",
-            // 表6 居住权
             "t6_cert", "t6_person", "t6_term", "t6_date", "t6_rem",
-            // 控件值
             "stampTop", "stampLeft", "stampSize", "wmTop", "wmLeft"
         ];
 
@@ -475,7 +470,7 @@
         const GIST_DESC = "Hefei Real Estate DB Backup";
 
         window.onload = function() {
-            // 初始化日期
+            // 初始化日期选择器并强制刷新页脚日期为当前时间
             const now = new Date(); 
             const picker = document.getElementById('datePicker');
             const yyyy = now.getFullYear();
@@ -485,10 +480,8 @@
             const mm = String(now.getMinutes()).padStart(2, '0');
             picker.value = `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
             
-            // 尝试保持之前的时间显示(如果有的话)，没有则刷新
-            if(document.getElementById('footerDateDisplay').innerText.trim().length < 10) {
-                updateDate(); 
-            }
+            // 强制刷新页脚，确保默认显示当前时间
+            updateDate(); 
 
             refreshList();
             const savedToken = localStorage.getItem('GH_TOKEN');
@@ -498,7 +491,6 @@
             }
         }
 
-        // 面板交互
         function handlePanelClick(e) {
             const panel = document.getElementById('controlPanel');
             if (panel.classList.contains('collapsed')) {
@@ -513,7 +505,6 @@
             document.getElementById('controlPanel').classList.toggle('collapsed');
         }
 
-        // 页面逻辑
         function updateDate() {
             const val = document.getElementById('datePicker').value;
             if(val) {
@@ -545,10 +536,8 @@
 
         function updateWatermark() {
             var top = document.getElementById('wmTop').value;
-            var left = document.getElementById('wmLeft').value; // 这里修正了变量名
             var wm = document.getElementById('bg-watermark');
             wm.style.top = top + 'px';
-            wm.style.left = left + 'px'; // 确保这里是 px
         }
 
         function saveAsImage() {
@@ -574,11 +563,10 @@
             fieldIds.forEach(id => {
                 const el = document.getElementById(id);
                 if(el) {
-                    // 判断是 input/select 还是 editable div/td
                     if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
                         data[id] = el.value;
                     } else {
-                        data[id] = el.innerText; // 针对表格内容
+                        data[id] = el.innerText;
                     }
                 }
             });
@@ -608,7 +596,6 @@
                         }
                     }
                 });
-                // 加载完数据后，手动触发一次印章/水印位置更新
                 updateStamp();
                 updateWatermark();
             }
@@ -654,11 +641,9 @@
             statusDiv.className = "cloud-status";
 
             try {
-                // 验证
                 const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `token ${token}` } });
                 if(!userRes.ok) throw new Error("Token 无效");
 
-                // 找 Gist
                 const gistsRes = await fetch('https://api.github.com/gists', { headers: { Authorization: `token ${token}` } });
                 const gists = await gistsRes.json();
                 let targetGist = gists.find(g => g.description === GIST_DESC && g.files[GIST_FILENAME]);
@@ -680,7 +665,7 @@
                     const detail = await detailRes.json();
                     localStorage.setItem(DB_KEY, detail.files[GIST_FILENAME].content);
                     refreshList();
-                    loadFromDB(); // 自动加载最新一条
+                    loadFromDB(); 
                     statusDiv.innerText = "✅ 下载成功"; statusDiv.classList.add("success"); alert("已恢复");
                 }
             } catch (error) {
