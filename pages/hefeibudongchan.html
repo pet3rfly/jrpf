@@ -215,7 +215,7 @@
             </div>
 
             <div class="section-title">产权信息</div>
-            <table>
+            <table id="ownerTable">
                 <colgroup>
                     <col style="width: 28%"> <col style="width: 12%"> <col style="width: 25%"> 
                     <col style="width: 12%"> <col style="width: 11%"> <col style="width: 12%">
@@ -232,7 +232,7 @@
                     <td contenteditable="true" id="t1_reason">存量房买卖</td>
                     <td contenteditable="true" id="t1_date">2021-10-22</td>
                 </tr>
-            </table>
+                </table>
 
             <div class="section-title">不动产详情（面积单位：平方米）</div>
             <table>
@@ -394,6 +394,9 @@
 
             <div class="section-title-panel">页面元素</div>
             <div class="control-row">
+                <button class="btn-full" onclick="toggleSecondOwner()">👥 增减第二权利人</button>
+            </div>
+            <div class="control-row">
                 <label>日期时间</label>
                 <input type="datetime-local" id="datePicker" step="60" onchange="updateDate()">
             </div>
@@ -453,9 +456,11 @@
     </div>
 
     <script>
+        // 更新了ID列表，增加了第二权利人的字段 (t1_xxx_2)
         const fieldIds = [
             "txtHeaderInfo", "footerDateDisplay",
             "t1_certNo", "t1_owner", "t1_id", "t1_type", "t1_reason", "t1_date",
+            "t1_certNo_2", "t1_owner_2", "t1_id_2", "t1_type_2", "t1_reason_2", "t1_date_2", // 新增字段
             "t2_share", "t2_unit", "t2_addr", 
             "t2_totalFl", "t2_currFl", "t2_room", "t2_usage", "t2_nature", "t2_areaBuild", "t2_areaPriv", "t2_areaShare", "t2_finish",
             "t2_landArea", "t2_landDate", "t2_zoneArea", "t2_zoneNature", "t2_zoneRightType", "t2_zoneUsage", "t2_zoneUsage2", "t2_zoneUsage3", "t2_remarks",
@@ -489,6 +494,35 @@
             if(savedToken) {
                 document.getElementById('ghToken').value = savedToken;
                 document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
+        }
+
+        // 新增功能：增减第二权利人
+        function toggleSecondOwner(forceState) {
+            const table = document.getElementById('ownerTable');
+            // 表格目前结构：0行=表头，1行=第一权利人。如果>2行，说明已经添加了第二人
+            const hasSecondRow = table.rows.length > 2;
+
+            // forceState: true(强制添加), false(强制删除), null(切换)
+            let shouldAdd = false;
+            if (forceState === true) shouldAdd = true;
+            else if (forceState === false) shouldAdd = false;
+            else shouldAdd = !hasSecondRow;
+
+            if (shouldAdd && !hasSecondRow) {
+                // 添加一行
+                const newRow = table.insertRow(2);
+                newRow.innerHTML = `
+                    <td contenteditable="true" id="t1_certNo_2"></td>
+                    <td contenteditable="true" id="t1_owner_2"></td>
+                    <td contenteditable="true" id="t1_id_2"></td>
+                    <td contenteditable="true" id="t1_type_2"></td>
+                    <td contenteditable="true" id="t1_reason_2"></td>
+                    <td contenteditable="true" id="t1_date_2"></td>
+                `;
+            } else if (!shouldAdd && hasSecondRow) {
+                // 删除一行
+                table.deleteRow(2);
             }
         }
 
@@ -594,8 +628,18 @@
             let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
             const data = allData[name];
             if(data) {
+                // 特殊处理：检查是否保存了第二权利人信息
+                // 如果保存的数据里有 t1_owner_2，说明当时是双人模式，需要强制开启
+                // 如果没有，则强制关闭
+                if (data['t1_owner_2'] !== undefined) {
+                    toggleSecondOwner(true);
+                } else {
+                    toggleSecondOwner(false);
+                }
+
                 fieldIds.forEach(id => {
                     const el = document.getElementById(id);
+                    // 必须再次检查el是否存在，因为toggleSecondOwner可能刚刚创建它
                     if(el && data[id] !== undefined) {
                         if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
                             el.value = data[id];
