@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIPO'S Music - 现代Web版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
+    <style>
+        :root {
+            var(--bg-overlay): rgba(30, 30, 30, 0.7);
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+            --panel-bg: rgba(20, 20, 20, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-color: #1db954;
+            --hover-bg: rgba(255, 255, 255, 0.1);
+            --blur-level: 20px;
+        }
+
+        [data-theme="light"] {
+            --bg-overlay: rgba(255, 255, 255, 0.6);
+            --text-color: #333333;
+            --text-muted: #666666;
+            --panel-bg: rgba(255, 255, 255, 0.5);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --hover-bg: rgba(0, 0, 0, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            transition: color 0.3s;
+        }
+
+        #bg-image {
+            position: fixed; top: -5%; left: -5%; width: 110%; height: 110%;
+            background-size: cover; background-position: center;
+            filter: blur(var(--blur-level)); z-index: -2; transition: filter 0.3s;
+        }
+        #bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-overlay); z-index: -1; transition: background 0.3s;
+        }
+
+        .sidebar {
+            width: 300px; background: var(--panel-bg); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; backdrop-filter: blur(10px);
+        }
+        .main-content {
+            flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+            background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px; position: relative;
+        }
+
+        .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border-color); }
+        .sidebar-actions { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
+        
+        #app-title { outline: none; border-bottom: 1px dashed transparent; transition: border 0.3s; }
+        #app-title:focus { border-bottom: 1px dashed var(--accent-color); }
+
+        .btn {
+            background: var(--border-color); color: var(--text-color); border: none;
+            padding: 8px 12px; border-radius: 4px; cursor: pointer; text-align: center;
+            transition: background 0.2s; white-space: nowrap; display: inline-block; font-size: 14px;
+        }
+        .btn:hover { background: var(--hover-bg); }
+        .btn-primary { background: var(--accent-color); color: white; }
+
+        .playlist-item { padding: 10px; cursor: pointer; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .playlist-item:hover { background: var(--hover-bg); }
+        .playlist-item.active { background: var(--border-color); font-weight: bold; border-left: 4px solid var(--accent-color); }
+        .playlist-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .playlist-actions { display: flex; gap: 5px; }
+        .icon-btn { cursor: pointer; opacity: 0.6; font-size: 14px; transition: opacity 0.2s; }
+        .icon-btn:hover { opacity: 1; transform: scale(1.1); }
+        
+        .song-item { padding: 8px; cursor: pointer; border-radius: 4px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .song-item:hover { background: var(--hover-bg); }
+        .song-item.playing { color: var(--accent-color); font-weight: bold; }
+
+        .top-settings { display: flex; justify-content: flex-end; gap: 10px; align-items: center; font-size: 12px; }
+        .top-settings input[type="file"] { display: none; }
+        .top-settings label, .top-settings button { cursor: pointer; background: var(--border-color); padding: 5px 10px; border-radius: 4px; border: none; color: var(--text-color);}
+
+        .player-center { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center;}
+        .cover-wrapper { width: 250px; height: 250px; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; background: #333; }
+        .cover-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .song-title { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+        .song-artist { font-size: 16px; color: var(--text-muted); }
+
+        .controls-container { width: 100%; max-width: 600px; margin: 0 auto; }
+        .progress-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 12px;}
+        .progress-bar input[type="range"] { flex: 1; cursor: pointer; }
+        .buttons { display: flex; justify-content: center; align-items: center; gap: 20px; }
+        .btn-control { background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; }
+        .btn-play { width: 50px; height: 50px; border-radius: 50%; background: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+        /* 授权恢复通知横幅 */
+        #restore-banner {
+            background: linear-gradient(45deg, #ff9800, #ff5722);
+            color: white; padding: 12px 20px; border-radius: 8px; text-align: center;
+            font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none; transition: transform 0.2s; margin-bottom: 15px;
+        }
+        #restore-banner:hover { transform: translateY(-2px); }
+        
+        /* 隐藏的降级回退输入框 */
+        #fallback-files, #fallback-folder { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="bg-image" style="background-image: url('https://images.unsplash.com/photo-1614149162883-504ce4d13909?q=80&w=1000&auto=format&fit=crop');"></div>
+    <div id="bg-overlay"></div>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3 id="app-title" contenteditable="true" spellcheck="false" title="点击修改名称">PIPO'S Music</h3>
+        </div>
+        <div class="sidebar-actions">
+            <button id="btn-add-files" class="btn btn-primary" style="flex: 1;" title="添加音乐文件">🎵 添加音乐</button>
+            <button id="btn-add-folder" class="btn btn-primary" style="padding: 8px 15px;" title="添加音乐文件夹">📂</button>
+            
+            <input type="file" id="fallback-files" multiple accept="audio/*">
+            <input type="file" id="fallback-folder" webkitdirectory directory multiple>
+        </div>
+        <div class="sidebar-content" id="playlist-container"></div>
+        <div class="sidebar-header" style="border-top: 1px solid var(--border-color); margin-top: auto;">
+            <h4>当前列表歌曲</h4>
+        </div>
+        <div class="sidebar-content" id="songs-container" style="flex: 1.5;"></div>
+    </div>
+
+    <div class="main-content">
+        <div id="restore-banner" onclick="restorePermissions()">
+            🔒 浏览器拦截了离线访问。点此【一键恢复授权】，找回你的全部音乐！
+        </div>
+
+        <div class="top-settings">
+            <span>模糊度:</span>
+            <input type="range" id="blur-control" min="0" max="50" value="20">
+            <label for="bg-upload">更换背景</label>
+            <input type="file" id="bg-upload" accept="image/*">
+            <button id="theme-toggle">切换模式</button>
+            <button id="export-btn">导出备份</button>
+            <label for="import-backup">导入备份</label>
+            <input type="file" id="import-backup" accept=".json">
+        </div>
+
+        <div class="player-center">
+            <div class="cover-wrapper">
+                <img id="cover-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="封面">
+            </div>
+            <div class="song-title" id="display-title">暂无播放</div>
+            <div class="song-artist" id="display-artist">请添加音乐</div>
+        </div>
+
+        <div class="controls-container">
+            <div class="progress-bar">
+                <span id="time-current">0:00</span>
+                <input type="range" id="progress-slider" min="0" max="100" value="0">
+                <span id="time-total">0:00</span>
+            </div>
+            <div class="buttons">
+                <button class="btn-control" id="btn-mode" title="播放模式">🔁</button>
+                <button class="btn-control" id="btn-prev" title="上一首">⏮</button>
+                <button class="btn-control btn-play" id="btn-play" title="播放/暂停">▶</button>
+                <button class="btn-control" id="btn-next" title="下一首">⏭</button>
+                <div style="display: flex; align-items: center; gap: 5px; margin-left: 20px;">
+                    <span>🔈</span>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" style="width: 80px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <script>
+        // 核心状态
+        let playlists = { "全部歌曲": [] };
+        let currentPlaylistName = "全部歌曲";
+        let currentSongIndex = -1;
+        let playMode = 'loop'; 
+        let savedHandles = []; 
+        let isModernAPIAvailable = false;
+        
+        const audio = document.getElementById('audio-player');
+        let currentObjectUrl = null;
+
+        const DOM = {
+            playlistContainer: document.getElementById('playlist-container'),
+            songsContainer: document.getElementById('songs-container'),
+            coverImg: document.getElementById('cover-img'),
+            displayTitle: document.getElementById('display-title'),
+            displayArtist: document.getElementById('display-artist'),
+            progressSlider: document.getElementById('progress-slider'),
+            timeCurrent: document.getElementById('time-current'),
+            timeTotal: document.getElementById('time-total'),
+            btnPlay: document.getElementById('btn-play'),
+            btnPrev: document.getElementById('btn-prev'),
+            btnNext: document.getElementById('btn-next'),
+            btnMode: document.getElementById('btn-mode'),
+            volumeSlider: document.getElementById('volume-slider'),
+            appTitle: document.getElementById('app-title'),
+            blurControl: document.getElementById('blur-control'),
+            restoreBanner: document.getElementById('restore-banner')
+        };
+
+        // ================= 数据持久化防护 =================
+        async function saveDatabase() {
+            if (typeof idbKeyval === 'undefined') return; // 防止断网没加载库时报错
+            try {
+                const structure = {};
+                for(let key in playlists) {
+                    structure[key] = playlists[key].map(song => ({ name: song.name, title: song.title }));
+                }
+                await idbKeyval.set('pipos_structure', structure);
+                await idbKeyval.set('pipos_handles', savedHandles);
+            } catch (e) { console.warn("存储数据失败", e); }
+        }
+
+        async function loadDatabase() {
+            if (typeof idbKeyval === 'undefined') return;
+            try {
+                const structure = await idbKeyval.get('pipos_structure');
+                const handles = await idbKeyval.get('pipos_handles');
+                
+                if (structure) {
+                    for(let key in structure) {
+                        if(key !== "全部歌曲" && !playlists[key]) playlists[key] = [];
+                        playlists[key] = structure[key].map(song => ({ ...song, fileObj: null }));
+                    }
+                }
+                if (handles && handles.length > 0) {
+                    savedHandles = handles;
+                    isModernAPIAvailable = true; 
+                    DOM.restoreBanner.style.display = 'block'; 
+                }
+                renderPlaylists(); renderSongs();
+            } catch (error) { console.error("数据库读取失败", error); }
+        }
+
+        // ================= 智能双轨：添加文件/文件夹 =================
+        
+        // 核心拦截处理函数（无论哪种方式拿到的文件，都在这里处理）
+        function processFilesIntoPlaylist(listName, files) {
+            // 恢复/挂载缺失的文件实体
+            for(let key in playlists) {
+                playlists[key].forEach(song => {
+                    if(!song.fileObj) {
+                        const match = files.find(f => f.name === song.name);
+                        if(match) song.fileObj = match;
+                    }
+                });
+            }
+
+            if (listName !== "全部歌曲" && !playlists[listName]) playlists[listName] = [];
+            
+            let changed = false;
+            files.forEach(file => {
+                const songObj = { name: file.name, fileObj: file, title: file.name.replace(/\.[^/.]+$/, "") };
+                if (listName !== "全部歌曲" && !playlists[listName].some(song => song.name === file.name)) {
+                    playlists[listName].push(songObj); changed = true;
+                }
+                if (!playlists["全部歌曲"].some(song => song.name === file.name)) {
+                    playlists["全部歌曲"].push(songObj); changed = true;
+                }
+            });
+
+            if (changed) saveDatabase();
+            renderPlaylists();
+            if (currentPlaylistName === listName || currentPlaylistName === "全部歌曲") renderSongs();
+        }
+
+        // 按钮 1：添加音乐文件
+        document.getElementById('btn-add-files').onclick = async () => {
+            try {
+                // 尝试前沿 API
+                if (!window.showOpenFilePicker) throw new Error("Fallback");
+                const handles = await window.showOpenFilePicker({
+                    multiple: true,
+                    types: [{ description: '音频文件', accept: { 'audio/*': ['.mp3', '.wav', '.flac', '.ogg', '.m4a'] } }]
+                });
+                
+                isModernAPIAvailable = true;
+                const files = [];
+                for (const handle of handles) {
+                    await addToHandles(handle); 
+                    files.push(await handle.getFile()); 
+                }
+                processFilesIntoPlaylist("全部歌曲", files);
+            } catch (e) { 
+                if (e.name === 'AbortError') return; // 用户主动关掉窗口
+                // 核心降级：如果被 Brave 拦截，立刻触发老式方案
+                document.getElementById('fallback-files').click();
+            }
+        };
+
+        // 按钮 2：添加音乐文件夹
+        document.getElementById('btn-add-folder').onclick = async () => {
+            try {
+                if (!window.showDirectoryPicker) throw new Error("Fallback");
+                const dirHandle = await window.showDirectoryPicker();
+                isModernAPIAvailable = true;
+                await addToHandles(dirHandle); 
+
+                const files = [];
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind === 'file' && entry.name.match(/\.(mp3|wav|flac|ogg|m4a)$/i)) {
+                        files.push(await entry.getFile());
+                    }
+                }
+                if (files.length > 0) processFilesIntoPlaylist(dirHandle.name, files);
+            } catch (e) { 
+                if (e.name === 'AbortError') return;
+                document.getElementById('fallback-folder').click(); 
+            }
+        };
+
+        // 老式 API 的后备处理逻辑
+        document.getElementById('fallback-files').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files).filter(f => f.type.startsWith('audio/'));
+            if(files.length > 0) processFilesIntoPlaylist("全部歌曲", files);
+            e.target.value = ''; 
+        });
+
+        document.getElementById('fallback-folder').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files).filter(f => f.type.startsWith('audio/'));
+            if(files.length === 0) return;
+            const folderName = files[0].webkitRelativePath.split('/')[0] || "新建文件夹列表";
+            processFilesIntoPlaylist(folderName, files);
+            e.target.value = ''; 
+        });
+
+        async function addToHandles(newHandle) {
+            if (typeof idbKeyval === 'undefined') return;
+            let exists = false;
+            for (const h of savedHandles) {
+                if (await h.isSameEntry(newHandle)) { exists = true; break; }
+            }
+            if (!exists) {
+                savedHandles.push(newHandle);
+                saveDatabase();
+            }
+        }
+
+        // ================= 导入导出（已补回！） =================
+        document.getElementById('export-btn').onclick = () => {
+            const structure = {};
+            for(let key in playlists) {
+                structure[key] = playlists[key].map(song => ({ name: song.name, title: song.title }));
+            }
+            const blob = new Blob([JSON.stringify(structure)], {type: 'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'music_player_backup.json'; a.click();
+        };
+
+        document.getElementById('import-backup').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    for(let key in data) {
+                        if(key !== "全部歌曲" && playlists[key]) continue; 
+                        playlists[key] = data[key].map(song => ({ name: song.name, title: song.title, fileObj: null }));
+                    }
+                    saveDatabase(); 
+                    currentPlaylistName = "全部歌曲";
+                    renderPlaylists(); renderSongs();
+                    alert("备份导入成功！请点击上方【📂】重新选中音乐存放的主文件夹，以激活所有变红的离线歌曲！");
+                } catch(err) { alert("导入失败，JSON格式错误。"); }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // 允许重复导入同一文件
+        });
+
+        // ================= 一键恢复授权 =================
+        window.restorePermissions = async () => {
+            try {
+                const allFiles = [];
+                for (const handle of savedHandles) {
+                    if (await handle.queryPermission({ mode: 'read' }) !== 'granted') {
+                        const perm = await handle.requestPermission({ mode: 'read' });
+                        if (perm !== 'granted') throw new Error("授权被拒绝");
+                    }
+                    if (handle.kind === 'file') {
+                        allFiles.push(await handle.getFile());
+                    } else if (handle.kind === 'directory') {
+                        for await (const entry of handle.values()) {
+                            if (entry.kind === 'file' && entry.name.match(/\.(mp3|wav|flac|ogg|m4a)$/i)) {
+                                allFiles.push(await entry.getFile());
+                            }
+                        }
+                    }
+                }
+                
+                for (let key in playlists) {
+                    playlists[key].forEach(song => {
+                        if (!song.fileObj) {
+                            const match = allFiles.find(f => f.name === song.name);
+                            if (match) song.fileObj = match;
+                        }
+                    });
+                }
+                DOM.restoreBanner.style.display = 'none'; 
+                renderSongs(); 
+            } catch (error) { alert("恢复授权失败，系统拦截或用户拒绝。请使用添加按钮重新关联。"); }
+        };
+
+        // ================= UI 与 播放控制 =================
+        function renderPlaylists() {
+            DOM.playlistContainer.innerHTML = '';
+            const keys = ["全部歌曲", ...Object.keys(playlists).filter(k => k !== "全部歌曲")];
+
+            keys.forEach(name => {
+                const div = document.createElement('div');
+                div.className = `playlist-item ${currentPlaylistName === name ? 'active' : ''}`;
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'playlist-name'; nameSpan.innerText = name; div.appendChild(nameSpan);
+
+                if (name !== "全部歌曲") {
+                    const actionsDiv = document.createElement('div'); actionsDiv.className = 'playlist-actions';
+                    const renameBtn = document.createElement('span'); renameBtn.innerText = '✏️'; renameBtn.className = 'icon-btn';
+                    renameBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        const newName = prompt("请输入新的列表名称:", name);
+                        if (newName && newName.trim() !== "" && newName !== name) {
+                            if (playlists[newName]) return alert("名称已存在！");
+                            playlists[newName] = playlists[name]; delete playlists[name];
+                            if (currentPlaylistName === name) currentPlaylistName = newName;
+                            saveDatabase(); renderPlaylists();
+                        }
+                    };
+                    const delBtn = document.createElement('span'); delBtn.innerText = '🗑'; delBtn.className = 'icon-btn';
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        if(confirm(`确定删除 "${name}" 吗？`)) {
+                            delete playlists[name];
+                            if(currentPlaylistName === name) currentPlaylistName = "全部歌曲";
+                            saveDatabase(); renderPlaylists(); renderSongs();
+                        }
+                    };
+                    actionsDiv.appendChild(renameBtn); actionsDiv.appendChild(delBtn); div.appendChild(actionsDiv);
+                }
+                div.onclick = () => { currentPlaylistName = name; renderPlaylists(); renderSongs(); };
+                DOM.playlistContainer.appendChild(div);
+            });
+        }
+
+        function renderSongs() {
+            DOM.songsContainer.innerHTML = '';
+            const songs = playlists[currentPlaylistName] || [];
+            if(songs.length === 0) return DOM.songsContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 20px;">暂无音乐</div>';
+
+            songs.forEach((song, index) => {
+                const div = document.createElement('div');
+                div.className = `song-item ${currentSongIndex === index ? 'playing' : ''}`;
+                div.innerText = song.title;
+                
+                if(!song.fileObj) {
+                    div.style.color = "#ff4d4f";
+                    div.innerText += " (等待关联)";
+                }
+
+                div.onclick = () => {
+                    if (song.fileObj) playSong(index);
+                    else {
+                        if(isModernAPIAvailable) alert("请先点击界面顶部的【一键恢复授权】按钮！");
+                        else alert("因环境受限导致离线：请点击【📂】重新选中音乐文件夹，系统会自动恢复红色歌曲！");
+                    }
+                };
+                DOM.songsContainer.appendChild(div);
+            });
+        }
+
+        function playSong(index) {
+            const song = playlists[currentPlaylistName][index];
+            if (!song || !song.fileObj) return; 
+
+            currentSongIndex = index;
+            if(currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+            currentObjectUrl = URL.createObjectURL(song.fileObj);
+            audio.src = currentObjectUrl; audio.play();
+            DOM.btnPlay.innerText = "⏸";
+            DOM.displayTitle.innerText = song.title; DOM.displayArtist.innerText = "解析中...";
+            renderSongs(); extractCoverAndTags(song.fileObj);
+        }
+
+        function togglePlay() {
+            if(currentSongIndex === -1 && playlists[currentPlaylistName].length > 0) return playSong(0);
+            if (audio.paused) { audio.play(); DOM.btnPlay.innerText = "⏸"; } else { audio.pause(); DOM.btnPlay.innerText = "▶"; }
+        }
+
+        function playNext() {
+            const songs = playlists[currentPlaylistName]; if(songs.length === 0) return;
+            let nextIndex = playMode === 'random' ? Math.floor(Math.random() * songs.length) : (currentSongIndex + 1) % songs.length;
+            playSong(nextIndex);
+        }
+
+        function playPrev() {
+            const songs = playlists[currentPlaylistName]; if(songs.length === 0) return;
+            let prevIndex = currentSongIndex - 1; if (prevIndex < 0) prevIndex = songs.length - 1;
+            playSong(prevIndex);
+        }
+
+        function changeMode() {
+            const modes = { 'loop': { next: 'single', icon: '🔂', title: '单曲循环' }, 'single': { next: 'random', icon: '🔀', title: '随机' }, 'random': { next: 'loop', icon: '🔁', title: '列表循环' } };
+            playMode = modes[playMode].next;
+            DOM.btnMode.innerText = modes[playMode].icon; DOM.btnMode.title = modes[playMode].title;
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            if(audio.duration) {
+                DOM.progressSlider.value = (audio.currentTime / audio.duration) * 100;
+                DOM.timeCurrent.innerText = formatTime(audio.currentTime); DOM.timeTotal.innerText = formatTime(audio.duration);
+            }
+        });
+        audio.addEventListener('ended', () => playMode === 'single' ? (audio.currentTime = 0, audio.play()) : playNext());
+        DOM.progressSlider.addEventListener('input', (e) => { if(audio.duration) audio.currentTime = (e.target.value / 100) * audio.duration; });
+        DOM.volumeSlider.addEventListener('input', (e) => audio.volume = e.target.value);
+        DOM.btnPlay.onclick = togglePlay; DOM.btnNext.onclick = playNext; DOM.btnPrev.onclick = playPrev; DOM.btnMode.onclick = changeMode;
+
+        function extractCoverAndTags(file) {
+            DOM.coverImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; DOM.displayArtist.innerText = "未知";
+            if (window.jsmediatags) {
+                jsmediatags.read(file, {
+                    onSuccess: function(tag) {
+                        if(tag.tags.title) DOM.displayTitle.innerText = tag.tags.title;
+                        if(tag.tags.artist) DOM.displayArtist.innerText = tag.tags.artist;
+                        if (tag.tags.picture) {
+                            let b64 = ""; for (let i = 0; i < tag.tags.picture.data.length; i++) b64 += String.fromCharCode(tag.tags.picture.data[i]);
+                            DOM.coverImg.src = "data:" + tag.tags.picture.format + ";base64," + window.btoa(b64);
+                        }
+                    }
+                });
+            }
+        }
+        function formatTime(s) { const m = Math.floor(s / 60), sec = Math.floor(s % 60); return `${m}:${sec < 10 ? '0' : ''}${sec}`; }
+
+        // ================= 外观设置存储 =================
+        function saveSettings() {
+            localStorage.setItem('pipos_settings', JSON.stringify({ title: DOM.appTitle.innerText, theme: document.documentElement.getAttribute('data-theme'), blur: DOM.blurControl.value }));
+        }
+        function loadSettings() {
+            const s = JSON.parse(localStorage.getItem('pipos_settings'));
+            if (s) { DOM.appTitle.innerText = s.title || "PIPO'S Music"; document.documentElement.setAttribute('data-theme', s.theme || 'dark'); DOM.blurControl.value = s.blur || 20; document.documentElement.style.setProperty('--blur-level', `${s.blur || 20}px`); }
+            const bg = localStorage.getItem('pipos_background'); if (bg) document.getElementById('bg-image').style.backgroundImage = `url('${bg}')`;
+        }
+
+        DOM.appTitle.addEventListener('blur', saveSettings);
+        document.getElementById('theme-toggle').onclick = () => { document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); saveSettings(); };
+        DOM.blurControl.addEventListener('input', (e) => { document.documentElement.style.setProperty('--blur-level', `${e.target.value}px`); saveSettings(); });
+        document.getElementById('bg-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64Url = event.target.result;
+                    document.getElementById('bg-image').style.backgroundImage = `url('${base64Url}')`;
+                    try { localStorage.setItem('pipos_background', base64Url); } catch (e) { alert("图片太大，无法缓存！"); }
+                }; reader.readAsDataURL(file);
+            }
+        });
+
+        // 启动加载
+        window.onload = async () => {
+            loadSettings();
+            await loadDatabase(); 
+        };
+
+    </script>
+</body>
+</html>
