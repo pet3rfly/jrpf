@@ -105,9 +105,17 @@
             font-family: var(--font-song);
         }
         
-        td[contenteditable="true"] { outline: none; }
+        td[contenteditable="true"], h1[contenteditable="true"] { outline: none; }
         [contenteditable="true"]:hover { background-color: rgba(255, 255, 0, 0.1); cursor: text; }
         [contenteditable="true"]:focus { background-color: rgba(255, 255, 255, 0.8); }
+
+        /* 全文编辑模式样式 */
+        .global-editable {
+            outline: 1px dashed var(--theme-color);
+            background-color: rgba(34, 88, 218, 0.05);
+            cursor: text;
+        }
+        .global-editable:hover { background-color: rgba(255, 255, 0, 0.1); }
 
         .footer-date {
             text-align: right; font-size: 16px;
@@ -203,12 +211,14 @@
     <div class="a4-page" id="capture-area">
         <img src="../images/bdc水印.jpg" id="bg-watermark" alt="水印" style="top: 40px; left: 0px;">
         <img src="../images/hfbdc.png" id="stamp-layer" alt="印章" style="top: 375px; left: 460px; width: 160px;">
+        <input type="hidden" id="stampSrcVal" value="../images/hfbdc.png">
+        <input type="file" id="stampUpload" accept="image/*" style="display:none" onchange="loadStamp(this)">
 
         <div class="content-layer">
             
             <div class="header">
                 <div class="header-title">
-                    <h1>合肥市不动产登记信息查询结果</h1>
+                    <h1 contenteditable="true" id="mainTitle">合肥市不动产登记信息查询结果</h1>
                     <div class="header-info" contenteditable="true" id="txtHeaderInfo">依申请，经过查询 合肥市不动产统一登记信息管理系统，结果如下：</div>
                 </div>
                 <img src="../images/hfqr-100.jpg" id="qr-img" class="qr-code" alt="QR">
@@ -394,7 +404,8 @@
 
             <div class="section-title-panel">页面元素</div>
             <div class="control-row">
-                <button class="btn-full" onclick="toggleSecondOwner()">👥 增减第二权利人</button>
+                <button class="btn-full" onclick="toggleSecondOwner()" style="width: 48%;">👥 增减权利人</button>
+                <button class="btn-full" onclick="toggleGlobalEdit()" style="width: 48%; background: #fff3cd; border-color: #ffeeba;">📝 全文编辑</button>
             </div>
             <div class="control-row">
                 <label>日期时间</label>
@@ -406,6 +417,11 @@
             </div>
 
             <div class="section-title-panel">印章 & 水印</div>
+            <div class="control-row">
+                <button class="btn-full" onclick="changeStamp('../images/hfbdc.png')" style="width: 30%; padding: 4px;">合肥</button>
+                <button class="btn-full" onclick="changeStamp('../images/fxbdc.png')" style="width: 30%; padding: 4px;">肥西</button>
+                <button class="btn-full" onclick="document.getElementById('stampUpload').click()" style="width: 35%; padding: 4px;">📂 上传</button>
+            </div>
             <div class="control-row">
                 <label>印章上下</label>
                 <div class="slider-container">
@@ -456,11 +472,11 @@
     </div>
 
     <script>
-        // 更新了ID列表，增加了第二权利人的字段 (t1_xxx_2)
+        // 加入了 mainTitle 和 stampSrcVal，以便数据库自动记录标题修改和印章选择
         const fieldIds = [
-            "txtHeaderInfo", "footerDateDisplay",
+            "mainTitle", "txtHeaderInfo", "footerDateDisplay",
             "t1_certNo", "t1_owner", "t1_id", "t1_type", "t1_reason", "t1_date",
-            "t1_certNo_2", "t1_owner_2", "t1_id_2", "t1_type_2", "t1_reason_2", "t1_date_2", // 新增字段
+            "t1_certNo_2", "t1_owner_2", "t1_id_2", "t1_type_2", "t1_reason_2", "t1_date_2", 
             "t2_share", "t2_unit", "t2_addr", 
             "t2_totalFl", "t2_currFl", "t2_room", "t2_usage", "t2_nature", "t2_areaBuild", "t2_areaPriv", "t2_areaShare", "t2_finish",
             "t2_landArea", "t2_landDate", "t2_zoneArea", "t2_zoneNature", "t2_zoneRightType", "t2_zoneUsage", "t2_zoneUsage2", "t2_zoneUsage3", "t2_remarks",
@@ -468,7 +484,8 @@
             "t4_org", "t4_type", "t4_doc", "t4_start", "t4_end", "t4_unseal", "t4_rem",
             "t5_item", "t5_rem",
             "t6_cert", "t6_person", "t6_term", "t6_date", "t6_rem",
-            "stampTop", "stampLeft", "stampSize", "wmTop", "wmLeft"
+            "stampTop", "stampLeft", "stampSize", "wmTop", "wmLeft",
+            "stampSrcVal" // 记录印章状态
         ];
 
         const DB_KEY = "HFBDC_DB";
@@ -476,7 +493,6 @@
         const GIST_DESC = "Hefei Real Estate DB Backup";
 
         window.onload = function() {
-            // 初始化日期选择器并强制刷新页脚日期为当前时间
             const now = new Date(); 
             const picker = document.getElementById('datePicker');
             const yyyy = now.getFullYear();
@@ -486,7 +502,6 @@
             const mm = String(now.getMinutes()).padStart(2, '0');
             picker.value = `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
             
-            // 强制刷新页脚
             updateDate(); 
 
             refreshList();
@@ -497,20 +512,50 @@
             }
         }
 
-        // 新增功能：增减第二权利人
+        // 全文编辑模式逻辑
+        let isGlobalEdit = false;
+        function toggleGlobalEdit() {
+            isGlobalEdit = !isGlobalEdit;
+            // 抓取所有的表头、固定单元格、分类标题和底部说明
+            const elements = document.querySelectorAll('.content-layer th, .content-layer td:not([id^="t"]), .section-title, .footer-notes');
+            elements.forEach(el => {
+                el.contentEditable = isGlobalEdit;
+                if(isGlobalEdit) {
+                    el.classList.add('global-editable');
+                } else {
+                    el.classList.remove('global-editable');
+                }
+            });
+        }
+
+        // 印章切换逻辑
+        function changeStamp(src) {
+            document.getElementById('stamp-layer').src = src;
+            document.getElementById('stampSrcVal').value = src;
+        }
+
+        // 印章上传逻辑
+        function loadStamp(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('stamp-layer').src = e.target.result;
+                    document.getElementById('stampSrcVal').value = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
         function toggleSecondOwner(forceState) {
             const table = document.getElementById('ownerTable');
-            // 表格目前结构：0行=表头，1行=第一权利人。如果>2行，说明已经添加了第二人
             const hasSecondRow = table.rows.length > 2;
 
-            // forceState: true(强制添加), false(强制删除), null(切换)
             let shouldAdd = false;
             if (forceState === true) shouldAdd = true;
             else if (forceState === false) shouldAdd = false;
             else shouldAdd = !hasSecondRow;
 
             if (shouldAdd && !hasSecondRow) {
-                // 添加一行
                 const newRow = table.insertRow(2);
                 newRow.innerHTML = `
                     <td contenteditable="true" id="t1_certNo_2"></td>
@@ -521,7 +566,6 @@
                     <td contenteditable="true" id="t1_date_2"></td>
                 `;
             } else if (!shouldAdd && hasSecondRow) {
-                // 删除一行
                 table.deleteRow(2);
             }
         }
@@ -536,15 +580,11 @@
             e.stopPropagation(); 
             document.getElementById('controlPanel').classList.add('collapsed');
         }
-        function toggleControlPanel() {
-            document.getElementById('controlPanel').classList.toggle('collapsed');
-        }
 
         function updateDate() {
             const val = document.getElementById('datePicker').value;
             if(val) {
                 const d = new Date(val);
-                // 修复：月、日、时、分 补零
                 const yyyy = d.getFullYear();
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
                 const dd = String(d.getDate()).padStart(2, '0');
@@ -592,7 +632,6 @@
             }).catch(err => { alert("导出失败，请检查环境。"); });
         }
 
-        // 数据库 & 云同步逻辑
         function saveToDB() {
             const owner = document.getElementById('t1_owner').innerText.trim() || "未命名";
             const now = new Date();
@@ -628,9 +667,6 @@
             let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
             const data = allData[name];
             if(data) {
-                // 特殊处理：检查是否保存了第二权利人信息
-                // 如果保存的数据里有 t1_owner_2，说明当时是双人模式，需要强制开启
-                // 如果没有，则强制关闭
                 if (data['t1_owner_2'] !== undefined) {
                     toggleSecondOwner(true);
                 } else {
@@ -639,7 +675,6 @@
 
                 fieldIds.forEach(id => {
                     const el = document.getElementById(id);
-                    // 必须再次检查el是否存在，因为toggleSecondOwner可能刚刚创建它
                     if(el && data[id] !== undefined) {
                         if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
                             el.value = data[id];
@@ -648,6 +683,12 @@
                         }
                     }
                 });
+                
+                // 恢复印章图片状态
+                if (data['stampSrcVal']) {
+                    document.getElementById('stamp-layer').src = data['stampSrcVal'];
+                }
+
                 updateStamp();
                 updateWatermark();
             }
