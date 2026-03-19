@@ -214,7 +214,7 @@
             <div class="section-title">产权信息</div>
             <table id="ownerTable">
                 <colgroup>
-                    <col style="width: 28%"> <col style="width: 12%"> <col style="width: 25%"> 
+                    <col style="width: 26%"> <col style="width: 16%"> <col style="width: 23%"> 
                     <col style="width: 12%"> <col style="width: 11%"> <col style="width: 12%">
                 </colgroup>
                 <tr>
@@ -234,9 +234,9 @@
             <div class="section-title">不动产详情（面积单位：平方米）</div>
             <table>
                 <colgroup>
-                    <col style="width: 10%"> <col style="width: 10%"> <col style="width: 10%"> 
-                    <col style="width: 16%"> <col style="width: 13%"> <col style="width: 13%"> 
-                    <col style="width: 13%"> <col style="width: 15%">
+                    <col style="width: 8%"> <col style="width: 8%"> <col style="width: 8%"> 
+                    <col style="width: 12%"> <col style="width: 14%"> <col style="width: 14%"> 
+                    <col style="width: 14%"> <col style="width: 22%">
                 </colgroup>
                 <tr>
                     <td colspan="2">共有情况</td>
@@ -309,12 +309,12 @@
                     <th>债务履行期限</th> <th>登记时间</th> <th>禁止转让</th> <th>附记</th>
                 </tr>
                 <tr>
-                    <td contenteditable="true" id="t3_cert">皖(2025)合肥市不动<br>产证明第 9052077 号</td>
-                    <td contenteditable="true" id="t3_person">安徽长丰农村<br>商业银行股份<br>有限公司埠里<br>支行</td>
-                    <td contenteditable="true" id="t3_type">最高额抵<br>押</td>
-                    <td contenteditable="true" id="t3_amt">180</td>
-                    <td contenteditable="true" id="t3_term">2025-07-03 至<br>2028-07-03</td>
-                    <td contenteditable="true" id="t3_date">2025-07-04</td>
+                    <td contenteditable="true" id="t3_cert">皖(2026)合肥市不动<br>产证明第9015697号</td>
+                    <td contenteditable="true" id="t3_person">安徽九鼎典当<br>商业银行股份</td>
+                    <td contenteditable="true" id="t3_type">一般抵押</td>
+                    <td contenteditable="true" id="t3_amt">150</td>
+                    <td contenteditable="true" id="t3_term">2026-02-28 至<br>2026-03-29</td>
+                    <td contenteditable="true" id="t3_date">2026-03-02</td>
                     <td contenteditable="true" id="t3_forbid">是</td>
                     <td contenteditable="true" id="t3_rem"></td>
                 </tr>
@@ -377,7 +377,8 @@
                 说明：<br>
                 1、本次查询结果依据不动产（含房屋）登记簿出具，反映查询人目前实际拥有的不动产权利登记信息。<br>
                 2、可能因被查询人身份信息与登记簿不一致导致错误结果，查询人请当场核实以上身份信息和结果信息，<br>
-                如信息有误或异议，请告知档案查询工作人员予以核实，如有隐瞒或提供虚假信息自行承担法律责任。
+                如信息有误或异议，请告知档案查询工作人员予以核实，如有隐瞒或提供虚假信息自行承担法律责任。<br>
+                3、查询结果中空白栏，均为登记簿中无此项信息。<br>
             </div>
 
         </div>
@@ -469,7 +470,6 @@
         // === 智能交互：光标进入(Click/Tab)自动全选文字 ===
         document.addEventListener('focusin', function(e) {
             if(e.target && e.target.getAttribute('contenteditable') === 'true') {
-                // 轻微延时，确保系统默认的focus行为完成后再执行全选
                 setTimeout(() => {
                     const range = document.createRange();
                     range.selectNodeContents(e.target);
@@ -477,6 +477,50 @@
                     sel.removeAllRanges();
                     sel.addRange(range);
                 }, 10);
+            }
+        });
+
+        // === 智能交互：失去焦点(blur)时验证长度与自动格式化日期 ===
+        document.addEventListener('focusout', function(e) {
+            if(e.target && e.target.getAttribute('contenteditable') === 'true') {
+                const id = e.target.id;
+                const text = e.target.innerText.trim();
+
+                // 1. 验证证件号 (18位)
+                if (id === 't1_id' || id === 't1_id_2') {
+                    if (text.length > 0 && text.length !== 18) {
+                        e.target.style.color = 'red';
+                        alert("⚠️ 提醒：证件号码通常为 18 位，您当前输入了 " + text.length + " 位，请检查！");
+                    } else {
+                        e.target.style.color = ''; 
+                    }
+                }
+
+                // 2. 验证不动产单元号 (28位)
+                if (id === 't2_unit') {
+                    if (text.length > 0 && text.length !== 28) {
+                        e.target.style.color = 'red';
+                        alert("⚠️ 提醒：不动产单元号应为 28 位，您当前输入了 " + text.length + " 位，请检查！");
+                    } else {
+                        e.target.style.color = '';
+                    }
+                }
+
+                // 3. 自动格式化日期 (8位数字 -> YYYY-MM-DD)
+                const dateFieldIds = [
+                    "t1_date", "t1_date_2", 
+                    "t2_finish", "t2_landDate", 
+                    "t3_term", "t3_term_2", "t3_date", "t3_date_2", 
+                    "t4_start", "t4_end", 
+                    "t6_date"
+                ];
+                if (dateFieldIds.includes(id)) {
+                    // 正则匹配独立的8位纯数字（包含汉字分隔的情况，如：至20250703），将其替换为 YYYY-MM-DD
+                    const newText = text.replace(/\b(\d{4})(\d{2})(\d{2})\b/g, '$1-$2-$3');
+                    if (newText !== text) {
+                        e.target.innerText = newText;
+                    }
+                }
             }
         });
 
