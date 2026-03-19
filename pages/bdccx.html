@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>不动产档案信息</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js](https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js)"></script>
     <style>
         :root {
             --font-song: "SimSun", "Songti SC", serif;
@@ -75,7 +75,6 @@
         .header-info { font-size: 16px; text-align: left; margin: 0; }
         .qr-code { width: 120px; height: 120px; object-fit: contain; }
 
-        /* 标题样式 */
         .section-title {
             font-size: 16px; 
             font-weight: normal; 
@@ -109,7 +108,6 @@
         [contenteditable="true"]:hover { background-color: rgba(255, 255, 0, 0.1); cursor: text; }
         [contenteditable="true"]:focus { background-color: rgba(255, 255, 255, 0.8); }
 
-        /* 全文编辑模式样式 */
         .global-editable {
             outline: 1px dashed var(--theme-color);
             background-color: rgba(34, 88, 218, 0.05);
@@ -137,7 +135,6 @@
         .float-btn.green { background: #28a745; }
         .float-btn:hover { opacity: 0.9; }
 
-        /* 控制面板样式 */
         .control-panel {
             position: fixed; bottom: 20px; right: 20px; background: #fff;
             border: 1px solid #ccc; padding: 0; z-index: 10000;
@@ -186,6 +183,8 @@
         .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
         .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
 
+        /* AI 导入文本域 */
+        #jsonImportArea { width:100%; height:80px; font-size:10px; display:none; margin-top:5px; border: 1px solid #ccc; border-radius: 4px; padding: 4px; box-sizing: border-box; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -393,6 +392,13 @@
                 <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
             </div>
 
+            <div class="section-title-panel">🤖 AI 智能录入</div>
+            <div class="control-row">
+                <button class="btn-full" onclick="toggleJsonArea()" style="width: 100%; border-color:#2196F3; color:#2196F3;">📥 粘贴 AI 识别数据</button>
+            </div>
+            <textarea id="jsonImportArea" placeholder="在此粘贴 Gem 生成的 JSON 代码..."></textarea>
+            <button class="btn-full" id="btnConfirmImport" onclick="executeImport()" style="display:none; background: #28a745; color: white; margin-top: 5px;">✅ 确认填充</button>
+
             <div class="section-title-panel">快捷增删 & 编辑</div>
             <div class="control-row">
                 <button class="btn-full" onclick="toggleSecondOwner()" style="width: 48%;">👥 增减权利人</button>
@@ -467,6 +473,55 @@
     </div>
 
     <script>
+        // === AI 导入逻辑 ===
+        function toggleJsonArea() {
+            const area = document.getElementById('jsonImportArea');
+            const btn = document.getElementById('btnConfirmImport');
+            if (area.style.display === 'none') {
+                area.style.display = 'block';
+                btn.style.display = 'block';
+                area.focus();
+            } else {
+                area.style.display = 'none';
+                btn.style.display = 'none';
+            }
+        }
+
+        function executeImport() {
+            const rawText = document.getElementById('jsonImportArea').value.trim();
+            if(!rawText) return alert('请先粘贴数据！');
+            try {
+                // 清理可能带有的 markdown 标记
+                let cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const data = JSON.parse(cleanText);
+
+                // 动态构建多行
+                if (data['t1_owner_2']) toggleSecondOwner(true);
+                else toggleSecondOwner(false);
+
+                if (data['t3_cert_2']) toggleSecondMortgage(true);
+                else toggleSecondMortgage(false);
+
+                // 遍历填充
+                for (const key in data) {
+                    const el = document.getElementById(key);
+                    if (el) {
+                        if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                            el.value = data[key];
+                        } else {
+                            el.innerText = data[key];
+                        }
+                    }
+                }
+                alert('✅ 智能录入成功！请仔细核对数据。');
+                document.getElementById('jsonImportArea').value = '';
+                toggleJsonArea(); // 收起输入框
+            } catch (e) {
+                alert('❌ 识别数据格式有误，请确保复制了完整的 JSON 内容！\n\n错误详情: ' + e.message);
+            }
+        }
+
+
         // === 智能交互：光标进入(Click/Tab)自动全选文字 ===
         document.addEventListener('focusin', function(e) {
             if(e.target && e.target.getAttribute('contenteditable') === 'true') {
@@ -515,7 +570,6 @@
                     "t6_date"
                 ];
                 if (dateFieldIds.includes(id)) {
-                    // 正则匹配独立的8位纯数字（包含汉字分隔的情况，如：至20250703），将其替换为 YYYY-MM-DD
                     const newText = text.replace(/\b(\d{4})(\d{2})(\d{2})\b/g, '$1-$2-$3');
                     if (newText !== text) {
                         e.target.innerText = newText;
@@ -527,22 +581,17 @@
         // 字段列表更新
         const fieldIds = [
             "mainTitle", "txtHeaderInfo", "footerDateDisplay",
-            // 产权人 1 & 2
             "t1_certNo", "t1_owner", "t1_id", "t1_type", "t1_reason", "t1_date",
             "t1_certNo_2", "t1_owner_2", "t1_id_2", "t1_type_2", "t1_reason_2", "t1_date_2", 
-            // 详情
             "t2_share", "t2_unit", "t2_addr", 
             "t2_totalFl", "t2_currFl", "t2_room", "t2_usage", "t2_areaBuild", "t2_areaPriv", "t2_areaShare", "t2_finish",
-            "t2_nature", "t2_natureName", // 新增独立一行
+            "t2_nature", "t2_natureName",
             "t2_landArea", "t2_landDate", "t2_zoneArea", "t2_zoneNature", "t2_zoneRightType", "t2_zoneUsage", "t2_zoneUsage2", "t2_zoneUsage3", "t2_remarks",
-            // 抵押 1 & 2
             "t3_cert", "t3_person", "t3_type", "t3_amt", "t3_term", "t3_date", "t3_forbid", "t3_rem",
-            "t3_cert_2", "t3_person_2", "t3_type_2", "t3_amt_2", "t3_term_2", "t3_date_2", "t3_forbid_2", "t3_rem_2", // 新增抵押2
-            // 查封、异议、居住权
+            "t3_cert_2", "t3_person_2", "t3_type_2", "t3_amt_2", "t3_term_2", "t3_date_2", "t3_forbid_2", "t3_rem_2",
             "t4_org", "t4_type", "t4_doc", "t4_start", "t4_end", "t4_unseal", "t4_rem",
             "t5_item", "t5_rem",
             "t6_cert", "t6_person", "t6_term", "t6_date", "t6_rem",
-            // 控制属性
             "stampTop", "stampLeft", "stampSize", "wmTop", "wmLeft",
             "stampSrcVal" 
         ];
@@ -573,7 +622,6 @@
         // 切换抵押信息行数
         function toggleSecondMortgage(forceState) {
             const table = document.getElementById('mortgageTable');
-            // 行数>2代表已经有两行抵押记录 (第0行是colgroup，第1行是表头，第2行是第一条)
             const hasSecondRow = table.rows.length > 2;
 
             let shouldAdd = false;
@@ -584,13 +632,13 @@
             if (shouldAdd && !hasSecondRow) {
                 const newRow = table.insertRow(2);
                 newRow.innerHTML = `
-                    <td contenteditable="true" id="t3_cert_2">皖(2026)合肥市不动<br>产证明第 9015697 号</td>
-                    <td contenteditable="true" id="t3_person_2">安徽九鼎典当<br>有限公司</td>
-                    <td contenteditable="true" id="t3_type_2">一般抵押</td>
-                    <td contenteditable="true" id="t3_amt_2">150</td>
-                    <td contenteditable="true" id="t3_term_2">2026-02-28 至<br>2026-03-29</td>
-                    <td contenteditable="true" id="t3_date_2">2026-03-02</td>
-                    <td contenteditable="true" id="t3_forbid_2">是</td>
+                    <td contenteditable="true" id="t3_cert_2"></td>
+                    <td contenteditable="true" id="t3_person_2"></td>
+                    <td contenteditable="true" id="t3_type_2"></td>
+                    <td contenteditable="true" id="t3_amt_2"></td>
+                    <td contenteditable="true" id="t3_term_2"></td>
+                    <td contenteditable="true" id="t3_date_2"></td>
+                    <td contenteditable="true" id="t3_forbid_2"></td>
                     <td contenteditable="true" id="t3_rem_2"></td>
                 `;
             } else if (!shouldAdd && hasSecondRow) {
@@ -751,14 +799,12 @@
             let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
             const data = allData[name];
             if(data) {
-                // 恢复多行数据结构状态
                 if (data['t1_owner_2'] !== undefined) toggleSecondOwner(true);
                 else toggleSecondOwner(false);
 
                 if (data['t3_cert_2'] !== undefined) toggleSecondMortgage(true);
                 else toggleSecondMortgage(false);
 
-                // 填入数据
                 fieldIds.forEach(id => {
                     const el = document.getElementById(id);
                     if(el && data[id] !== undefined) {
@@ -770,7 +816,6 @@
                     }
                 });
                 
-                // 恢复印章
                 if (data['stampSrcVal']) {
                     document.getElementById('stamp-layer').src = data['stampSrcVal'];
                 }
@@ -820,10 +865,10 @@
             statusDiv.className = "cloud-status";
 
             try {
-                const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `token ${token}` } });
+                const userRes = await fetch('[https://api.github.com/user](https://api.github.com/user)', { headers: { Authorization: `token ${token}` } });
                 if(!userRes.ok) throw new Error("Token 无效");
 
-                const gistsRes = await fetch('https://api.github.com/gists', { headers: { Authorization: `token ${token}` } });
+                const gistsRes = await fetch('[https://api.github.com/gists](https://api.github.com/gists)', { headers: { Authorization: `token ${token}` } });
                 const gists = await gistsRes.json();
                 let targetGist = gists.find(g => g.description === GIST_DESC && g.files[GIST_FILENAME]);
                 let gistId = targetGist ? targetGist.id : null;
@@ -831,7 +876,7 @@
                 if (action === 'upload') {
                     const content = localStorage.getItem(DB_KEY) || "{}";
                     const payload = { description: GIST_DESC, public: false, files: { [GIST_FILENAME]: { content: content } } };
-                    let url = 'https://api.github.com/gists';
+                    let url = '[https://api.github.com/gists](https://api.github.com/gists)';
                     let method = 'POST';
                     if (gistId) { url += `/${gistId}`; method = 'PATCH'; }
                     
