@@ -45,7 +45,7 @@
                 margin: 0;
                 page-break-after: always;
             }
-            .control-panel, .btn-group, .del-row-btn { display: none !important; }
+            .control-panel, .btn-group { display: none !important; }
             -webkit-print-color-adjust: exact;
         }
 
@@ -107,35 +107,12 @@
         [contenteditable="true"]:hover { background-color: rgba(255, 255, 0, 0.1); cursor: text; }
         [contenteditable="true"]:focus { background-color: rgba(255, 255, 255, 0.8); }
 
-        /* 全文编辑模式样式 */
         .global-editable {
             outline: 1px dashed var(--theme-color);
             background-color: rgba(34, 88, 218, 0.05);
             cursor: text;
         }
         .global-editable:hover { background-color: rgba(255, 255, 0, 0.1); }
-
-        /* === 悬浮删除行按钮 === */
-        .del-row-btn {
-            position: absolute;
-            left: -18px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 14px;
-            height: 14px;
-            background-color: #ff5252;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 13px;
-            font-size: 10px;
-            cursor: pointer;
-            display: none;
-            user-select: none;
-            z-index: 100;
-            font-family: Arial, sans-serif;
-        }
-        tr:hover .del-row-btn { display: block; }
 
         .footer-date {
             text-align: right; font-size: 16px;
@@ -156,7 +133,6 @@
         }
         .float-btn:hover { opacity: 0.9; }
 
-        /* 控制面板样式 */
         .control-panel {
             position: fixed; bottom: 20px; right: 20px; background: #fff;
             border: 1px solid #ccc; padding: 0; z-index: 10000;
@@ -187,12 +163,12 @@
             border-left: 3px solid var(--theme-color); padding-left: 6px;
         }
         .section-title-panel:first-child { margin-top: 0; }
-        .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 5px; }
         .control-row label { color: #555; font-weight: bold; min-width: 60px; }
-        .control-row input, .control-row select { flex: 1; padding: 4px; border: 1px solid #ddd; border-radius: 4px; margin-left: 5px; }
-        .slider-container { flex: 1; display: flex; align-items: center; gap: 5px; margin-left: 5px;}
+        .control-row input, .control-row select { flex: 1; padding: 4px; border: 1px solid #ddd; border-radius: 4px; }
+        .slider-container { flex: 1; display: flex; align-items: center; gap: 5px; }
         .slider-container input { flex: 1; }
-        .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; }
+        .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; box-sizing: border-box; }
         .btn-full:hover { background: #e0e0e0; }
         .btn-primary { background: var(--theme-color); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         .btn-danger { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
@@ -205,14 +181,13 @@
         .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
         .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
 
-        /* AI 导入文本域 */
         #jsonImportArea { width:100%; height:80px; font-size:10px; display:none; margin-top:5px; border: 1px solid #ccc; border-radius: 4px; padding: 4px; box-sizing: border-box; font-family: monospace; }
     </style>
 </head>
 <body>
 
     <div class="btn-group">
-        <button class="float-btn" onclick="window.print()">🖨️ 打印 / 存为PDF</button>
+        <button class="float-btn red" style="background:#b71c1c" onclick="window.print()">🖨️ 打印 / 存为PDF</button>
     </div>
 
     <div class="a4-page" id="capture-area">
@@ -237,21 +212,22 @@
                     <col style="width: 26%"> <col style="width: 16%"> <col style="width: 23%"> 
                     <col style="width: 12%"> <col style="width: 11%"> <col style="width: 12%">
                 </colgroup>
-                <tr>
-                    <th>不动产权证号</th> <th>权利人</th> <th>证件号</th>
-                    <th>登记类型</th> <th>登记原因</th> <th>登记时间</th>
-                </tr>
-                <tr>
-                    <td contenteditable="true" id="t1_certNo" style="position:relative;">
-                        <span class="del-row-btn" contenteditable="false" onclick="this.closest('tr').remove()" title="删除此行">✖</span>
-                        皖(2025)合肥市不动产权<br>第 5015944 号
-                    </td>
-                    <td contenteditable="true" id="t1_owner">吕亮</td>
-                    <td contenteditable="true" id="t1_id">340121198708151333</td>
-                    <td contenteditable="true" id="t1_type">转移登记</td>
-                    <td contenteditable="true" id="t1_reason">存量房买卖</td>
-                    <td contenteditable="true" id="t1_date">2025-07-01</td>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>不动产权证号</th> <th>权利人</th> <th>证件号</th>
+                        <th>登记类型</th> <th>登记原因</th> <th>登记时间</th>
+                    </tr>
+                </thead>
+                <tbody id="ownerTbody">
+                    <tr data-suffix="">
+                        <td contenteditable="true" id="t1_certNo">皖(2025)合肥市不动产权<br>第 5015944 号</td>
+                        <td contenteditable="true" id="t1_owner">吕亮</td>
+                        <td contenteditable="true" id="t1_id">340121198708151333</td>
+                        <td contenteditable="true" id="t1_type">转移登记</td>
+                        <td contenteditable="true" id="t1_reason">存量房买卖</td>
+                        <td contenteditable="true" id="t1_date">2025-07-01</td>
+                    </tr>
+                </tbody>
             </table>
 
             <div class="section-title">不动产详情（面积单位：平方米）</div>
@@ -327,23 +303,24 @@
                     <col style="width: 22%"> <col style="width: 15%"> <col style="width: 10%"> <col style="width: 10%"> 
                     <col style="width: 15%"> <col style="width: 12%"> <col style="width: 10%"> <col style="width: 6%"> 
                 </colgroup>
-                <tr>
-                    <th>不动产证明号</th> <th>抵押权人</th> <th>抵押方式</th> <th>抵押金额</th>
-                    <th>债务履行期限</th> <th>登记时间</th> <th>禁止转让</th> <th>附记</th>
-                </tr>
-                <tr>
-                    <td contenteditable="true" id="t3_cert" style="position:relative;">
-                        <span class="del-row-btn" contenteditable="false" onclick="this.closest('tr').remove()" title="删除此行">✖</span>
-                        皖(2026)合肥市不动<br>产证明第9015697号
-                    </td>
-                    <td contenteditable="true" id="t3_person">安徽长丰农村<br>商业银行股份<br>有限公司埠里<br>支行</td>
-                    <td contenteditable="true" id="t3_type">最高额抵<br>押</td>
-                    <td contenteditable="true" id="t3_amt">180</td>
-                    <td contenteditable="true" id="t3_term">2025-07-03 至<br>2028-07-03</td>
-                    <td contenteditable="true" id="t3_date">2025-07-04</td>
-                    <td contenteditable="true" id="t3_forbid">是</td>
-                    <td contenteditable="true" id="t3_rem"></td>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>不动产证明号</th> <th>抵押权人</th> <th>抵押方式</th> <th>抵押金额</th>
+                        <th>债务履行期限</th> <th>登记时间</th> <th>禁止转让</th> <th>附记</th>
+                    </tr>
+                </thead>
+                <tbody id="mortgageTbody">
+                    <tr data-suffix="">
+                        <td contenteditable="true" id="t3_cert">皖(2026)合肥市不动<br>产证明第9015697号</td>
+                        <td contenteditable="true" id="t3_person">安徽长丰农村<br>商业银行股份<br>有限公司埠里<br>支行</td>
+                        <td contenteditable="true" id="t3_type">最高额抵<br>押</td>
+                        <td contenteditable="true" id="t3_amt">180</td>
+                        <td contenteditable="true" id="t3_term">2025-07-03 至<br>2028-07-03</td>
+                        <td contenteditable="true" id="t3_date">2025-07-04</td>
+                        <td contenteditable="true" id="t3_forbid">是</td>
+                        <td contenteditable="true" id="t3_rem"></td>
+                    </tr>
+                </tbody>
             </table>
 
             <div class="section-title">查封信息（注：轮候查封的实际起止日期为待定）</div>
@@ -426,24 +403,26 @@
             <textarea id="jsonImportArea" placeholder="在此粘贴 Gem 生成的 JSON 代码..."></textarea>
             <button class="btn-full" id="btnConfirmImport" onclick="executeImport()" style="display:none; background: #28a745; color: white; margin-top: 5px;">✅ 确认填充</button>
 
-            <div class="section-title-panel">按需增加行 & 编辑模式</div>
+            <div class="section-title-panel">行数增减 & 编辑模式</div>
             <div class="control-row">
-                <button class="btn-full" onclick="onAddOwnerClick()" style="width: 48%;">➕ 添加权利人</button>
-                <button class="btn-full" onclick="onAddMortgageClick()" style="width: 48%;">➕ 添加抵押</button>
+                <button class="btn-full" onclick="addOwnerRow()" style="width: 48%;">➕ 权利人</button>
+                <button class="btn-full" onclick="delTopOwnerRow()" style="width: 48%; background: #ffebee; border-color: #ffcdd2; color: #d32f2f;">➖ 删首行</button>
             </div>
-            <div style="font-size: 10px; color:#888; text-align: center; margin-top:2px;">(提示：鼠标移入表格行即可点击左侧 ✖ 删除)</div>
-            
+            <div class="control-row">
+                <button class="btn-full" onclick="addMortgageRow()" style="width: 48%;">➕ 抵押信息</button>
+                <button class="btn-full" onclick="delTopMortgageRow()" style="width: 48%; background: #ffebee; border-color: #ffcdd2; color: #d32f2f;">➖ 删首行</button>
+            </div>
             <div class="control-row" style="margin-top: 5px;">
                 <button class="btn-full" onclick="toggleGlobalEdit()" style="width: 100%; background: #fff3cd; border-color: #ffeeba;">📝 开启/关闭 全文结构编辑</button>
             </div>
             
             <div class="control-row" style="margin-top: 10px;">
                 <label>打印时间</label>
-                <input type="datetime-local" id="datePicker" step="60" onchange="updateDate()">
+                <input type="datetime-local" id="datePicker" step="60" onchange="updateDate()" style="margin-left: 0;">
             </div>
             <div class="control-row">
-                <label>替换二维码</label>
-                <input type="file" accept="image/*" onchange="loadQR(this)" style="padding:2px;">
+                <label>换二维码</label>
+                <input type="file" accept="image/*" onchange="loadQR(this)" style="padding:2px; margin-left: 0;">
             </div>
 
             <div class="section-title-panel">印章 & 水印</div>
@@ -453,27 +432,21 @@
                 <button class="btn-full" onclick="document.getElementById('stampUpload').click()" style="width: 35%; padding: 4px;">📂 上传</button>
             </div>
             <div class="control-row">
-                <label>印章上下</label>
+                <label>上下</label>
                 <div class="slider-container">
                     <input type="range" id="stampTop" min="0" max="1000" value="350" oninput="updateStamp()">
                 </div>
             </div>
             <div class="control-row">
-                <label>印章左右</label>
+                <label>左右</label>
                 <div class="slider-container">
                     <input type="range" id="stampLeft" min="0" max="700" value="400" oninput="updateStamp()">
                 </div>
             </div>
             <div class="control-row">
-                <label>印章大小</label>
+                <label>大小</label>
                 <div class="slider-container">
                     <input type="range" id="stampSize" min="50" max="300" value="160" oninput="updateStamp()">
-                </div>
-            </div>
-            <div class="control-row">
-                <label>底纹上下</label>
-                <div class="slider-container">
-                    <input type="range" id="wmTop" min="-200" max="200" value="40" oninput="updateWatermark()">
                 </div>
             </div>
 
@@ -502,30 +475,44 @@
     </div>
 
     <script>
-        // === 核心逻辑：智能增减行与构建 ===
-        
-        function addOwnerRowWithSuffix(suffix) {
-            const table = document.getElementById('ownerTable');
-            const tr = table.insertRow(-1);
+        // === 核心逻辑：无限增减行与自上而下删除 ===
+
+        // 动态添加权利人行
+        function addOwnerRow(forceSuffix) {
+            const tbody = document.getElementById('ownerTbody');
+            // 如果没有传入后缀，则生成一个基于时间戳的唯一后缀
+            const suffix = forceSuffix !== undefined ? forceSuffix : "_" + Date.now();
+            const tr = document.createElement('tr');
+            tr.dataset.suffix = suffix;
             tr.innerHTML = `
-                <td contenteditable="true" id="t1_certNo${suffix}" style="position:relative;">
-                    <span class="del-row-btn" contenteditable="false" onclick="this.closest('tr').remove()" title="删除此行">✖</span>
-                </td>
+                <td contenteditable="true" id="t1_certNo${suffix}"></td>
                 <td contenteditable="true" id="t1_owner${suffix}"></td>
                 <td contenteditable="true" id="t1_id${suffix}"></td>
                 <td contenteditable="true" id="t1_type${suffix}"></td>
                 <td contenteditable="true" id="t1_reason${suffix}"></td>
                 <td contenteditable="true" id="t1_date${suffix}"></td>
             `;
+            tbody.appendChild(tr);
         }
 
-        function addMortgageRowWithSuffix(suffix) {
-            const table = document.getElementById('mortgageTable');
-            const tr = table.insertRow(-1);
+        // 动态删除第一条权利人数据
+        function delTopOwnerRow() {
+            const tbody = document.getElementById('ownerTbody');
+            if (tbody.rows.length > 1) {
+                tbody.deleteRow(0); // 严格删除 tbody 里的第0行（即第一条数据，不影响表头）
+            } else {
+                alert("这是最后一行权利人信息了，不能再删了哦！\n可以直接修改里面的文字。");
+            }
+        }
+
+        // 动态添加抵押行
+        function addMortgageRow(forceSuffix) {
+            const tbody = document.getElementById('mortgageTbody');
+            const suffix = forceSuffix !== undefined ? forceSuffix : "_" + Date.now();
+            const tr = document.createElement('tr');
+            tr.dataset.suffix = suffix;
             tr.innerHTML = `
-                <td contenteditable="true" id="t3_cert${suffix}" style="position:relative;">
-                    <span class="del-row-btn" contenteditable="false" onclick="this.closest('tr').remove()" title="删除此行">✖</span>
-                </td>
+                <td contenteditable="true" id="t3_cert${suffix}"></td>
                 <td contenteditable="true" id="t3_person${suffix}"></td>
                 <td contenteditable="true" id="t3_type${suffix}"></td>
                 <td contenteditable="true" id="t3_amt${suffix}"></td>
@@ -534,57 +521,54 @@
                 <td contenteditable="true" id="t3_forbid${suffix}"></td>
                 <td contenteditable="true" id="t3_rem${suffix}"></td>
             `;
+            tbody.appendChild(tr);
         }
 
-        function onAddOwnerClick() {
-            for(let i=1; i<=10; i++) {
-                let s = i === 1 ? "" : `_${i}`;
-                if(!document.getElementById('t1_certNo' + s)) {
-                    addOwnerRowWithSuffix(s);
-                    return;
-                }
+        // 动态删除第一条抵押数据
+        function delTopMortgageRow() {
+            const tbody = document.getElementById('mortgageTbody');
+            if (tbody.rows.length > 1) {
+                tbody.deleteRow(0); 
+            } else {
+                alert("这是最后一行抵押信息了，不能再删了哦！\n可以直接修改里面的文字。");
             }
         }
 
-        function onAddMortgageClick() {
-            for(let i=1; i<=10; i++) {
-                let s = i === 1 ? "" : `_${i}`;
-                if(!document.getElementById('t3_cert' + s)) {
-                    addMortgageRowWithSuffix(s);
-                    return;
-                }
-            }
-        }
-
-        // 根据传入的数据对象（来自DB或JSON），精准重建所需的所有行
+        // 重构表格结构（用于读取数据库和AI导入时，动态还原多行）
         function rebuildTableFromData(data) {
-            // 1. 清理权利人表格的数据行
-            const ownerTable = document.getElementById('ownerTable');
-            while(ownerTable.rows.length > 1) ownerTable.deleteRow(1);
-            
-            // 2. 根据数据重建权利人行
-            for(let i=1; i<=10; i++) {
-                let s = i === 1 ? "" : `_${i}`;
-                if(data['t1_certNo'+s] !== undefined || data['t1_owner'+s] !== undefined) {
-                    addOwnerRowWithSuffix(s);
+            // --- 还原权利人行 ---
+            const ownerTbody = document.getElementById('ownerTbody');
+            ownerTbody.innerHTML = ''; // 清空现有行
+            let ownerSuffixes = new Set();
+            for (let key in data) {
+                if (key.startsWith('t1_owner')) {
+                    ownerSuffixes.add(key.replace('t1_owner', ''));
                 }
             }
-            if(ownerTable.rows.length === 1) addOwnerRowWithSuffix(""); // 保底留一行空行
+            if (ownerSuffixes.size === 0) ownerSuffixes.add(''); // 保底一行
+            // 排序：保证无后缀的第一行在最上面，如果有_2,_3等则排在后面
+            let sortedOwners = Array.from(ownerSuffixes).sort((a,b) => {
+                if(a==='') return -1; if(b==='') return 1;
+                return parseInt(a.replace('_','')) - parseInt(b.replace('_',''));
+            });
+            sortedOwners.forEach(suffix => addOwnerRow(suffix));
 
-            // 3. 清理抵押表格的数据行
-            const mortTable = document.getElementById('mortgageTable');
-            while(mortTable.rows.length > 1) mortTable.deleteRow(1);
-            
-            // 4. 根据数据重建抵押行
-            for(let i=1; i<=10; i++) {
-                let s = i === 1 ? "" : `_${i}`;
-                if(data['t3_cert'+s] !== undefined || data['t3_person'+s] !== undefined) {
-                    addMortgageRowWithSuffix(s);
+            // --- 还原抵押行 ---
+            const mortTbody = document.getElementById('mortgageTbody');
+            mortTbody.innerHTML = ''; 
+            let mortSuffixes = new Set();
+            for (let key in data) {
+                if (key.startsWith('t3_person')) {
+                    mortSuffixes.add(key.replace('t3_person', ''));
                 }
             }
-            if(mortTable.rows.length === 1) addMortgageRowWithSuffix("");
+            if (mortSuffixes.size === 0) mortSuffixes.add('');
+            let sortedMorts = Array.from(mortSuffixes).sort((a,b) => {
+                if(a==='') return -1; if(b==='') return 1;
+                return parseInt(a.replace('_','')) - parseInt(b.replace('_',''));
+            });
+            sortedMorts.forEach(suffix => addMortgageRow(suffix));
         }
-
 
         // === AI 导入逻辑 ===
         function toggleJsonArea() {
@@ -607,10 +591,10 @@
                 let cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
                 const data = JSON.parse(cleanText);
 
-                // 智能重建行，确保所有需要的格子都存在
+                // 智能重建行结构
                 rebuildTableFromData(data);
 
-                // 遍历填充
+                // 遍历填充数据
                 for (const key in data) {
                     const el = document.getElementById(key);
                     if (el) {
@@ -628,6 +612,7 @@
                 alert('❌ 识别数据格式有误，请确保复制了完整的 JSON 内容！\n\n错误详情: ' + e.message);
             }
         }
+
 
         // === 智能交互：光标进入自动全选文字 ===
         document.addEventListener('focusin', function(e) {
@@ -650,7 +635,7 @@
 
                 const text = e.target.innerText.trim();
 
-                // 1. 验证证件号 (18位)
+                // 验证证件号 (18位)
                 if (id.startsWith('t1_id')) {
                     if (text.length > 0 && text.length !== 18) {
                         e.target.style.color = 'red';
@@ -660,7 +645,7 @@
                     }
                 }
 
-                // 2. 验证不动产单元号 (28位)
+                // 验证不动产单元号 (28位)
                 if (id.startsWith('t2_unit')) {
                     if (text.length > 0 && text.length !== 28) {
                         e.target.style.color = 'red';
@@ -670,7 +655,7 @@
                     }
                 }
 
-                // 3. 自动格式化日期 (8位数字 -> YYYY-MM-DD)
+                // 自动格式化日期 (8位数字 -> YYYY-MM-DD) - 支持动态生成的行前缀
                 const datePrefixes = ['t1_date', 't2_finish', 't2_landDate', 't3_term', 't3_date', 't4_start', 't4_end', 't6_date'];
                 if (datePrefixes.some(prefix => id.startsWith(prefix))) {
                     const newText = text.replace(/\b(\d{4})(\d{2})(\d{2})\b/g, '$1-$2-$3');
@@ -681,10 +666,10 @@
             }
         });
 
-        // 动态获取所有活动字段用于保存
+        // 动态获取当前页面所有活动字段用于保存
         function getDynamicFieldIds() {
             const ids = new Set(["stampSrcVal"]); // 基础隐藏字段
-            // 获取所有带 ID 且可编辑的元素
+            // 获取 content-layer 里所有带有 id 且可编辑或为表单元素的节点
             document.querySelectorAll('.content-layer [id]').forEach(el => {
                 if (el.getAttribute('contenteditable') === 'true' || el.tagName === 'INPUT' || el.tagName === 'SELECT') {
                     ids.add(el.id);
@@ -798,8 +783,11 @@
             wm.style.top = top + 'px';
         }
 
+        // === 数据存取 ===
         function saveToDB() {
-            const owner = document.getElementById('t1_owner') ? document.getElementById('t1_owner').innerText.trim() : "未命名";
+            // 尝试获取第一行权利人的名字
+            const firstOwnerEl = document.querySelector('[id^="t1_owner"]');
+            const owner = firstOwnerEl ? firstOwnerEl.innerText.trim() : "未命名";
             const now = new Date();
             const timeStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
             
@@ -834,7 +822,7 @@
             let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
             const data = allData[name];
             if(data) {
-                // 1. 智能重建所有必须的行
+                // 1. 智能重建行结构
                 rebuildTableFromData(data);
 
                 // 2. 填入数据
