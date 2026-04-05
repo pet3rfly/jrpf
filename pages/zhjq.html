@@ -12,13 +12,45 @@
         }
 
         :root {
+            /* 字体定义 */
             --font-song: "SimSun", "Songti SC", serif;
             --text-main: #000;
             --theme-color: #b71c1c; /* 中行红 */
         }
 
-        @page { size: A4; margin: 0; }
+        /* === 核心：修正 PDF 导出/打印尺寸问题 === */
+        @page { 
+            size: A4; 
+            margin: 0; /* 必须为0 */
+        }
 
+        @media print {
+            body { 
+                background: none !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                width: 210mm !important; 
+                height: 297mm !important;
+                overflow: visible !important;
+            }
+            .a4-page { 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                /* 强制指定物理尺寸，防止内容被裁剪或偏移 */
+                width: 210mm !important; 
+                height: 297mm !important; 
+                position: relative !important; /* 关键：相对定位 */
+                left: 0 !important;
+                top: 0 !important;
+                page-break-after: always; 
+            }
+            .control-panel, .btn-group { display: none !important; }
+            /* 保证扫描纹理能被打印或导出 PDF */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* === 浏览器内显示的居中排版 === */
         body {
             background-color: #e0e0e0;
             margin: 0;
@@ -34,21 +66,12 @@
             background: white;
             width: 210mm;
             height: 297mm;
-            /* 完美复刻 Word 的绝对边距 */
+            /* 复刻 Word 的绝对边距 */
             padding: 1.91cm 2.54cm; 
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
             position: relative;
             box-sizing: border-box;
             overflow: hidden;
-        }
-
-        @media print {
-            body { background: none; padding: 0; }
-            .a4-page { box-shadow: none; margin: 0; width: auto; height: auto; page-break-after: always; }
-            .control-panel, .btn-group { display: none !important; }
-            /* 保证扫描纹理能被打印或导出 PDF */
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
         }
 
         /* === 真实的扫描纹理层 === */
@@ -66,14 +89,13 @@
         /* === 标题样式 (三号 方正小标宋，段后2行) === */
         h1 {
             text-align: center;
-            /* 3号字约等于 16pt / 21.3px */
             font-size: 22px; 
-            font-weight: normal; /* 小标宋自带粗体效果，无需再加粗 */
+            font-weight: normal; /* 小标宋自带粗体效果 */
             margin-top: 20px;
             margin-bottom: 48px; /* 约2行的行距 */
             letter-spacing: 1px;
             font-family: 'FZXBSJ', var(--font-song); 
-            user-select: none; /* 标题不可修改，防误触 */
+            user-select: none; /* 标题不可修改 */
         }
 
         /* === 无边框表格排版 === */
@@ -85,17 +107,15 @@
         }
 
         td {
-            /* 紧凑间距 */
             padding: 10px 0px; 
-            /* 小四号字 = 12pt = 16px */
-            font-size: 16px; 
+            font-size: 16px; /* 小四号 */
             font-weight: normal; 
             vertical-align: middle;
             line-height: 1.8;
         }
 
         .label-col { text-align: left; padding-left: 5px; color: #000; }
-        .val-col { text-align: left; padding-left: 0px; } /* 值与标题更紧凑 */
+        .val-col { text-align: left; padding-left: 0px; }
 
         input[type="text"], select {
             border: none; outline: none; background: transparent;
@@ -171,7 +191,7 @@
         
         <img id="scan-texture" src="../images/zw/zw3.jpg" alt="扫描纹理">
 
-        <img id="stamp-layer" src="../images/bankmark/中国银行长丰支行业务章.png" alt="印章" style="display:block; width:160px; top:420px; left:480px; transform: rotate(0deg);">
+        <img id="stamp-layer" src="../images/bankmark/中国银行长丰支行业务章.png" alt="印章" style="display:block; width:160px; top:470px; left:480px; transform: rotate(0deg);">
         <input type="hidden" id="stampSrcVal" value="../images/bankmark/中国银行长丰支行业务章.png">
         <input type="file" id="stampUpload" accept="image/*" style="display:none" onchange="loadStamp(this)">
 
@@ -297,7 +317,7 @@
             <div class="control-row">
                 <label>上下</label>
                 <div class="slider-container">
-                    <input type="range" id="stampTop" min="0" max="1000" value="420" oninput="updateStamp()">
+                    <input type="range" id="stampTop" min="0" max="1000" value="470" oninput="updateStamp()">
                 </div>
             </div>
             <div class="control-row">
@@ -344,7 +364,7 @@
     </div>
 
     <script>
-        // === 真实纸纹的扫描模式逻辑 ===
+        // === 真实的纸纹的扫描模式逻辑 ===
         function updateScanMode() {
             const isChecked = document.getElementById('scanToggle').checked;
             const texImg = document.getElementById('scan-texture');
