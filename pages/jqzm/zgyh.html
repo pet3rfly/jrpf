@@ -8,7 +8,7 @@
         /* === 引入特定的公文字体 === */
         @font-face {
             font-family: 'FZXBSJ'; /* 方正小标宋简 */
-            src: url('../images/方正小标宋简.TTF') format('truetype');
+            src: url('../../images/方正小标宋简.TTF') format('truetype');
         }
 
         :root {
@@ -171,7 +171,6 @@
         .btn-cloud { flex: 1; font-size: 12px; padding: 5px; border: none; border-radius: 4px; cursor: pointer; color: white; }
         .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
         .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
-        #jsonImportArea { width:100%; height:80px; font-size:10px; display:none; margin-top:5px; border: 1px solid #ccc; border-radius: 4px; padding: 4px; box-sizing: border-box; font-family: monospace; }
         
         .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -189,10 +188,10 @@
 
     <div class="a4-page" id="capture-area">
         
-        <img id="scan-texture" src="../images/zw/zw3.jpg" alt="扫描纹理">
+        <img id="scan-texture" src="../../images/zw/zw3.jpg" alt="扫描纹理">
 
-        <img id="stamp-layer" src="../images/bankmark/中国银行长丰支行业务章.png" alt="印章" style="display:block; width:160px; top:470px; left:480px; transform: rotate(0deg);">
-        <input type="hidden" id="stampSrcVal" value="../images/bankmark/中国银行长丰支行业务章.png">
+        <img id="stamp-layer" src="../../images/bankmark/中国银行长丰支行业务章.png" alt="印章" style="display:block; width:160px; top:470px; left:480px; transform: rotate(0deg);">
+        <input type="hidden" id="stampSrcVal" value="../../images/bankmark/中国银行长丰支行业务章.png">
         <input type="file" id="stampUpload" accept="image/*" style="display:none" onchange="loadStamp(this)">
 
         <div class="content-layer">
@@ -275,9 +274,9 @@
             <div class="control-row">
                 <label>纸张样式</label>
                 <select id="scanSelect" onchange="updateScanMode()">
-                    <option value="../images/zw/zw3.jpg">深色折痕 (zw3)</option>
-                    <option value="../images/zw/zw2.jpg">中度噪点 (zw2)</option>
-                    <option value="../images/zw/zw1.jpg">轻微复印 (zw1)</option>
+                    <option value="../../images/zw/zw3.jpg">深色折痕 (zw3)</option>
+                    <option value="../../images/zw/zw2.jpg">中度噪点 (zw2)</option>
+                    <option value="../../images/zw/zw1.jpg">轻微复印 (zw1)</option>
                 </select>
             </div>
             <div class="control-row">
@@ -287,12 +286,7 @@
                 </div>
             </div>
 
-            <div class="section-title-panel">🤖 AI 与业务功能</div>
-            <div class="control-row">
-                <button class="btn-full" onclick="toggleJsonArea()" style="width: 100%; border-color:#2196F3; color:#2196F3;">📥 粘贴 AI 识别数据</button>
-            </div>
-            <textarea id="jsonImportArea" placeholder="粘贴 JSON 代码..."></textarea>
-            <button class="btn-full" id="btnConfirmImport" onclick="executeImport()" style="display:none; background: #28a745; color: white; margin-top: 5px;">✅ 确认填充</button>
+            <div class="section-title-panel">业务功能</div>
 
             <div class="control-row">
                 <button class="btn-full" onclick="generateAccount()">🎲 生成随机贷款账号</button>
@@ -310,8 +304,8 @@
 
             <div class="section-title-panel">印章管理</div>
             <div class="control-row">
-                <button class="btn-full" onclick="changeStamp('../images/bankmark/中国银行长丰支行业务章.png')" style="width: 30%; padding: 4px;">长丰</button>
-                <button class="btn-full" onclick="changeStamp('../images/bankmark/中国银行业务章蜀山支行.png')" style="width: 30%; padding: 4px;">蜀山</button>
+                <button class="btn-full" onclick="changeStamp('../../images/bankmark/中国银行长丰支行业务章.png')" style="width: 30%; padding: 4px;">长丰</button>
+                <button class="btn-full" onclick="changeStamp('../../images/bankmark/中国银行业务章蜀山支行.png')" style="width: 30%; padding: 4px;">蜀山</button>
                 <button class="btn-full" onclick="document.getElementById('stampUpload').click()" style="width: 35%; padding: 4px;">📂 上传</button>
             </div>
             <div class="control-row">
@@ -463,45 +457,6 @@
                 const MM = String(d.getMinutes()).padStart(2, '0');
                 const SS = String(d.getSeconds()).padStart(2, '0');
                 document.getElementById('t_printTimeDisplay').value = `${yyyy}/${mm}/${dd} ${HH}:${MM}:${SS}`;
-            }
-        }
-
-        // === AI 导入逻辑 ===
-        function toggleJsonArea() {
-            const area = document.getElementById('jsonImportArea');
-            const btn = document.getElementById('btnConfirmImport');
-            if (area.style.display === 'none') {
-                area.style.display = 'block';
-                btn.style.display = 'block';
-                area.focus();
-            } else {
-                area.style.display = 'none';
-                btn.style.display = 'none';
-            }
-        }
-
-        function executeImport() {
-            const rawText = document.getElementById('jsonImportArea').value.trim();
-            if(!rawText) return alert('请先粘贴数据！');
-            try {
-                let cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-                const data = JSON.parse(cleanText);
-
-                for (const key in data) {
-                    const el = document.getElementById(key);
-                    if (el) {
-                        if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
-                            el.value = data[key];
-                        } else {
-                            el.innerText = data[key];
-                        }
-                    }
-                }
-                alert('✅ 智能录入成功！请仔细核对数据。');
-                document.getElementById('jsonImportArea').value = '';
-                toggleJsonArea();
-            } catch (e) {
-                alert('❌ 识别数据格式有误，请确保复制了完整的 JSON 内容！\n\n错误详情: ' + e.message);
             }
         }
 

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安徽肥东农村商业银行 - 结清证明</title>
+    <style>
+        /* === 引入特定的公文字体 === */
+        @font-face {
+            font-family: 'FZXBSJ'; /* 方正小标宋简 */
+            src: url('../../images/方正小标宋简.TTF') format('truetype');
+        }
+        @font-face {
+            font-family: 'FangSong_GB2312'; /* 仿宋_GB2312 */
+            src: url('../../images/仿宋_GB2312.ttf') format('truetype');
+        }
+
+        :root {
+            --font-song: "SimSun", "Songti SC", serif;
+            --text-main: #000;
+            --theme-color: #009688; /* 农商行偏绿色系 */
+        }
+
+        @page { size: A4; margin: 0; }
+
+        @media print {
+            body { background: none !important; padding: 0 !important; margin: 0 !important; width: 210mm !important; height: 297mm !important; overflow: visible !important; }
+            .a4-page { box-shadow: none !important; margin: 0 !important; width: 210mm !important; height: 297mm !important; position: relative !important; left: 0 !important; top: 0 !important; page-break-after: always; }
+            .control-panel, .btn-group { display: none !important; }
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+
+        body {
+            background-color: #e0e0e0; margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text-main);
+        }
+
+        .a4-page {
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            /* 严格遵循公文页边距 */
+            padding: 2.54cm 3.18cm; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* 真实的扫描纹理层 */
+        #scan-texture {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; mix-blend-mode: multiply; pointer-events: none; z-index: 9999;
+            display: none; opacity: 0.6;
+        }
+
+        /* === 标题 (小二 = 18pt = 24px, 方正小标宋) === */
+        h1 {
+            text-align: center;
+            font-size: 24px; 
+            font-weight: normal; 
+            margin-top: 10px;
+            margin-bottom: 40px; 
+            line-height: 1.5;
+            font-family: 'FZXBSJ', var(--font-song); 
+            user-select: none;
+        }
+
+        .content-layer { position: relative; z-index: 10; background: transparent; }
+
+        /* === 正文 (四号 = 14pt = ~19px, 宋体) === */
+        .main-text {
+            font-family: var(--font-song);
+            font-size: 19px;
+            line-height: 2.0; /* 提升至 2.0，完美模拟 Word 的 1.5 倍行距 */
+            text-indent: 2em; /* 首行空两格 */
+            margin: 15px 0;
+            text-align: justify;
+        }
+
+        /* === 客户信息框 (四号, 仿宋_GB2312) === */
+        .info-box {
+            border: 1px solid #000;
+            padding: 20px 10px;
+            margin: 25px 0;
+            background: transparent;
+        }
+        .info-box p {
+            font-family: 'FangSong_GB2312', var(--font-song);
+            font-size: 19px;
+            line-height: 2.0; /* 同步提升行距 */
+            text-indent: 2em; /* 首行空两格 */
+            margin: 5px 0;
+        }
+
+        /* === 落款区域 (靠右，内部居中) === */
+        .signature-area {
+            margin-top: 60px;
+            display: flex;
+            justify-content: flex-end; /* 将整个模块推到最右侧 */
+            padding-right: 10px;
+        }
+        .signature-box {
+            text-align: center; /* 内部两行文字互相居中 */
+            font-family: var(--font-song);
+            font-size: 19px;
+            line-height: 2.0;
+        }
+        .signature-box p { margin: 5px 0; }
+
+        /* 全文编辑反馈 - 移除了 block 属性，真正变成行内无缝文字 */
+        span[contenteditable="true"] { outline: none; border-radius: 2px; transition: background 0.2s; }
+        span[contenteditable="true"]:hover { background-color: rgba(255, 255, 0, 0.2); cursor: text; }
+        span[contenteditable="true"]:focus { background-color: rgba(255, 255, 255, 0.8); outline: 1px dashed var(--theme-color); }
+
+        /* === 印章 === */
+        #stamp-layer {
+            position: absolute; z-index: 5; mix-blend-mode: multiply; cursor: move; transform-origin: center center;
+            width: 163px; /* 默认4.3cm */
+        }
+
+        /* === 控制面板样式 === */
+        .btn-group { position: fixed; top: 20px; right: 20px; z-index: 10001; display: flex; gap: 10px; }
+        .float-btn { padding: 8px 15px; background: var(--theme-color); color: #fff; border: none; border-radius: 4px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 14px; font-family: "Microsoft YaHei"; }
+        .float-btn:hover { opacity: 0.9; }
+
+        .control-panel { position: fixed; bottom: 20px; right: 20px; background: #fff; border: 1px solid #ccc; padding: 0; z-index: 10000; width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.15); border-radius: 8px; font-size: 12px; font-family: "Microsoft YaHei"; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; max-height: 85vh; overflow-y: auto; }
+        .control-panel.collapsed { width: 48px; height: 48px; border-radius: 50%; background: var(--theme-color); cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
+        .control-panel.collapsed .panel-content { opacity: 0; pointer-events: none; }
+        .toggle-icon { display: none; color: white; font-size: 24px; }
+        .control-panel.collapsed .toggle-icon { display: block; }
+        .panel-content { padding: 15px; opacity: 1; transition: opacity 0.3s; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--theme-color); margin-bottom: 15px; padding-bottom: 8px; }
+        .panel-header h4 { margin: 0; color: var(--theme-color); font-size: 14px; }
+        .minimize-btn { cursor: pointer; font-size: 20px; color: #999; width: 24px; height: 24px; line-height: 20px; text-align: center; }
+        .minimize-btn:hover { color: #333; background: #eee; border-radius: 4px; }
+        .section-title-panel { font-weight: bold; color: #666; margin: 15px 0 5px 0; font-size: 12px; border-left: 3px solid var(--theme-color); padding-left: 6px; }
+        .section-title-panel:first-child { margin-top: 0; }
+        .control-row { margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+        .control-row label { color: #555; font-weight: bold; min-width: 50px; }
+        .control-row input, .control-row select { flex: 1; padding: 4px; border: 1px solid #ddd; border-radius: 4px; }
+        .slider-container { flex: 1; display: flex; align-items: center; gap: 5px; }
+        .slider-container input { flex: 1; }
+        .btn-full { width: 100%; padding: 6px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; margin-top: 5px; color: #333; box-sizing: border-box; }
+        .btn-full:hover { background: #e0e0e0; }
+        .btn-primary { background: var(--theme-color); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background: #ff5252; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        
+        .cloud-status { font-size: 10px; color: #999; text-align: right; margin-top: 2px; }
+        .cloud-status.success { color: green; }
+        .cloud-status.error { color: red; }
+        .cloud-row { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-cloud { flex: 1; font-size: 12px; padding: 5px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
+        .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 18px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--theme-color); }
+        input:checked + .slider:before { transform: translateX(16px); }
+    </style>
+</head>
+<body>
+
+    <div class="btn-group">
+        <button class="float-btn" style="background:#b71c1c" onclick="window.print()">🖨️ 打印 / 存为PDF</button>
+    </div>
+
+    <div class="a4-page" id="capture-area">
+        
+        <img id="scan-texture" src="../../images/zw/zw3.jpg" alt="扫描纹理">
+
+        <img id="stamp-layer" src="../../images/bankmark/肥东农商行.png" alt="印章" style="display:block; top:760px; left:430px; transform: rotate(0deg);">
+        <input type="hidden" id="stampSrcVal" value="../../images/bankmark/肥东农商行.png">
+        <input type="file" id="stampUpload" accept="image/*" style="display:none" onchange="loadStamp(this)">
+
+        <div class="content-layer">
+            <h1 id="mainTitle">安徽肥东农村商业银行股份有限公司<br>个人贷款业务结清证明</h1>
+
+            <p class="main-text">客户<span contenteditable="true" id="t_custName">钱昌</span>在我行的办理的个人抵押经营性贷款于<span contenteditable="true" id="t_clearDate"> 2026 年 04 月 06 日</span>已结清全部贷款本息，我行允许其办理相关手续，请有关单位予以协助为盼。</p>
+
+            <div class="info-box">
+                <p>客户姓名：<span contenteditable="true" id="t_boxName">钱昌</span></p>
+                <p>身份证号：<span contenteditable="true" id="t_idCard">340111198303201512</span></p>
+                <p>借据号：<span contenteditable="true" id="t_receiptNo">9071263901</span></p>
+                <p>经办行：<span contenteditable="true" id="t_branch">肥东营业部</span></p>
+                <p>贷款金额：<span contenteditable="true" id="t_amtCn">柒拾贰万元</span>（人民币<span contenteditable="true" id="t_amtNum">720000.00</span>元）</p>
+                <p>放款日期：<span contenteditable="true" id="t_loanDate">2024年4月17日</span></p>
+                <p>贷款期限：<span contenteditable="true" id="t_term">240</span>个月</p>
+            </div>
+
+            <p class="main-text">特此证明！</p>
+
+            <div class="signature-area">
+                <div class="signature-box">
+                    <p contenteditable="true" id="t_signBank">安徽肥东农村商业银行股份有限公司</p>
+                    <p contenteditable="true" id="t_signDate">2026年04月06日</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="control-panel" id="controlPanel" onclick="handlePanelClick(event)">
+        <div class="toggle-icon">⚙</div>
+        
+        <div class="panel-content">
+            <div class="panel-header">
+                <h4>肥东农商设置</h4>
+                <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
+            </div>
+
+            <div class="control-row" style="background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px dashed #ccc;">
+                <label style="color:var(--theme-color); flex:1;">🖨️ 开启扫描纸纹</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="scanToggle" onchange="updateScanMode()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="control-row">
+                <label>纸张样式</label>
+                <select id="scanSelect" onchange="updateScanMode()">
+                    <option value="../../images/zw/zw3.jpg">深色折痕 (zw3)</option>
+                    <option value="../../images/zw/zw2.jpg">中度噪点 (zw2)</option>
+                    <option value="../../images/zw/zw1.jpg">轻微复印 (zw1)</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <label>纸纹浓度</label>
+                <div class="slider-container">
+                    <input type="range" id="scanOpacity" min="0.1" max="1" step="0.1" value="0.6" oninput="updateScanMode()">
+                </div>
+            </div>
+
+            <div class="section-title-panel">业务操作</div>
+            <div class="control-row">
+                <button class="btn-full" onclick="generateReceipt()">🎲 生成随机借据号(10位)</button>
+            </div>
+            
+            <div class="section-title-panel">印章管理 (默认4.3cm)</div>
+            <div class="control-row">
+                <button class="btn-full" onclick="changeStamp('../../images/bankmark/肥东农商行.png')" style="width: 48%; padding: 4px;">肥东印章</button>
+                <button class="btn-full" onclick="document.getElementById('stampUpload').click()" style="width: 48%; padding: 4px;">📂 上传更换</button>
+            </div>
+            <div class="control-row">
+                <label>上下</label>
+                <div class="slider-container">
+                    <input type="range" id="stampTop" min="0" max="1000" value="630" oninput="updateStamp()">
+                </div>
+            </div>
+            <div class="control-row">
+                <label>左右</label>
+                <div class="slider-container">
+                    <input type="range" id="stampLeft" min="0" max="700" value="380" oninput="updateStamp()">
+                </div>
+            </div>
+            <div class="control-row">
+                <label>大小</label>
+                <div class="slider-container">
+                    <input type="range" id="stampSize" min="50" max="300" value="163" oninput="updateStamp()">
+                </div>
+            </div>
+            <div class="control-row">
+                <label>旋转</label>
+                <div class="slider-container">
+                    <input type="range" id="stampRotate" min="-180" max="180" value="0" oninput="updateStamp()">
+                </div>
+            </div>
+
+            <div class="section-title-panel">本地档案库</div>
+            <div class="control-row">
+                <input type="text" id="dbSaveName" placeholder="档案名 (自动生成)" style="margin-left:0;">
+                <button class="btn-primary" style="background:var(--theme-color);" onclick="saveToDB()">保存</button>
+            </div>
+            <div class="control-row">
+                <select id="dbList" onchange="loadFromDB()" style="margin-left:0;">
+                    <option value="">-- 历史记录 --</option>
+                </select>
+                <button class="btn-danger" onclick="deleteFromDB()" style="margin-left:5px;">删</button>
+            </div>
+
+            <div class="section-title-panel">GitHub 云同步</div>
+            <div class="control-row">
+                <input type="password" id="ghToken" placeholder="粘贴 Token" onchange="saveToken()" style="margin-left:0;">
+            </div>
+            <div class="cloud-status" id="cloudStatus">未配置</div>
+            <div class="cloud-row">
+                <button class="btn-cloud btn-upload" onclick="syncToCloud('upload')">⬆ 上传到云</button>
+                <button class="btn-cloud btn-download" onclick="syncToCloud('download')">⬇ 从云下载</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === 纸纹扫描模式 ===
+        function updateScanMode() {
+            const isChecked = document.getElementById('scanToggle').checked;
+            const texImg = document.getElementById('scan-texture');
+            const texSrc = document.getElementById('scanSelect').value;
+            const opacity = document.getElementById('scanOpacity').value;
+            
+            if (isChecked) {
+                texImg.src = texSrc;
+                texImg.style.opacity = opacity;
+                texImg.style.display = 'block';
+            } else {
+                texImg.style.display = 'none';
+            }
+        }
+
+        // === 随机借据号生成 (10位数字) ===
+        function generateReceipt() {
+            const digits = "0123456789";
+            let result = "9"; // 仿照原图以 9 开头
+            for(let i=0; i<9; i++) {
+                result += digits.charAt(Math.floor(Math.random() * digits.length));
+            }
+            document.getElementById('t_receiptNo').innerText = result;
+        }
+
+        // === 智能全选 ===
+        document.addEventListener('focusin', function(e) {
+            if(e.target && e.target.getAttribute('contenteditable') === 'true') {
+                setTimeout(() => {
+                    const range = document.createRange();
+                    range.selectNodeContents(e.target);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }, 10);
+            }
+        });
+
+        // 监听客户姓名的修改，自动同步到框内
+        document.getElementById('t_custName').addEventListener('input', function(e) {
+            document.getElementById('t_boxName').innerText = this.innerText;
+        });
+
+        // === 失去焦点：校验与日期格式化 ===
+        document.addEventListener('focusout', function(e) {
+            const id = e.target.id;
+            if(!id) return;
+            const text = e.target.innerText.trim();
+            if(!text) return;
+
+            // 1. 身份证校验 (18位)
+            if (id === 't_idCard') {
+                if (text.length !== 18) {
+                    e.target.style.color = 'red';
+                    alert(`⚠️ 提醒：证件号码通常为 18 位，当前为 ${text.length} 位！`);
+                } else {
+                    e.target.style.color = ''; 
+                }
+            }
+
+            // 2. 日期格式化：输入 20260323 -> 2026 年 03 月 23 日
+            const dateFieldIds = ['t_clearDate', 't_loanDate', 't_signDate'];
+            if (dateFieldIds.includes(id)) {
+                const newText = text.replace(/\b(\d{4})(\d{2})(\d{2})\b/g, '$1 年 $2 月 $3 日');
+                const finalText = newText.replace(/(\d{4})年(\d{1,2})月(\d{1,2})日/g, '$1 年 $2 月 $3 日');
+                if (finalText !== text) {
+                    e.target.innerText = finalText;
+                }
+            }
+        });
+
+        // === 默认日期设置 ===
+        function initDateFields() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy} 年 ${mm} 月 ${dd} 日`;
+            
+            // 如果为空才赋值，防止覆盖已有记录
+            if(!document.getElementById('t_clearDate').innerText) document.getElementById('t_clearDate').innerText = dateStr;
+            if(!document.getElementById('t_signDate').innerText) document.getElementById('t_signDate').innerText = dateStr;
+        }
+
+        // === 数据库与外挂基础 ===
+        const DB_KEY = "FDNS_JIEQING_DB";
+        const GIST_FILENAME = "fdns_jieqing_db.json";
+        const GIST_DESC = "Feidong Nongshang Jieqing Backup";
+
+        function getDynamicFieldIds() {
+            const ids = new Set(["stampSrcVal"]); 
+            document.querySelectorAll('.content-layer [id]').forEach(el => {
+                if (el.getAttribute('contenteditable') === 'true') ids.add(el.id);
+            });
+            ids.add("stampTop"); ids.add("stampLeft"); ids.add("stampSize"); ids.add("stampRotate");
+            ids.add("scanToggle"); ids.add("scanSelect"); ids.add("scanOpacity");
+            return Array.from(ids);
+        }
+
+        window.onload = function() {
+            initDateFields();
+            refreshList();
+            const savedToken = localStorage.getItem('GH_TOKEN');
+            if(savedToken) {
+                document.getElementById('ghToken').value = savedToken;
+                document.getElementById('cloudStatus').innerText = "Token 已保存";
+            }
+        }
+
+        // 印章控制
+        function changeStamp(src) {
+            document.getElementById('stamp-layer').src = src;
+            document.getElementById('stampSrcVal').value = src;
+        }
+        function loadStamp(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('stamp-layer').src = e.target.result;
+                    document.getElementById('stampSrcVal').value = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function updateStamp() {
+            const top = document.getElementById('stampTop').value;
+            const left = document.getElementById('stampLeft').value;
+            const size = document.getElementById('stampSize').value;
+            const rot = document.getElementById('stampRotate').value;
+            const stamp = document.getElementById('stamp-layer');
+            stamp.style.top = top + 'px';
+            stamp.style.left = left + 'px';
+            stamp.style.width = size + 'px';
+            stamp.style.transform = `rotate(${rot}deg)`;
+        }
+
+        // 面板交互
+        function handlePanelClick(e) {
+            const panel = document.getElementById('controlPanel');
+            if (panel.classList.contains('collapsed')) panel.classList.remove('collapsed');
+        }
+        function minimizePanel(e) {
+            e.stopPropagation(); 
+            document.getElementById('controlPanel').classList.add('collapsed');
+        }
+
+        // 存取逻辑
+        function saveToDB() {
+            const owner = document.getElementById('t_custName').innerText.trim() || "未命名";
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+            let saveName = document.getElementById('dbSaveName').value.trim();
+            if(!saveName) saveName = `${owner}_${timeStr}`;
+
+            const data = {};
+            const dynamicIds = getDynamicFieldIds();
+            dynamicIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    if(el.tagName === 'INPUT' && el.type === 'checkbox') data[id] = el.checked;
+                    else if(el.tagName === 'INPUT' || el.tagName === 'SELECT') data[id] = el.value;
+                    else data[id] = el.innerText;
+                }
+            });
+
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            allData[saveName] = data;
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            alert(`✅ 已保存: ${saveName}`);
+            refreshList();
+            document.getElementById('dbSaveName').value = "";
+        }
+
+        function loadFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            const data = allData[name];
+            if(data) {
+                const dynamicIds = getDynamicFieldIds();
+                dynamicIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el && data[id] !== undefined) {
+                        if(el.tagName === 'INPUT' && el.type === 'checkbox') el.checked = data[id];
+                        else if(el.tagName === 'INPUT' || el.tagName === 'SELECT') el.value = data[id];
+                        else el.innerText = data[id];
+                    }
+                });
+                if (data['stampSrcVal']) document.getElementById('stamp-layer').src = data['stampSrcVal'];
+                updateStamp();
+                updateScanMode();
+            }
+        }
+
+        function deleteFromDB() {
+            const name = document.getElementById('dbList').value;
+            if(!name) return;
+            if(!confirm(`删除 [${name}] ?`)) return;
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            delete allData[name];
+            localStorage.setItem(DB_KEY, JSON.stringify(allData));
+            refreshList();
+        }
+
+        function refreshList() {
+            const select = document.getElementById('dbList');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- 历史记录 --</option>';
+            let allData = JSON.parse(localStorage.getItem(DB_KEY) || "{}");
+            Object.keys(allData).reverse().forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key; opt.innerText = key; select.appendChild(opt);
+            });
+            if(allData[currentVal]) select.value = currentVal;
+        }
+
+        function saveToken() {
+            const token = document.getElementById('ghToken').value.trim();
+            if(token) { localStorage.setItem('GH_TOKEN', token); document.getElementById('cloudStatus').innerText = "Token 已保存"; }
+        }
+
+        async function syncToCloud(action) {
+            const token = localStorage.getItem('GH_TOKEN');
+            if(!token) { alert("请先输入 GitHub Token！"); return; }
+            const statusDiv = document.getElementById('cloudStatus');
+            statusDiv.innerText = "连接中..."; statusDiv.className = "cloud-status";
+
+            try {
+                const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `token ${token}` } });
+                if(!userRes.ok) throw new Error("Token 无效");
+
+                const gistsRes = await fetch('https://api.github.com/gists', { headers: { Authorization: `token ${token}` } });
+                const gists = await gistsRes.json();
+                let targetGist = gists.find(g => g.description === GIST_DESC && g.files[GIST_FILENAME]);
+                let gistId = targetGist ? targetGist.id : null;
+
+                if (action === 'upload') {
+                    const content = localStorage.getItem(DB_KEY) || "{}";
+                    const payload = { description: GIST_DESC, public: false, files: { [GIST_FILENAME]: { content: content } } };
+                    let url = 'https://api.github.com/gists'; let method = 'POST';
+                    if (gistId) { url += `/${gistId}`; method = 'PATCH'; }
+                    await fetch(url, { method: method, headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    statusDiv.innerText = "✅ 上传成功"; statusDiv.classList.add("success"); alert("同步完成");
+                } else if (action === 'download') {
+                    if (!gistId) { alert("云端无文件"); return; }
+                    const detailRes = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { Authorization: `token ${token}` } });
+                    const detail = await detailRes.json();
+                    localStorage.setItem(DB_KEY, detail.files[GIST_FILENAME].content);
+                    refreshList(); loadFromDB(); 
+                    statusDiv.innerText = "✅ 下载成功"; statusDiv.classList.add("success"); alert("已恢复");
+                }
+            } catch (error) { statusDiv.innerText = "❌ " + error.message; statusDiv.classList.add("error"); }
+        }
+    </script>
+</body>
+</html>

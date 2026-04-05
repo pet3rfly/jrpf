@@ -6,14 +6,14 @@
     <title>皮卡皮啦 - 业务终端</title>
     <style>
         :root {
-            /* 核心蓝色主题变量 */
-            --theme-blue-dark: #1e3a8a;   /* 侧边栏深蓝 */
-            --theme-blue-main: #2563eb;   /* 主题亮蓝 */
-            --theme-blue-hover: #1e40af;  /* 侧边栏悬停蓝 */
-            --theme-blue-light: #eff6ff;  /* 浅蓝背景 */
+            /* 核心主题变量优化：更清爽的蓝白搭配 */
+            --theme-blue-dark: #1e3a8a;   
+            --theme-blue-main: #2563eb;   /* 主题亮蓝 (文字/高亮) */
+            --theme-blue-hover: #f0fdfa;  /* 侧边栏悬停极浅蓝 */
+            --theme-blue-light: #eff6ff;  /* 选中状态浅蓝背景 */
             
-            --sidebar-width: 240px;
-            --bg-color: #f1f5f9;
+            --sidebar-width: 250px;
+            --bg-color: #f1f5f9;          /* 右侧工作区底色 */
         }
 
         body {
@@ -24,25 +24,25 @@
             overflow: hidden;
         }
 
-        /* === 左侧边栏 (深蓝主题) === */
+        /* === 左侧边栏 (清爽白底主题) === */
         .sidebar {
             width: var(--sidebar-width);
-            background-color: var(--theme-blue-dark);
-            color: #fff;
+            background-color: #ffffff; /* 改为白色 */
+            color: #334155; /* 深灰文字 */
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            border-right: 1px solid #e2e8f0; /* 右侧加条浅色分割线 */
             z-index: 10;
         }
 
         .logo-area {
-            padding: 20px;
+            padding: 22px 20px;
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            background-color: rgba(0,0,0,0.15);
+            border-bottom: 1px solid #f1f5f9;
+            background-color: #ffffff;
         }
-        .logo-area h2 { margin: 0; font-size: 20px; letter-spacing: 2px; }
-        .logo-area p { margin: 5px 0 0 0; font-size: 12px; color: #93c5fd; }
+        .logo-area h2 { margin: 0; font-size: 22px; letter-spacing: 2px; color: var(--theme-blue-dark); font-weight: 800; }
+        .logo-area p { margin: 5px 0 0 0; font-size: 12px; color: #64748b; }
 
         .menu-list {
             flex: 1;
@@ -51,55 +51,83 @@
             margin: 0;
         }
 
-        .menu-group-title {
-            padding: 15px 20px 8px 20px;
-            font-size: 12px;
-            color: #60a5fa;
-            font-weight: bold;
-            letter-spacing: 1px;
+        /* === 折叠菜单样式 === */
+        .menu-group {
+            margin-bottom: 5px;
         }
 
+        .menu-group-title {
+            padding: 12px 20px;
+            font-size: 13px;
+            color: var(--theme-blue-main); /* 小标题用亮蓝色 */
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between; /* 文字和箭头两端对齐 */
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        .menu-group-title:hover {
+            background-color: #f8fafc;
+        }
+
+        .toggle-arrow {
+            font-size: 10px;
+            color: #94a3b8;
+            transition: transform 0.3s ease;
+        }
+
+        /* 内部容器，用于实现折叠动画 */
+        .menu-group-content {
+            max-height: 500px; /* 足够大的高度 */
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+
+        /* 折叠状态 */
+        .menu-group.collapsed .menu-group-content {
+            max-height: 0;
+        }
+        .menu-group.collapsed .toggle-arrow {
+            transform: rotate(-90deg); /* 箭头向右 */
+        }
+
+        /* === 菜单项 === */
         .menu-item {
             display: flex;
             align-items: center;
-            padding: 12px 20px;
+            padding: 10px 20px 10px 25px; /* 稍微往里缩进一点 */
             cursor: pointer;
-            color: #cbd5e1;
+            color: #475569;
             text-decoration: none;
-            border-left: 4px solid transparent;
+            border-left: 3px solid transparent;
             transition: all 0.2s ease;
             font-size: 14px;
         }
 
         .menu-item:hover {
             background-color: var(--theme-blue-hover);
-            color: #fff;
+            color: var(--theme-blue-main);
         }
 
         .menu-item.active {
-            background-color: var(--theme-blue-main);
-            border-left-color: #60a5fa;
-            color: #fff;
+            background-color: var(--theme-blue-light);
+            border-left-color: var(--theme-blue-main);
+            color: var(--theme-blue-main);
             font-weight: bold;
         }
 
-        /* 圆形小图标设定 */
+        /* 圆形小图标 */
         .menu-icon {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%; /* 强制圆形 */
+            width: 24px;
+            height: 24px;
+            border-radius: 50%; 
             object-fit: cover;
-            background-color: #fff; /* 防止透明PNG在深色背景下看不清 */
+            background-color: transparent; /* 去除原本的白底防黑 */
             margin-right: 12px;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-
-        /* 结清证明空缺提示 */
-        .menu-empty {
-            padding: 10px 20px;
-            font-size: 12px;
-            color: #475569;
-            font-style: italic;
+            border: 1px solid #e2e8f0; /* 极细的边框让图标更精致 */
         }
 
         /* === 右侧主工作区 === */
@@ -122,9 +150,9 @@
         }
 
         .top-bar-title { 
-            font-size: 16px; 
+            font-size: 15px; 
             font-weight: bold; 
-            color: var(--theme-blue-dark); 
+            color: #334155; 
         }
 
         /* iframe 画框 */
@@ -138,8 +166,8 @@
         /* 自定义滚动条 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body>
@@ -147,50 +175,82 @@
     <div class="sidebar">
         <div class="logo-area">
             <h2>皮卡皮啦</h2>
-            <p>效率终端 V1.0</p>
+            <p>效率终端 V2.0</p>
         </div>
         
         <div class="menu-list">
             
-            <div class="menu-group-title">批复通知</div>
-            <a class="menu-item active" href="pages/zhongguoyinhang.html" target="main_frame" onclick="setActive(this, '中国银行 - 批复通知')">
-                <img src="images/中行logo.png" class="menu-icon" alt="中行" onerror="fallbackIcon(this)">
-                <span>中国银行</span>
-            </a>
-            <a class="menu-item" href="pages/jiansheyinhang.html" target="main_frame" onclick="setActive(this, '建设银行 - 批复通知')">
-                <img src="images/建行logo.png" class="menu-icon" alt="建行" onerror="fallbackIcon(this)">
-                <span>建设银行</span>
-            </a>
-            <a class="menu-item" href="pages/nongyeyinhang.html" target="main_frame" onclick="setActive(this, '农业银行 - 批复通知')">
-                <img src="images/农行logo.png" class="menu-icon" alt="农行" onerror="fallbackIcon(this)">
-                <span>农业银行</span>
-            </a>
-            <a class="menu-item" href="pages/pufayinhang.html" target="main_frame" onclick="setActive(this, '浦发银行 - 批复通知')">
-                <img src="images/浦发logo.png" class="menu-icon" alt="浦发" onerror="fallbackIcon(this)">
-                <span>浦发银行</span>
-            </a>
+            <div class="menu-group">
+                <div class="menu-group-title" onclick="toggleGroup(this)">
+                    <span>批复通知</span>
+                    <span class="toggle-arrow">▼</span>
+                </div>
+                <div class="menu-group-content">
+                    <a class="menu-item active" href="pages/zhongguoyinhang.html" target="main_frame" onclick="setActive(this, '中国银行 - 批复通知')">
+                        <img src="images/中行logo.png" class="menu-icon" alt="中行" onerror="fallbackIcon(this)">
+                        <span>中国银行</span>
+                    </a>
+                    <a class="menu-item" href="pages/jiansheyinhang.html" target="main_frame" onclick="setActive(this, '建设银行 - 批复通知')">
+                        <img src="images/建行logo.png" class="menu-icon" alt="建行" onerror="fallbackIcon(this)">
+                        <span>建设银行</span>
+                    </a>
+                    <a class="menu-item" href="pages/nongyeyinhang.html" target="main_frame" onclick="setActive(this, '农业银行 - 批复通知')">
+                        <img src="images/农行logo.png" class="menu-icon" alt="农行" onerror="fallbackIcon(this)">
+                        <span>农业银行</span>
+                    </a>
+                    <a class="menu-item" href="pages/pufayinhang.html" target="main_frame" onclick="setActive(this, '浦发银行 - 批复通知')">
+                        <img src="images/浦发logo.png" class="menu-icon" alt="浦发" onerror="fallbackIcon(this)">
+                        <span>浦发银行</span>
+                    </a>
+                </div>
+            </div>
 
-            <div class="menu-group-title">信息查询</div>
-            <a class="menu-item" href="pages/hefeibudongchan.html" target="main_frame" onclick="setActive(this, '合肥不动产查询')">
-                <img src="images/hfbdclogo.png" class="menu-icon" alt="不动产" onerror="fallbackIcon(this)">
-                <span>合肥不动产查询</span>
-            </a>
+            <div class="menu-group">
+                <div class="menu-group-title" onclick="toggleGroup(this)">
+                    <span>信息查询</span>
+                    <span class="toggle-arrow">▼</span>
+                </div>
+                <div class="menu-group-content">
+                    <a class="menu-item" href="pages/hefeibudongchan.html" target="main_frame" onclick="setActive(this, '合肥不动产查询')">
+                        <img src="images/hfbdclogo.png" class="menu-icon" alt="不动产" onerror="fallbackIcon(this)">
+                        <span>合肥不动产查询</span>
+                    </a>
+                </div>
+            </div>
 
-            <div class="menu-group-title">结清证明</div>
-<a class="menu-item" href="pages/zhjq.html" target="main_frame" onclick="setActive(this, '中国银行 - 结清证明')">
-    <img src="images/中行logo.png" class="menu-icon" alt="中行" onerror="fallbackIcon(this)">
-    <span>中国银行</span>
-</a>
+            <div class="menu-group">
+                <div class="menu-group-title" onclick="toggleGroup(this)">
+                    <span>结清证明</span>
+                    <span class="toggle-arrow">▼</span>
+                </div>
+                <div class="menu-group-content">
+                    <a class="menu-item" href="pages/jqzm/zgyh.html" target="main_frame" onclick="setActive(this, '中国银行 - 结清证明')">
+                        <img src="images/中行logo.png" class="menu-icon" alt="中行" onerror="fallbackIcon(this)">
+                        <span>中国银行</span>
+                    </a>
+                    <a class="menu-item" href="pages/jqzm/fdns.html" target="main_frame" onclick="setActive(this, '肥东农商行 - 结清证明')">
+                        <img src="images/安徽农金logo.png" class="menu-icon" alt="肥东农商行" onerror="fallbackIcon(this)">
+                        <span>肥东农商行</span>
+                    </a>
+                </div>
+            </div>
 
-            <div class="menu-group-title">小工具</div>
-            <a class="menu-item" href="pages/suijishu.html" target="main_frame" onclick="setActive(this, '小工具 - 随机数生成')">
-                <img src="images/suijishu.png" class="menu-icon" alt="随机数" onerror="fallbackIcon(this)">
-                <span>随机数</span>
-            </a>
-            <a class="menu-item" href="pages/printer.html" target="main_frame" onclick="setActive(this, '小工具 - 扫描模拟器')">
-                <img src="images/saomiao.png" class="menu-icon" alt="扫描" onerror="fallbackIcon(this)">
-                <span>扫描模拟器</span>
-            </a>
+            <div class="menu-group">
+                <div class="menu-group-title" onclick="toggleGroup(this)">
+                    <span>小工具</span>
+                    <span class="toggle-arrow">▼</span>
+                </div>
+                <div class="menu-group-content">
+                    <a class="menu-item" href="pages/suijishu.html" target="main_frame" onclick="setActive(this, '小工具 - 随机数生成')">
+                        <img src="images/suijishu.png" class="menu-icon" alt="随机数" onerror="fallbackIcon(this)">
+                        <span>随机数</span>
+                    </a>
+                    <a class="menu-item" href="pages/printer.html" target="main_frame" onclick="setActive(this, '小工具 - 扫描模拟器')">
+                        <img src="images/saomiao.png" class="menu-icon" alt="扫描" onerror="fallbackIcon(this)">
+                        <span>扫描模拟器</span>
+                    </a>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -204,6 +264,12 @@
     </div>
 
     <script>
+        // 折叠/展开 菜单组逻辑
+        function toggleGroup(element) {
+            const group = element.parentElement;
+            group.classList.toggle('collapsed');
+        }
+
         // 菜单点击高亮与顶部标题联动逻辑
         function setActive(element, title) {
             // 移除所有激活状态
@@ -216,11 +282,11 @@
             document.getElementById('current-title').innerText = title;
         }
 
-        // 图标加载失败时的容错处理（防止图片缺失时显示丑陋的裂图）
+        // 图标加载失败时的容错处理
         function fallbackIcon(img) {
-            img.onerror = null; // 防止死循环
-            // 替换为一个通用的蓝色圆形底图作为默认图标
-            img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%232563eb"><circle cx="12" cy="12" r="10"/></svg>';
+            img.onerror = null; 
+            // 如果图片丢失，替换为一个淡蓝色的圆形底图
+            img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2393c5fd"><circle cx="12" cy="12" r="10"/></svg>';
         }
     </script>
 
