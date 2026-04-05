@@ -6,8 +6,9 @@
     <title>中国银行个人贷款结清证明</title>
     <style>
         :root {
-            /* 中行标准公文通常使用宋体 */
+            /* 字体定义 */
             --font-song: "SimSun", "Songti SC", serif;
+            --font-hei: "SimHei", "Microsoft YaHei", sans-serif;
             --text-main: #000;
             --theme-color: #b71c1c; /* 中行红 */
         }
@@ -29,27 +30,50 @@
             background: white;
             width: 210mm;
             height: 297mm;
-            padding: 45mm 30mm; /* 原图顶部留白非常大 */
+            /* 整体上移，左右边距缩小 */
+            padding: 25mm 15mm; 
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
             position: relative;
             box-sizing: border-box;
             overflow: hidden;
+            transition: all 0.3s;
         }
 
         @media print {
             body { background: none; padding: 0; }
             .a4-page { box-shadow: none; margin: 0; width: auto; height: auto; page-break-after: always; }
             .control-panel, .btn-group { display: none !important; }
+            /* 打印时必须允许背景图形打印，扫描纹理才能生效 */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        /* === 标题样式 === */
+        /* === 纯代码实现的扫描噪点纹理 (0 KB) === */
+        .scan-mode {
+            /* 模拟纸张微微泛黄和扫描对比度降低 */
+            background-color: #faf9f6 !important;
+            filter: contrast(1.05) sepia(0.1); 
+        }
+        .scan-mode::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            /* 纯代码生成的高频噪点 */
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.15"/></svg>');
+            mix-blend-mode: multiply;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* === 标题样式 (无衬线、不可编辑) === */
         h1 {
             text-align: center;
             font-size: 26px; 
             font-weight: bold; 
-            margin-bottom: 70px;
+            margin-bottom: 60px;
             letter-spacing: 1px;
-            font-family: var(--font-song);
+            font-family: var(--font-hei); /* 无衬线体 */
+            user-select: none;
         }
 
         /* === 无边框表格排版 === */
@@ -57,12 +81,13 @@
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed; 
-            border: none; /* 结清证明无边框 */
+            border: none;
         }
 
         td {
-            padding: 12px 5px; /* 行间距拉大，契合原图疏朗感 */
-            font-size: 15px; 
+            /* 减小左右内边距，使值更贴近标题 */
+            padding: 12px 2px; 
+            font-size: 16px; /* 字号调大 */
             font-weight: normal; 
             vertical-align: middle;
             line-height: 1.5;
@@ -71,15 +96,13 @@
         .label-col { text-align: left; padding-left: 10px; color: #000; }
         .val-col { text-align: left; padding-left: 0px; }
 
-        /* 输入框隐形化 */
         input[type="text"], select {
             border: none; outline: none; background: transparent;
-            font-family: var(--font-song); font-size: 15px;
+            font-family: var(--font-song); font-size: 16px; /* 输入框字号同步放大 */
             width: 100%; padding: 0; margin: 0; color: #000;
         }
         select { -webkit-appearance: none; appearance: none; cursor: pointer; }
 
-        /* 全文编辑反馈 */
         .global-editable { outline: 1px dashed #2196F3; background-color: rgba(33, 150, 243, 0.05); cursor: text; }
         .global-editable:hover { background-color: rgba(33, 150, 243, 0.1); }
         [contenteditable="true"]:hover { background-color: rgba(255, 255, 0, 0.1); cursor: text; }
@@ -93,7 +116,7 @@
             transform-origin: center center;
         }
 
-        /* === 浮动按钮与面板 === */
+        /* === 控制面板 === */
         .btn-group { position: fixed; top: 20px; right: 20px; z-index: 10001; display: flex; gap: 10px; }
         .float-btn { padding: 8px 15px; background: var(--theme-color); color: #fff; border: none; border-radius: 4px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 14px; font-family: "Microsoft YaHei"; }
         .float-btn:hover { opacity: 0.9; }
@@ -135,6 +158,14 @@
         .btn-upload { background: #2196F3; } .btn-upload:hover { background: #1976D2; }
         .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
         #jsonImportArea { width:100%; height:80px; font-size:10px; display:none; margin-top:5px; border: 1px solid #ccc; border-radius: 4px; padding: 4px; box-sizing: border-box; font-family: monospace; }
+        
+        /* 扫描模式开关样式 */
+        .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 18px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #28a745; }
+        input:checked + .slider:before { transform: translateX(16px); }
     </style>
 </head>
 <body>
@@ -145,19 +176,19 @@
 
     <div class="a4-page" id="capture-area">
         
-        <img id="stamp-layer" src="../images/bankmark/中国银行长丰支行业务章.png" alt="印章" style="display:block; width:160px; top:420px; left:420px; transform: rotate(0deg);">
+        <img id="stamp-layer" src="../images/bankmark/中国银行长丰支行业务章.png" alt="印章" style="display:block; width:160px; top:400px; left:180px; transform: rotate(0deg);">
         <input type="hidden" id="stampSrcVal" value="../images/bankmark/中国银行长丰支行业务章.png">
         <input type="file" id="stampUpload" accept="image/*" style="display:none" onchange="loadStamp(this)">
 
         <div class="content-layer">
-            <h1 contenteditable="true" id="mainTitle">中国银行个人贷款结清证明</h1>
+            <h1 id="mainTitle">中国银行个人贷款结清证明</h1>
 
             <table>
                 <colgroup>
-                    <col style="width: 20%">
-                    <col style="width: 32%">
-                    <col style="width: 18%">
-                    <col style="width: 30%">
+                    <col style="width: 17%">
+                    <col style="width: 33%">
+                    <col style="width: 15%">
+                    <col style="width: 35%">
                 </colgroup>
 
                 <tr>
@@ -219,6 +250,14 @@
                 <span class="minimize-btn" onclick="minimizePanel(event)">_</span>
             </div>
 
+            <div class="control-row" style="background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px dashed #ccc;">
+                <label style="color:#d32f2f;">🖨️ 扫描件质感</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="scanToggle" onchange="toggleScanMode()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <div class="section-title-panel">🤖 AI 与业务功能</div>
             <div class="control-row">
                 <button class="btn-full" onclick="toggleJsonArea()" style="width: 100%; border-color:#2196F3; color:#2196F3;">📥 粘贴 AI 识别数据</button>
@@ -249,13 +288,13 @@
             <div class="control-row">
                 <label>上下</label>
                 <div class="slider-container">
-                    <input type="range" id="stampTop" min="0" max="1000" value="420" oninput="updateStamp()">
+                    <input type="range" id="stampTop" min="0" max="1000" value="400" oninput="updateStamp()">
                 </div>
             </div>
             <div class="control-row">
                 <label>左右</label>
                 <div class="slider-container">
-                    <input type="range" id="stampLeft" min="0" max="700" value="420" oninput="updateStamp()">
+                    <input type="range" id="stampLeft" min="0" max="700" value="180" oninput="updateStamp()">
                 </div>
             </div>
             <div class="control-row">
@@ -296,19 +335,27 @@
     </div>
 
     <script>
+        // === 扫描模式控制 ===
+        function toggleScanMode() {
+            const isChecked = document.getElementById('scanToggle').checked;
+            const a4 = document.getElementById('capture-area');
+            if(isChecked) {
+                a4.classList.add('scan-mode');
+            } else {
+                a4.classList.remove('scan-mode');
+            }
+        }
+
         // === 专属业务逻辑：账号生成 ===
         function generateAccount() {
-            const prefix = "340"; // 规定开头
+            const prefix = "340"; 
             const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             const digits = "0123456789";
             let resultArr = [];
 
-            // 放入2个随机大写字母
             for(let i=0; i<2; i++) resultArr.push(letters.charAt(Math.floor(Math.random() * letters.length)));
-            // 放入15个随机数字
             for(let i=0; i<15; i++) resultArr.push(digits.charAt(Math.floor(Math.random() * digits.length)));
 
-            // 经典的洗牌算法打乱数组
             for (let i = resultArr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [resultArr[i], resultArr[j]] = [resultArr[j], resultArr[i]];
@@ -340,7 +387,6 @@
             const text = e.target.value || e.target.innerText;
             if(!text) return;
 
-            // 1. 验证证件号 (18位)
             if (id === 't_idCard') {
                 if (text.length !== 18) {
                     e.target.style.color = 'red';
@@ -350,7 +396,6 @@
                 }
             }
 
-            // 2. 自动格式化日期 (8位数字 -> YYYY/MM/DD 中行原图格式)
             if (id === 't_loanDate') {
                 const newText = text.replace(/\b(\d{4})(\d{2})(\d{2})\b/g, '$1/$2/$3');
                 if (newText !== text) {
@@ -438,8 +483,8 @@
                     ids.add(el.id);
                 }
             });
-            // 加入滑块的状态保存
             ids.add("stampTop"); ids.add("stampLeft"); ids.add("stampSize"); ids.add("stampRotate");
+            ids.add("scanToggle"); // 记录扫描件状态
             return Array.from(ids);
         }
 
@@ -521,7 +566,9 @@
             dynamicIds.forEach(id => {
                 const el = document.getElementById(id);
                 if(el) {
-                    if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                    if(el.tagName === 'INPUT' && el.type === 'checkbox') {
+                        data[id] = el.checked;
+                    } else if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
                         data[id] = el.value;
                     } else {
                         data[id] = el.innerText;
@@ -548,7 +595,9 @@
                 dynamicIds.forEach(id => {
                     const el = document.getElementById(id);
                     if(el && data[id] !== undefined) {
-                        if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                        if(el.tagName === 'INPUT' && el.type === 'checkbox') {
+                            el.checked = data[id];
+                        } else if(el.tagName === 'INPUT' || el.tagName === 'SELECT') {
                             el.value = data[id];
                         } else {
                             el.innerText = data[id];
@@ -560,6 +609,7 @@
                     document.getElementById('stamp-layer').src = data['stampSrcVal'];
                 }
                 updateStamp();
+                toggleScanMode(); // 同步扫描模式外观
             }
         }
 
