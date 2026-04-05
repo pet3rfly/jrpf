@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>中国银行个人贷款结清证明</title>
     <style>
+        /* === 引入特定的公文字体 === */
+        @font-face {
+            font-family: 'FZXBSJ'; /* 方正小标宋简 */
+            src: url('../images/方正小标宋简.TTF') format('truetype');
+        }
+
         :root {
-            /* 字体定义 */
             --font-song: "SimSun", "Songti SC", serif;
-            --font-hei: "SimHei", "Microsoft YaHei", sans-serif;
             --text-main: #000;
             --theme-color: #b71c1c; /* 中行红 */
         }
@@ -30,50 +34,46 @@
             background: white;
             width: 210mm;
             height: 297mm;
-            /* 整体上移，左右边距缩小 */
-            padding: 25mm 15mm; 
+            /* 完美复刻 Word 的绝对边距 */
+            padding: 1.91cm 2.54cm; 
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
             position: relative;
             box-sizing: border-box;
             overflow: hidden;
-            transition: all 0.3s;
         }
 
         @media print {
             body { background: none; padding: 0; }
             .a4-page { box-shadow: none; margin: 0; width: auto; height: auto; page-break-after: always; }
             .control-panel, .btn-group { display: none !important; }
-            /* 打印时必须允许背景图形打印，扫描纹理才能生效 */
+            /* 保证扫描纹理能被打印或导出 PDF */
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
-        /* === 纯代码实现的扫描噪点纹理 (0 KB) === */
-        .scan-mode {
-            /* 模拟纸张微微泛黄和扫描对比度降低 */
-            background-color: #faf9f6 !important;
-            filter: contrast(1.05) sepia(0.1); 
-        }
-        .scan-mode::after {
-            content: "";
+        /* === 真实的扫描纹理层 === */
+        #scan-texture {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* 纯代码生成的高频噪点 */
-            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.15"/></svg>');
-            mix-blend-mode: multiply;
-            pointer-events: none;
+            object-fit: cover;
+            mix-blend-mode: multiply; /* 正片叠底 */
+            pointer-events: none; /* 防止挡住鼠标点击 */
             z-index: 9999;
+            display: none; /* 默认隐藏 */
+            opacity: 0.6;
         }
 
-        /* === 标题样式 (无衬线、不可编辑) === */
+        /* === 标题样式 (三号 方正小标宋，段后2行) === */
         h1 {
             text-align: center;
-            font-size: 26px; 
-            font-weight: bold; 
-            margin-bottom: 60px;
+            /* 3号字约等于 16pt / 21.3px */
+            font-size: 22px; 
+            font-weight: normal; /* 小标宋自带粗体效果，无需再加粗 */
+            margin-top: 20px;
+            margin-bottom: 48px; /* 约2行的行距 */
             letter-spacing: 1px;
-            font-family: var(--font-hei); /* 无衬线体 */
-            user-select: none;
+            font-family: 'FZXBSJ', var(--font-song); 
+            user-select: none; /* 标题不可修改，防误触 */
         }
 
         /* === 无边框表格排版 === */
@@ -85,20 +85,21 @@
         }
 
         td {
-            /* 减小左右内边距，使值更贴近标题 */
-            padding: 12px 2px; 
-            font-size: 16px; /* 字号调大 */
+            /* 紧凑间距 */
+            padding: 10px 0px; 
+            /* 小四号字 = 12pt = 16px */
+            font-size: 16px; 
             font-weight: normal; 
             vertical-align: middle;
-            line-height: 1.5;
+            line-height: 1.8;
         }
 
-        .label-col { text-align: left; padding-left: 10px; color: #000; }
-        .val-col { text-align: left; padding-left: 0px; }
+        .label-col { text-align: left; padding-left: 5px; color: #000; }
+        .val-col { text-align: left; padding-left: 0px; } /* 值与标题更紧凑 */
 
         input[type="text"], select {
             border: none; outline: none; background: transparent;
-            font-family: var(--font-song); font-size: 16px; /* 输入框字号同步放大 */
+            font-family: var(--font-song); font-size: 16px;
             width: 100%; padding: 0; margin: 0; color: #000;
         }
         select { -webkit-appearance: none; appearance: none; cursor: pointer; }
@@ -121,14 +122,7 @@
         .float-btn { padding: 8px 15px; background: var(--theme-color); color: #fff; border: none; border-radius: 4px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 14px; font-family: "Microsoft YaHei"; }
         .float-btn:hover { opacity: 0.9; }
 
-        .control-panel {
-            position: fixed; bottom: 20px; right: 20px; background: #fff;
-            border: 1px solid #ccc; padding: 0; z-index: 10000;
-            width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.15);
-            border-radius: 8px; font-size: 12px; font-family: "Microsoft YaHei";
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow: hidden; max-height: 85vh; overflow-y: auto;
-        }
+        .control-panel { position: fixed; bottom: 20px; right: 20px; background: #fff; border: 1px solid #ccc; padding: 0; z-index: 10000; width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.15); border-radius: 8px; font-size: 12px; font-family: "Microsoft YaHei"; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; max-height: 85vh; overflow-y: auto; }
         .control-panel.collapsed { width: 48px; height: 48px; border-radius: 50%; background: var(--theme-color); cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
         .control-panel.collapsed .panel-content { opacity: 0; pointer-events: none; }
         .toggle-icon { display: none; color: white; font-size: 24px; }
@@ -159,7 +153,6 @@
         .btn-download { background: #FF9800; } .btn-download:hover { background: #F57C00; }
         #jsonImportArea { width:100%; height:80px; font-size:10px; display:none; margin-top:5px; border: 1px solid #ccc; border-radius: 4px; padding: 4px; box-sizing: border-box; font-family: monospace; }
         
-        /* 扫描模式开关样式 */
         .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 18px; }
@@ -176,7 +169,9 @@
 
     <div class="a4-page" id="capture-area">
         
-        <img id="stamp-layer" src="../images/bankmark/中国银行长丰支行业务章.png" alt="印章" style="display:block; width:160px; top:400px; left:180px; transform: rotate(0deg);">
+        <img id="scan-texture" src="../images/zw/zw3.jpg" alt="扫描纹理">
+
+        <img id="stamp-layer" src="../images/bankmark/中国银行长丰支行业务章.png" alt="印章" style="display:block; width:160px; top:420px; left:480px; transform: rotate(0deg);">
         <input type="hidden" id="stampSrcVal" value="../images/bankmark/中国银行长丰支行业务章.png">
         <input type="file" id="stampUpload" accept="image/*" style="display:none" onchange="loadStamp(this)">
 
@@ -185,8 +180,8 @@
 
             <table>
                 <colgroup>
-                    <col style="width: 17%">
-                    <col style="width: 33%">
+                    <col style="width: 18%">
+                    <col style="width: 32%">
                     <col style="width: 15%">
                     <col style="width: 35%">
                 </colgroup>
@@ -251,11 +246,25 @@
             </div>
 
             <div class="control-row" style="background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px dashed #ccc;">
-                <label style="color:#d32f2f;">🖨️ 扫描件质感</label>
+                <label style="color:#2196F3; flex:1;">🖨️ 开启扫描纸纹</label>
                 <label class="toggle-switch">
-                    <input type="checkbox" id="scanToggle" onchange="toggleScanMode()">
+                    <input type="checkbox" id="scanToggle" onchange="updateScanMode()">
                     <span class="slider"></span>
                 </label>
+            </div>
+            <div class="control-row">
+                <label>纸张样式</label>
+                <select id="scanSelect" onchange="updateScanMode()">
+                    <option value="../images/zw/zw3.jpg">深色折痕 (zw3)</option>
+                    <option value="../images/zw/zw2.jpg">中度噪点 (zw2)</option>
+                    <option value="../images/zw/zw1.jpg">轻微复印 (zw1)</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <label>纸纹浓度</label>
+                <div class="slider-container">
+                    <input type="range" id="scanOpacity" min="0.1" max="1" step="0.1" value="0.6" oninput="updateScanMode()">
+                </div>
             </div>
 
             <div class="section-title-panel">🤖 AI 与业务功能</div>
@@ -288,13 +297,13 @@
             <div class="control-row">
                 <label>上下</label>
                 <div class="slider-container">
-                    <input type="range" id="stampTop" min="0" max="1000" value="400" oninput="updateStamp()">
+                    <input type="range" id="stampTop" min="0" max="1000" value="420" oninput="updateStamp()">
                 </div>
             </div>
             <div class="control-row">
                 <label>左右</label>
                 <div class="slider-container">
-                    <input type="range" id="stampLeft" min="0" max="700" value="180" oninput="updateStamp()">
+                    <input type="range" id="stampLeft" min="0" max="700" value="480" oninput="updateStamp()">
                 </div>
             </div>
             <div class="control-row">
@@ -335,14 +344,19 @@
     </div>
 
     <script>
-        // === 扫描模式控制 ===
-        function toggleScanMode() {
+        // === 真实纸纹的扫描模式逻辑 ===
+        function updateScanMode() {
             const isChecked = document.getElementById('scanToggle').checked;
-            const a4 = document.getElementById('capture-area');
-            if(isChecked) {
-                a4.classList.add('scan-mode');
+            const texImg = document.getElementById('scan-texture');
+            const texSrc = document.getElementById('scanSelect').value;
+            const opacity = document.getElementById('scanOpacity').value;
+            
+            if (isChecked) {
+                texImg.src = texSrc;
+                texImg.style.opacity = opacity;
+                texImg.style.display = 'block';
             } else {
-                a4.classList.remove('scan-mode');
+                texImg.style.display = 'none';
             }
         }
 
@@ -484,7 +498,7 @@
                 }
             });
             ids.add("stampTop"); ids.add("stampLeft"); ids.add("stampSize"); ids.add("stampRotate");
-            ids.add("scanToggle"); // 记录扫描件状态
+            ids.add("scanToggle"); ids.add("scanSelect"); ids.add("scanOpacity");
             return Array.from(ids);
         }
 
@@ -609,7 +623,7 @@
                     document.getElementById('stamp-layer').src = data['stampSrcVal'];
                 }
                 updateStamp();
-                toggleScanMode(); // 同步扫描模式外观
+                updateScanMode(); // 同步扫描模式外观
             }
         }
 
